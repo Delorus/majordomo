@@ -9,8 +9,8 @@ public class Launch {
     public static void main(String[] args) throws TelegramApiRequestException {
         ApiContextInitializer.init();
 
-        TelegramBotsApi api = new TelegramBotsApi();
+        TelegramBotsApi api = new TelegramBotsApi("https://perch-tg-bots.herokuapp.com", "localhost:" + args[0]);
 
-        api.registerBot(new TranslateBot("artificial_butler_bot", "489229556:AAEecUEiFazv6c53T2vAGgvkrK8gC3SLHEc"));
+        api.registerBot(new TranslateBot(System.getenv("TG_BOT_NAME"), System.getenv("TG_BOT_TOKEN"), System.getenv("TG_BOT_NAME")));
     }
 }
