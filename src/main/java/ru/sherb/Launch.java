@@ -11,11 +11,10 @@ public class Launch {
 
     public static void main(String[] args) throws TelegramApiRequestException {
         System.out.println("START APPLICATION");
-        System.out.println(System.getenv());
         ApiContextInitializer.init();
 
         System.out.println("Port: " + System.getenv("PORT"));
-        TelegramBotsApi api = new TelegramBotsApi("https://perch-tg-bots.herokuapp.com/", "http://localhost:" + System.getenv("PORT") + "/");
+        TelegramBotsApi api = new TelegramBotsApi("https://perch-tg-bots.herokuapp.com/", "http://0.0.0.0:" + System.getenv("PORT") + "/");
 
         System.out.println("Bot name: " + System.getenv("TG_BOT_NAME"));
         System.out.println("Bot token: " + System.getenv("TG_BOT_TOKEN"));
