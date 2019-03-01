@@ -14,7 +14,7 @@ public class Launch {
         ApiContextInitializer.init();
 
         System.out.println("Port: " + System.getenv("PORT"));
-        TelegramBotsApi api = new TelegramBotsApi("https://perch-tg-bots.herokuapp.com:443", "localhost:" + System.getenv("PORT"));
+        TelegramBotsApi api = new TelegramBotsApi("https://perch-tg-bots.herokuapp.com", "http://localhost:" + System.getenv("PORT") + "/");
 
         System.out.println("Bot name: " + System.getenv("TG_BOT_NAME"));
         api.registerBot(new TranslateBot(System.getenv("TG_BOT_NAME"), System.getenv("TG_BOT_TOKEN"), System.getenv("TG_BOT_NAME")));
