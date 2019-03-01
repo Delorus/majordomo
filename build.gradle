@@ -36,3 +36,6 @@ jar {
         attributes 'Main-Class': 'ru.sherb.Launch'
     }
 }
+
+task stage(dependsOn: ['build', 'clean'])
+build.mustRunAfter clean
