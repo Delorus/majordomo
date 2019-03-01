@@ -9,10 +9,9 @@ import java.text.MessageFormat;
 
 public class Launch {
 
-    private static final String MAIN_TAG = "Main";
-
     public static void main(String[] args) throws TelegramApiRequestException {
-
+        System.out.println("START APPLICATION");
+        System.out.println(System.getenv());
         ApiContextInitializer.init();
 
         System.out.println("Port: " + System.getenv("PORT"));
