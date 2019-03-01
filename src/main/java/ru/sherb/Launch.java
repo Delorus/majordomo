@@ -16,10 +16,10 @@ public class Launch {
     public static void main(String[] args) throws TelegramApiRequestException {
         BotLogger.setLevel(Level.ALL);
         BotLogger.registerLogger(new ConsoleHandler());
+        BotLogger.debug(MAIN_TAG, "get port: " + args[0]);
 
         ApiContextInitializer.init();
 
-        BotLogger.debug(MAIN_TAG, "get port: " + args[0]);
         TelegramBotsApi api = new TelegramBotsApi("https://perch-tg-bots.herokuapp.com", "localhost:" + args[0]);
 
         BotLogger.debug(MAIN_TAG, "get bot name: " + System.getenv("TG_BOT_NAME"));
