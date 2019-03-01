@@ -1,1 +1,1 @@
-web: java -jar build/libs/majordomo-all.jar $PORT
+web: java -jar build/libs/majordomo-all.jar
