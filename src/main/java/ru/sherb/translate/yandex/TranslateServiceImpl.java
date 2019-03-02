@@ -4,10 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import ru.sherb.translate.TranslateService;
 
 import javax.ws.rs.core.UriBuilder;
@@ -15,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,8 +53,7 @@ public final class TranslateServiceImpl implements TranslateService {
 
         HttpPost post = new HttpPost(uri);
         post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-        post.setEntity(new UrlEncodedFormEntity(
-                Collections.singletonList(new BasicNameValuePair("text", text))));
+        post.setEntity(new StringEntity("text=" + text, Charset.forName("UTF-8")));
 
         HttpResponse response = client.execute(post);
         try (InputStreamReader reader = new InputStreamReader(response.getEntity().getContent(), Charset.forName("UTF-8"))) {
