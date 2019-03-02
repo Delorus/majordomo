@@ -2,14 +2,18 @@ package ru.sherb.translate.yandex;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import ru.sherb.translate.TranslateService;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,7 +31,7 @@ public final class TranslateServiceImpl implements TranslateService {
         this.yandexTranslate = UriBuilder.fromUri("https://translate.yandex.net/api/v1.5/tr.json/translate")
                 .queryParam("key", apiKey)
                 .build();
-        this.client = HttpClient.newHttpClient();
+        this.client = HttpClients.createMinimal();
     }
 
     public String transRuToEn(String text) throws IOException {
@@ -47,25 +51,19 @@ public final class TranslateServiceImpl implements TranslateService {
                 .queryParam("lang", lang)
                 .build();
 
-        HttpRequest request = HttpRequest.newBuilder(uri)
-                .headers("Content-Type", "application/x-www-form-urlencoded",
-                        "Content-Length", String.valueOf("text=".length() + text.length()))
-                .POST(HttpRequest.BodyPublishers.ofString("text=" + text))
-                .build();
+        HttpPost post = new HttpPost(uri);
+        post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+        post.setHeader("Content-Length", String.valueOf("text=".length() + text.length()));
+        post.setEntity(new UrlEncodedFormEntity(
+                Collections.singletonList(new BasicNameValuePair("text", text))));
 
-        try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            TranslateResponse resp = mapper.readValue(response.body(), TranslateResponse.class);
-            if (resp.getCode() == 200) { //todo log it!
-                return String.join("\n", resp.getText());
-            } else {
-                System.out.println("Something wrong:");
-                System.out.println(response);
-            }
-        } catch (InterruptedException ie) {
-            //todo log it!
-            ie.printStackTrace();
-            Thread.currentThread().interrupt();
+        HttpResponse response = client.execute(post);
+        TranslateResponse resp = mapper.readValue(response.getEntity().getContent(), TranslateResponse.class);
+        if (resp.getCode() == 200) { //todo log it!
+            return String.join("\n", resp.getText());
+        } else {
+            System.out.println("Something wrong:");
+            System.out.println(response);
         }
 
         return "";

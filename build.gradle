@@ -5,8 +5,7 @@ plugins {
 
 group 'ru.sherb'
 
-sourceCompatibility = 11
-targetCompatibility = 11
+sourceCompatibility = 1.8
 
 repositories {
     mavenLocal()
