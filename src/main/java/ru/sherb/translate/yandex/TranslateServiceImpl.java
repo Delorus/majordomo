@@ -12,7 +12,9 @@ import ru.sherb.translate.TranslateService;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -57,12 +59,14 @@ public final class TranslateServiceImpl implements TranslateService {
                 Collections.singletonList(new BasicNameValuePair("text", text))));
 
         HttpResponse response = client.execute(post);
-        TranslateResponse resp = mapper.readValue(response.getEntity().getContent(), TranslateResponse.class);
-        if (resp.getCode() == 200) { //todo log it!
-            return String.join("\n", resp.getText());
-        } else {
-            System.out.println("Something wrong:");
-            System.out.println(response);
+        try (InputStreamReader reader = new InputStreamReader(response.getEntity().getContent(), Charset.forName("UTF-8"))) {
+            TranslateResponse resp = mapper.readValue(reader, TranslateResponse.class);
+            if (resp.getCode() == 200) { //todo log it!
+                return String.join("\n", resp.getText());
+            } else {
+                System.out.println("Something wrong:");
+                System.out.println(response);
+            }
         }
 
         return "";
