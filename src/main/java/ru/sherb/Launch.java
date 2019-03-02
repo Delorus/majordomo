@@ -3,7 +3,7 @@ package ru.sherb;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
-import ru.sherb.bot.TranslateBot;
+import ru.sherb.translate.TranslateBot;
 
 public class Launch {
 
