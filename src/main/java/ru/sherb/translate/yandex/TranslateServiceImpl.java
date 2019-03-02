@@ -53,7 +53,6 @@ public final class TranslateServiceImpl implements TranslateService {
 
         HttpPost post = new HttpPost(uri);
         post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-        post.setHeader("Content-Length", String.valueOf("text=".length() + text.length()));
         post.setEntity(new UrlEncodedFormEntity(
                 Collections.singletonList(new BasicNameValuePair("text", text))));
 
