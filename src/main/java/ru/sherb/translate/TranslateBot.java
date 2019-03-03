@@ -111,8 +111,15 @@ public final class TranslateBot extends TelegramWebhookBot {
 
         Message inMsg = update.getMessage();
         try {
-            String ru = service.transRuToEn(inMsg.getText());
-            return new SendMessage(inMsg.getChatId(), ru);
+            String en = service.transRuToEn(inMsg.getText());
+
+            Long chatID = this.enCharID != null
+                    ? this.enCharID
+                    : inMsg.getChatId();
+
+            String response = update.getMessage().getAuthorSignature() + " wrote:\n" + en;
+
+            return new SendMessage(chatID, response);
         } catch (IOException e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
