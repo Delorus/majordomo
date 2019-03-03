@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 import ru.sherb.translate.yandex.TranslateServiceImpl;
 
 import java.io.IOException;
@@ -108,7 +109,7 @@ public final class TranslateBot extends TelegramWebhookBot {
         if (filterMsg(update)) {
             return null;
         }
-
+        System.out.println(update);
         Message inMsg = update.getMessage();
         try {
             String en = service.transRuToEn(inMsg.getText());
@@ -117,9 +118,9 @@ public final class TranslateBot extends TelegramWebhookBot {
                     ? this.enCharID
                     : inMsg.getChatId();
 
-            String response = update.getMessage().getAuthorSignature() + " wrote:\n" + en;
+            String response = "*" + formatUserName(update.getMessage().getFrom()) + " wrote:*\n" + en;
 
-            return new SendMessage(chatID, response);
+            return new SendMessage(chatID, response).enableMarkdown(true);
         } catch (IOException e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -131,6 +132,19 @@ public final class TranslateBot extends TelegramWebhookBot {
         String text = update.getMessage().getText();
 
         return !cyrillic.matcher(text).find();
+    }
+
+    private String formatUserName(User user) {
+        String name = user.getUserName();
+        if (user.getFirstName() != null && !user.getFirstName().isEmpty()) {
+            name = user.getFirstName();
+
+            if (user.getLastName() != null && !user.getLastName().isEmpty()) {
+                name += " " + user.getLastName();
+            }
+        }
+
+        return name;
     }
 
     @Override
