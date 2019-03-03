@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * @author maksim
@@ -71,6 +72,8 @@ public final class TranslateBot extends TelegramWebhookBot {
         return dispatch(update);
     }
 
+    private static final Pattern cyrillic = Pattern.compile("[А-Яа-я]");
+
     private boolean filterMsg(Update update) {
         if (!update.hasMessage() || !update.getMessage().hasText()) {
             return true;
@@ -78,8 +81,7 @@ public final class TranslateBot extends TelegramWebhookBot {
 
         String text = update.getMessage().getText();
 
-        return false;//text.matches("[А-Яа-я]");
-
+        return !cyrillic.matcher(text).find();
     }
 
     private BotApiMethod dispatch(Update update) {
