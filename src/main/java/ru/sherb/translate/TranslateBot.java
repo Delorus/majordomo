@@ -78,7 +78,7 @@ public final class TranslateBot extends TelegramWebhookBot {
 
         String text = update.getMessage().getText();
 
-        return !text.matches("[А-Яа-я]");
+        return false;//text.matches("[А-Яа-я]");
 
     }
 
