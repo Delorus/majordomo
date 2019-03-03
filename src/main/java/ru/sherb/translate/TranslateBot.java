@@ -65,7 +65,7 @@ public final class TranslateBot extends TelegramWebhookBot {
 
     @Override
     public BotApiMethod onWebhookUpdateReceived(Update update) {
-        if (filterMsg(update)) {
+        if (!update.hasMessage() || !update.getMessage().hasText()) {
             return null;
         }
 
@@ -73,16 +73,6 @@ public final class TranslateBot extends TelegramWebhookBot {
     }
 
     private static final Pattern cyrillic = Pattern.compile("[А-Яа-я]");
-
-    private boolean filterMsg(Update update) {
-        if (!update.hasMessage() || !update.getMessage().hasText()) {
-            return true;
-        }
-
-        String text = update.getMessage().getText();
-
-        return !cyrillic.matcher(text).find();
-    }
 
     private BotApiMethod dispatch(Update update) {
         if (update.getMessage().isCommand()) {
@@ -115,6 +105,10 @@ public final class TranslateBot extends TelegramWebhookBot {
     }
 
     private BotApiMethod translate(Update update) {
+        if (filterMsg(update)) {
+            return null;
+        }
+
         Message inMsg = update.getMessage();
         try {
             String ru = service.transRuToEn(inMsg.getText());
@@ -124,6 +118,12 @@ public final class TranslateBot extends TelegramWebhookBot {
             e.printStackTrace();
             return new SendMessage(inMsg.getChatId(), "Извините, произошла ошибка.");
         }
+    }
+
+    private boolean filterMsg(Update update) {
+        String text = update.getMessage().getText();
+
+        return !cyrillic.matcher(text).find();
     }
 
     @Override
