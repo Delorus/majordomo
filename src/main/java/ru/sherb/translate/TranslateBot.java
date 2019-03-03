@@ -3,9 +3,11 @@ package ru.sherb.translate;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.sherb.translate.yandex.TranslateServiceImpl;
 
 import java.io.IOException;
@@ -120,6 +122,14 @@ public final class TranslateBot extends TelegramWebhookBot {
 
             String response = "*" + formatUserName(update.getMessage().getFrom()) + " wrote:*\n" + en;
 
+            if (this.enCharID == null) {
+                try {
+                    execute(new DeleteMessage(chatID, inMsg.getMessageId()));
+                } catch (TelegramApiException e) {
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
             return new SendMessage(chatID, response).enableMarkdown(true);
         } catch (IOException e) {
             System.out.println(e.getMessage());
