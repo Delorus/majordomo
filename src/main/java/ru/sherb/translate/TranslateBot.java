@@ -75,8 +75,6 @@ public final class TranslateBot extends TelegramWebhookBot {
         return dispatch(update);
     }
 
-    private static final Pattern cyrillic = Pattern.compile("[А-Яа-я]");
-
     private BotApiMethod dispatch(Update update) {
         if (update.getMessage().isCommand()) {
             return executeCmd(update);
@@ -108,7 +106,7 @@ public final class TranslateBot extends TelegramWebhookBot {
     }
 
     private BotApiMethod translate(Update update) {
-        if (filterMsg(update)) {
+        if (!isSupportedMsg(update)) {
             return null;
         }
 
@@ -123,12 +121,7 @@ public final class TranslateBot extends TelegramWebhookBot {
             String response = "*" + formatUserName(update.getMessage().getFrom()) + " wrote:*\n" + en;
 
             if (this.enCharID == null) {
-                try {
-                    execute(new DeleteMessage(chatID, inMsg.getMessageId()));
-                } catch (TelegramApiException e) {
-                    System.out.println(e.getMessage());
-                    e.printStackTrace();
-                }
+                tryDelete(new DeleteMessage(chatID, inMsg.getMessageId()));
             }
             return new SendMessage(chatID, response).enableMarkdown(true);
         } catch (IOException e) {
@@ -138,10 +131,21 @@ public final class TranslateBot extends TelegramWebhookBot {
         }
     }
 
-    private boolean filterMsg(Update update) {
+    private void tryDelete(DeleteMessage msg) {
+        try {
+            execute(msg);
+        } catch (TelegramApiException e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private static final Pattern cyrillic = Pattern.compile("[А-Яа-я]");
+
+    private boolean isSupportedMsg(Update update) {
         String text = update.getMessage().getText();
 
-        return !cyrillic.matcher(text).find();
+        return cyrillic.matcher(text).find();
     }
 
     private String formatUserName(User user) {
