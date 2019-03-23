@@ -12,7 +12,7 @@ import static ru.sherb.chart.XChartRenderer.ChartData;
  * @author maksim
  * @since 23.03.19
  */
-public final class FrequentlyUsedWordsChart implements Renderable {
+final class FrequentlyUsedWordsChart implements Renderable {
 
     @Value
     private static class WordCount {

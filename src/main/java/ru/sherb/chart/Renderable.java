@@ -6,7 +6,7 @@ import java.awt.image.BufferedImage;
  * @author maksim
  * @since 23.03.19
  */
-public interface Renderable {
+interface Renderable {
 
     BufferedImage renderBy(XChartRenderer renderService);
 }
