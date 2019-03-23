@@ -1,44 +1,37 @@
 package ru.sherb.translate;
 
-import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ru.sherb.translate.yandex.TranslateServiceImpl;
+import ru.sherb.bot.BotPlugin;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
  * @author maksim
- * @since 01.03.19
+ * @since 23.03.19
  */
-public final class TranslateBot extends TelegramWebhookBot {
+public final class TranslateBotPlugin implements BotPlugin {
 
     private final TranslateService service;
 
     private final Map<String, Function<Update, BotApiMethod>> commands = new HashMap<>();
 
-    private final String name;
-    private final String token;
-    private final String path;
-
     private Long enCharID;
     private Long ruChatID;
 
-    public TranslateBot(String name, String token, String path) {
-        super();
-        this.name = name;
-        this.token = token;
-        this.path = path;
-        service = new TranslateServiceImpl("trnsl.1.1.20190302T173434Z.b9d42857e1f5463e.8fdc17ce5df7d4a0aee3a9be6ade62b96671e05f");
+    public TranslateBotPlugin(TranslateService service) {
+        this.service = service;
 
         commands.put("ru_chat", upd -> {
             Long chatId = upd.getMessage().getChatId();
@@ -66,18 +59,17 @@ public final class TranslateBot extends TelegramWebhookBot {
         });
     }
 
-    @Override
-    public BotApiMethod onWebhookUpdateReceived(Update update) {
+    public List<BotApiMethod> onUpdate(Update update) {
         if (!update.hasMessage() || !update.getMessage().hasText()) {
-            return null;
+            return Collections.emptyList();
         }
 
         return dispatch(update);
     }
 
-    private BotApiMethod dispatch(Update update) {
+    private List<BotApiMethod> dispatch(Update update) {
         if (update.getMessage().isCommand()) {
-            return executeCmd(update);
+            return Collections.singletonList(executeCmd(update));
         } else {
             return translate(update);
         }
@@ -105,9 +97,10 @@ public final class TranslateBot extends TelegramWebhookBot {
         return text.substring(begin, end);
     }
 
-    private BotApiMethod translate(Update update) {
+    //todo replace BotApiMethod to special class (e.g. TelegramAnswer)
+    private List<BotApiMethod> translate(Update update) {
         if (!isSupportedMsg(update)) {
-            return null;
+            return Collections.emptyList();
         }
 
         Message inMsg = update.getMessage();
@@ -120,23 +113,16 @@ public final class TranslateBot extends TelegramWebhookBot {
 
             String response = "*" + formatUserName(update.getMessage().getFrom()) + " wrote:*\n" + en;
 
+            List<BotApiMethod> result = new ArrayList<>();
             if (this.enCharID == null) {
-                tryDelete(new DeleteMessage(chatID, inMsg.getMessageId()));
+                result.add(new DeleteMessage(chatID, inMsg.getMessageId()));
             }
-            return new SendMessage(chatID, response).enableMarkdown(true);
+            result.add(new SendMessage(chatID, response).enableMarkdown(true));
+            return result;
         } catch (IOException e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
-            return new SendMessage(inMsg.getChatId(), "Извините, произошла ошибка.");
-        }
-    }
-
-    private void tryDelete(DeleteMessage msg) {
-        try {
-            execute(msg);
-        } catch (TelegramApiException e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+            return Collections.singletonList(new SendMessage(inMsg.getChatId(), "Извините, произошла ошибка."));
         }
     }
 
@@ -159,20 +145,5 @@ public final class TranslateBot extends TelegramWebhookBot {
         }
 
         return name;
-    }
-
-    @Override
-    public String getBotUsername() {
-        return name;
-    }
-
-    @Override
-    public String getBotToken() {
-        return token;
-    }
-
-    @Override
-    public String getBotPath() {
-        return path;
     }
 }

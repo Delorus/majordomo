@@ -21,13 +21,13 @@ import java.util.Objects;
  * @author maksim
  * @since 02.03.19
  */
-public final class TranslateServiceImpl implements TranslateService {
+public final class YandexTranslateService implements TranslateService {
 
     private final ObjectMapper mapper = new ObjectMapper();
     private final URI yandexTranslate;
     private final HttpClient client;
 
-    public TranslateServiceImpl(String apiKey) {
+    public YandexTranslateService(String apiKey) {
         this.yandexTranslate = UriBuilder.fromUri("https://translate.yandex.net/api/v1.5/tr.json/translate")
                 .queryParam("key", apiKey)
                 .build();
