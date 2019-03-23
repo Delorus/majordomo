@@ -45,3 +45,15 @@
 Все данные старше недели хранить ввиде:
 Summary_by_user
 | Промежуток | Участник | Количество слов | Количество уникальных слов | Массив из 10 самых используемых слов | 
+
+
+### Топ 10 самых используемых слов (за неделю)
+
+
+select id_word 
+from used_word 
+where
+    date between start_interval and end_interval 
+group by id_word 
+sort by id_word
+limit 10
