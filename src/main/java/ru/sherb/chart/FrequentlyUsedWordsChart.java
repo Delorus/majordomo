@@ -2,7 +2,6 @@ package ru.sherb.chart;
 
 import lombok.Value;
 
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +34,7 @@ final class FrequentlyUsedWordsChart implements Renderable {
     }
 
     @Override
-    public BufferedImage renderBy(XChartRenderer renderer) {
+    public Chart renderBy(XChartRenderer renderer) {
         ChartData[] data = wordCounts.stream()
                 .map(wc -> new ChartData(wc.word, calcPercent(wc.numberOfUses)))
                 .toArray(ChartData[]::new);
