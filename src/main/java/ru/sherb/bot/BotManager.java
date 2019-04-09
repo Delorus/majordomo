@@ -2,6 +2,7 @@ package ru.sherb.bot;
 
 import lombok.Builder;
 import lombok.Value;
+import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -15,7 +16,7 @@ import java.util.List;
  * @author maksim
  * @since 01.03.19
  */
-public final class BotManager extends TelegramWebhookBot {
+public final class BotManager {
 
     @Value
     @Builder
@@ -39,38 +40,81 @@ public final class BotManager extends TelegramWebhookBot {
         this.plugins.addAll(Arrays.asList(plugins));
     }
 
-    @Override
-    public BotApiMethod onWebhookUpdateReceived(Update update) {
-        for (BotPlugin plugin : plugins) {
-            List<BotApiMethod> response = plugin.onUpdate(update);
-            execute(response);
-        }
-        return null; //todo return last msg
+    public TelegramWebhookBot atProductionBotManager() {
+        return new ProdBotManager();
     }
 
-    private void execute(List<BotApiMethod> response) {
-        try {
-            for (BotApiMethod method : response) {
-                execute(method);
+    public TelegramLongPollingBot atDevBotManager() {
+        return new DevBotManager();
+    }
+
+    private class ProdBotManager extends TelegramWebhookBot {
+
+        @Override
+        public BotApiMethod onWebhookUpdateReceived(Update update) {
+            for (BotPlugin plugin : plugins) {
+                List<BotApiMethod> response = plugin.onUpdate(update);
+                execute(response);
             }
-        } catch (TelegramApiException e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+            return null; //todo return last msg
+        }
+
+        private void execute(List<BotApiMethod> response) {
+            try {
+                for (BotApiMethod method : response) {
+                    execute(method);
+                }
+            } catch (TelegramApiException e) {
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public String getBotUsername() {
+            return name;
+        }
+
+        @Override
+        public String getBotToken() {
+            return token;
+        }
+
+        @Override
+        public String getBotPath() {
+            return path;
         }
     }
 
-    @Override
-    public String getBotUsername() {
-        return name;
-    }
+    private class DevBotManager extends TelegramLongPollingBot {
 
-    @Override
-    public String getBotToken() {
-        return token;
-    }
+        @Override
+        public void onUpdateReceived(Update update) {
+            for (BotPlugin plugin : plugins) {
+                List<BotApiMethod> response = plugin.onUpdate(update);
+                execute(response);
+            }
+        }
 
-    @Override
-    public String getBotPath() {
-        return path;
+        private void execute(List<BotApiMethod> response) {
+            try {
+                for (BotApiMethod method : response) {
+                    execute(method);
+                }
+            } catch (TelegramApiException e) {
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public String getBotUsername() {
+            return name;
+        }
+
+        @Override
+        public String getBotToken() {
+            return token;
+        }
     }
 }

@@ -16,7 +16,15 @@ public class Launch {
 
         BotManager manager = createBotManager(translatePlugin);
 
-        initTelegramConnection(manager);
+        initTelegramConnection(manager, isProd(args));
+    }
+
+    private static boolean isProd(String[] args) {
+        if (args.length < 1) {
+            return true;
+        }
+
+        return !"-dev".equals(args[0]);
     }
 
     private static TranslateBotPlugin createTranslatePlugin() {
@@ -36,11 +44,15 @@ public class Launch {
         return new BotManager(setting, plugin, plugins);
     }
 
-    private static void initTelegramConnection(BotManager manager) throws TelegramApiRequestException {
+    private static void initTelegramConnection(BotManager manager, boolean isProdEnv) throws TelegramApiRequestException {
         ApiContextInitializer.init();
 
-        TelegramBotsApi api = new TelegramBotsApi("https://perch-tg-bots.herokuapp.com/", "http://0.0.0.0:" + System.getenv("PORT") + "/");
+        TelegramBotsApi api = new TelegramBotsApi(System.getenv("EXTERNAL_URI"), "http://0.0.0.0:" + System.getenv("PORT") + "/");
 
-        api.registerBot(manager);
+        if (isProdEnv) {
+            api.registerBot(manager.atProductionBotManager());
+        } else {
+            api.registerBot(manager.atDevBotManager());
+        }
     }
 }
