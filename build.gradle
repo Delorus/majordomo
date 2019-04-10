@@ -36,4 +36,4 @@ jar {
     }
 }
 
-task stage(dependsOn: ['clean', 'shadowJar'])
+task fullAsm(dependsOn: ['clean', 'shadowJar'])
