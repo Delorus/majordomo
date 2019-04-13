@@ -28,8 +28,7 @@ public class Launch {
     }
 
     private static TranslateBotPlugin createTranslatePlugin() {
-        //todo from env
-        TranslateService service = new YandexTranslateService("trnsl.1.1.20190302T173434Z.b9d42857e1f5463e.8fdc17ce5df7d4a0aee3a9be6ade62b96671e05f");
+        TranslateService service = new YandexTranslateService(System.getenv("YNDX_TRNSL_API_KEY"));
 
         return new TranslateBotPlugin(service);
     }

@@ -1,0 +1,92 @@
+image: gradle:5.3-jdk8
+
+variables:
+  DOCKER_DRIVER: overlay2
+
+cache:
+  key: "$CI_PROJECT_NAME+$CI_COMMIT_REF_NAME"
+  paths:
+    - .gradle/
+    - build/
+
+stages:
+  - build
+  - test
+  - docker
+  - deploy
+
+build:
+  stage: build
+  script:
+    - gradle -q fullAsm
+  only:
+    - master
+    - develop
+
+test:
+  stage: test
+  script:
+    - gradle test
+  only:
+    - master
+    - develop
+
+
+docker:
+  stage: docker
+  image: docker:stable
+  dependencies:
+    - build
+  before_script:
+    - cp ./build/libs/*.jar src/main/docker
+  services:
+    - docker:dind
+  script:
+    - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY/$CI_PROD_DOCKER_IMG .
+    - docker push $CI_REGISTRY/$CI_PROD_DOCKER_IMG
+  only:
+    - master
+
+docker-dev:
+  stage: docker
+  image: docker:stable
+  dependencies:
+    - build
+  before_script:
+    - cp ./build/libs/*.jar src/main/docker
+  services:
+    - docker:dind
+  script:
+    - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY/$CI_DEV_DOCKER_IMG .
+    - docker push $CI_REGISTRY/$CI_DEV_DOCKER_IMG
+  only:
+    - develop
+
+
+deploy:
+  stage: deploy
+  image: docker:stable
+  dependencies:
+    - docker
+  script:
+    - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+    - docker rm $(docker stop $(docker ps -a -q --filter ancestor=$CI_REGISTRY/$CI_PROD_DOCKER_IMG --format="{{.ID}}") || true) || true
+    - docker pull $CI_REGISTRY/$CI_PROD_DOCKER_IMG
+    - docker run --env EXTERNAL_URI=$CI_PROD_TG_BOT_API_EXTRL_URI --env PORT=$CI_PROD_TG_BOT_API_INT_PORT --env TG_BOT_NAME=$CI_PROD_TG_BOT_NAME --env TG_BOT_TOKEN=$CI_PROD_TG_BOT_TOKEN --env YNDX_TRNSL_API_KEY=$CI_PROD_YNDX_TRSLT_API_KEY --network=dockernet -d -p $CI_PROD_DOCKER_PORT:$CI_PROD_TG_BOT_API_INT_PORT $CI_REGISTRY/$CI_PROD_DOCKER_IMG
+  only:
+    - master
+
+deploy-dev:
+  stage: deploy
+  image: docker:stable
+  dependencies:
+    - docker
+  script:
+    - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+    - docker rm $(docker stop $(docker ps -a -q --filter ancestor=$CI_REGISTRY/$CI_DEV_DOCKER_IMG --format="{{.ID}}") || true) || true
+    - docker pull $CI_REGISTRY/$CI_DEV_DOCKER_IMG
+    - docker run --env EXTERNAL_URI=$CI_DEV_TG_BOT_API_EXTRL_URI --env PORT=$CI_DEV_TG_BOT_API_INT_PORT --env TG_BOT_NAME=$CI_DEV_TG_BOT_NAME --env TG_BOT_TOKEN=$CI_DEV_TG_BOT_TOKEN --env YNDX_TRNSL_API_KEY=$CI_DEV_YNDX_TRSLT_API_KEY --network=dockernet -d -p $CI_DEV_DOCKER_PORT:$CI_DEV_TG_BOT_API_INT_PORT $CI_REGISTRY/$CI_DEV_DOCKER_IMG
+  only:
+    - develop
