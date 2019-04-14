@@ -2,6 +2,7 @@ package ru.sherb.translate.yandex;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -21,6 +22,7 @@ import java.util.Objects;
  * @author maksim
  * @since 02.03.19
  */
+@Slf4j
 public final class YandexTranslateService implements TranslateService {
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -61,8 +63,7 @@ public final class YandexTranslateService implements TranslateService {
             if (resp.getCode() == 200) { //todo log it!
                 return String.join("\n", resp.getText());
             } else {
-                System.out.println("Something wrong:");
-                System.out.println(response);
+                log.error(response.toString());
             }
         }
 

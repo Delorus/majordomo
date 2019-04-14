@@ -1,5 +1,6 @@
 package ru.sherb.translate;
 
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -21,6 +22,7 @@ import java.util.regex.Pattern;
  * @author maksim
  * @since 23.03.19
  */
+@Slf4j
 public final class TranslateBotPlugin implements BotPlugin {
 
     private final TranslateService service;
@@ -120,8 +122,7 @@ public final class TranslateBotPlugin implements BotPlugin {
             result.add(new SendMessage(chatID, response).enableMarkdown(true));
             return result;
         } catch (IOException e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+            log.error(e.getMessage());
             return Collections.singletonList(new SendMessage(inMsg.getChatId(), "Извините, произошла ошибка."));
         }
     }
