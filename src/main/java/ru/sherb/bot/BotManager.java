@@ -103,7 +103,7 @@ public final class BotManager {
                     execute(method);
                 }
             } catch (TelegramApiException e) {
-                log.error(e.getMessage());
+                log.error(e.getMessage(),e);
             }
         }
 

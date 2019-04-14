@@ -122,7 +122,7 @@ public final class TranslateBotPlugin implements BotPlugin {
             result.add(new SendMessage(chatID, response).enableMarkdown(true));
             return result;
         } catch (IOException e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(),e);
             return Collections.singletonList(new SendMessage(inMsg.getChatId(), "Извините, произошла ошибка."));
         }
     }
