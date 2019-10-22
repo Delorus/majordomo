@@ -60,7 +60,7 @@ public final class YandexTranslateService implements TranslateService {
         HttpResponse response = client.execute(post);
         try (InputStreamReader reader = new InputStreamReader(response.getEntity().getContent(), Charset.forName("UTF-8"))) {
             TranslateResponse resp = mapper.readValue(reader, TranslateResponse.class);
-            if (resp.getCode() == 200) { //todo log it!
+            if (resp.getCode() == 200) {
                 return String.join("\n", resp.getText());
             } else {
                 log.error(response.toString());
