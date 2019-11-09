@@ -17,6 +17,10 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    junitVersion = '5.5.2'
+}
+
 dependencies {
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
@@ -28,9 +32,8 @@ dependencies {
     implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.11.2'
 
 
-    testCompile "org.junit.jupiter:junit-jupiter-api:5.4.0"
-    testRuntime "org.junit.jupiter:junit-jupiter-engine:5.4.0"
-
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
     // https://github.com/rubenlagus/TelegramBots
     implementation group: 'org.telegram', name: 'telegrambots', version: '4.1.2'
 
