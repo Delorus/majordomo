@@ -1,7 +1,6 @@
 package page.devnet.translate;
 
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 import ru.sherb.bot.BotApiMethod;
@@ -99,7 +98,6 @@ public final class TranslateBotPlugin implements BotPlugin {
 
         return text.substring(begin, end);
     }
-    //todo replace BotApiMethod to special class (e.g. TelegramAnswer)
 
     private List<BotApiMethod> translate(Update update) {
         if (!isSupportedMsg(update)) {
@@ -118,7 +116,7 @@ public final class TranslateBotPlugin implements BotPlugin {
 
             List<BotApiMethod> result = new ArrayList<>();
             if (this.enCharID == null) {
-                result.add(BotApiMethod.from(new DeleteMessage(chatID, inMsg.getMessageId())));
+                result.add(BotApiMethod.newDeleteMessage(chatID, inMsg.getMessageId()));
             }
             result.add(BotApiMethod.newSendMarkdownMessage(chatID, response));
             return result;

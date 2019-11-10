@@ -1,6 +1,7 @@
 package ru.sherb.bot;
 
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 
 /**
  * @author maksim
@@ -18,6 +19,10 @@ public class BotApiMethod {
 
     public static BotApiMethod newSendMarkdownMessage(Long chatId, String message) {
         return new BotApiMethod(new SendMessage(chatId, message).enableMarkdown(true));
+    }
+
+    public static BotApiMethod newDeleteMessage(Long chatId, Integer messageId) {
+        return new BotApiMethod(new DeleteMessage(chatId, messageId));
     }
 
     private final org.telegram.telegrambots.meta.api.methods.BotApiMethod<?> origin;
