@@ -2,6 +2,7 @@ package ru.sherb.bot;
 
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -16,6 +17,7 @@ import java.util.List;
  * @author maksim
  * @since 01.03.19
  */
+@Slf4j
 public final class BotManager {
 
     @Value
@@ -65,8 +67,7 @@ public final class BotManager {
                     execute(method);
                 }
             } catch (TelegramApiException e) {
-                System.out.println(e.getMessage());
-                e.printStackTrace();
+                log.error(e.getMessage(),e);
             }
         }
 
@@ -102,8 +103,7 @@ public final class BotManager {
                     execute(method);
                 }
             } catch (TelegramApiException e) {
-                System.out.println(e.getMessage());
-                e.printStackTrace();
+                log.error(e.getMessage(),e);
             }
         }
 
