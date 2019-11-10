@@ -1,7 +1,5 @@
 package ru.sherb.bot;
 
-import org.telegram.telegrambots.meta.api.objects.User;
-
 /**
  * @author maksim
  * @since 10.11.2019
@@ -37,7 +35,7 @@ public class Message {
     }
 
     public User getFrom() {
-        return origin.getFrom();
+        return User.from(origin.getFrom());
     }
 
     public Integer getMessageId() {
