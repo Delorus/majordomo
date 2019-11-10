@@ -1,7 +1,5 @@
 package ru.sherb.bot;
 
-import org.telegram.telegrambots.meta.api.objects.Message;
-
 /**
  * @author maksim
  * @since 10.11.2019
@@ -25,7 +23,7 @@ public class Update {
     }
 
     public Message getMessage() {
-        return origin.getMessage();
+        return Message.from(origin.getMessage());
     }
 
     //endregion

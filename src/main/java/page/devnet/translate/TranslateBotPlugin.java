@@ -1,10 +1,10 @@
 package page.devnet.translate;
 
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 import ru.sherb.bot.BotApiMethod;
 import page.devnet.bot.BotPlugin;
+import ru.sherb.bot.Message;
 import ru.sherb.bot.Update;
 
 import java.io.IOException;
