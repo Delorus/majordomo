@@ -5,8 +5,6 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
@@ -53,9 +51,9 @@ public final class BotManager {
     private class ProdBotManager extends TelegramWebhookBot {
 
         @Override
-        public BotApiMethod onWebhookUpdateReceived(Update update) {
+        public org.telegram.telegrambots.meta.api.methods.BotApiMethod onWebhookUpdateReceived(org.telegram.telegrambots.meta.api.objects.Update update) {
             for (BotPlugin plugin : plugins) {
-                List<BotApiMethod> response = plugin.onUpdate(update);
+                List<BotApiMethod> response = plugin.onUpdate(Update.from(update));
                 execute(response);
             }
             return null; //todo return last msg
@@ -64,7 +62,7 @@ public final class BotManager {
         private void execute(List<BotApiMethod> response) {
             try {
                 for (BotApiMethod method : response) {
-                    execute(method);
+                    execute(method.unwrap());
                 }
             } catch (TelegramApiException e) {
                 log.error(e.getMessage(),e);
@@ -90,9 +88,9 @@ public final class BotManager {
     private class DevBotManager extends TelegramLongPollingBot {
 
         @Override
-        public void onUpdateReceived(Update update) {
+        public void onUpdateReceived(org.telegram.telegrambots.meta.api.objects.Update update) {
             for (BotPlugin plugin : plugins) {
-                List<BotApiMethod> response = plugin.onUpdate(update);
+                List<BotApiMethod> response = plugin.onUpdate(Update.from(update));
                 execute(response);
             }
         }
@@ -100,7 +98,7 @@ public final class BotManager {
         private void execute(List<BotApiMethod> response) {
             try {
                 for (BotApiMethod method : response) {
-                    execute(method);
+                    execute(method.unwrap());
                 }
             } catch (TelegramApiException e) {
                 log.error(e.getMessage(),e);
