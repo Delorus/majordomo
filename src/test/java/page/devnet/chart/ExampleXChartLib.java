@@ -1,4 +1,4 @@
-package ru.sherb.chart;
+package page.devnet.chart;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

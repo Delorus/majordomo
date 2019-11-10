@@ -1,4 +1,4 @@
-package ru.sherb.translate.yandex;
+package page.devnet.translate.yandex;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
@@ -8,13 +8,13 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
-import ru.sherb.translate.TranslateService;
+import page.devnet.translate.TranslateService;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,10 +55,10 @@ public final class YandexTranslateService implements TranslateService {
 
         HttpPost post = new HttpPost(uri);
         post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-        post.setEntity(new StringEntity("text=" + text, Charset.forName("UTF-8")));
+        post.setEntity(new StringEntity("text=" + text, StandardCharsets.UTF_8));
 
         HttpResponse response = client.execute(post);
-        try (InputStreamReader reader = new InputStreamReader(response.getEntity().getContent(), Charset.forName("UTF-8"))) {
+        try (InputStreamReader reader = new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)) {
             TranslateResponse resp = mapper.readValue(reader, TranslateResponse.class);
             if (resp.getCode() == 200) {
                 return String.join("\n", resp.getText());

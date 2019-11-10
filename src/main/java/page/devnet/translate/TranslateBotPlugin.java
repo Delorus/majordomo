@@ -1,4 +1,4 @@
-package ru.sherb.translate;
+package page.devnet.translate;
 
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -7,7 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
-import ru.sherb.bot.BotPlugin;
+import page.devnet.bot.BotPlugin;
 
 import java.io.IOException;
 import java.util.ArrayList;
