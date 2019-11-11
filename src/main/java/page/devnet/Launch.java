@@ -1,13 +1,13 @@
-package ru.sherb;
+package page.devnet;
 
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
-import ru.sherb.bot.BotManager;
-import ru.sherb.bot.BotPlugin;
-import ru.sherb.translate.TranslateBotPlugin;
-import ru.sherb.translate.TranslateService;
-import ru.sherb.translate.yandex.YandexTranslateService;
+import page.devnet.bot.BotManager;
+import page.devnet.bot.BotPlugin;
+import page.devnet.translate.TranslateBotPlugin;
+import page.devnet.translate.TranslateService;
+import page.devnet.translate.yandex.YandexTranslateService;
 
 public class Launch {
 

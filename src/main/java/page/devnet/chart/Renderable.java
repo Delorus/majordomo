@@ -1,4 +1,4 @@
-package ru.sherb.chart;
+package page.devnet.chart;
 
 /**
  * @author maksim

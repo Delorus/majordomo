@@ -3,7 +3,7 @@ plugins {
     id "com.github.johnrengelman.shadow" version "5.0.0"
 }
 
-group 'ru.sherb'
+group 'page.devnet'
 
 sourceCompatibility = 1.8
 
@@ -46,7 +46,7 @@ test {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'ru.sherb.Launch'
+        attributes 'Main-Class': 'page.devnet.Launch'
     }
 }
 

@@ -1,4 +1,4 @@
-package ru.sherb.bot;
+package page.devnet.bot;
 
 import lombok.Builder;
 import lombok.Value;

@@ -1,11 +1,9 @@
-package ru.sherb.chart;
+package page.devnet.chart;
 
 import lombok.Value;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static ru.sherb.chart.XChartRenderer.ChartData;
 
 /**
  * @author maksim
@@ -35,9 +33,9 @@ final class FrequentlyUsedWordsChart implements Renderable {
 
     @Override
     public Chart renderBy(XChartRenderer renderer) {
-        ChartData[] data = wordCounts.stream()
-                .map(wc -> new ChartData(wc.word, calcPercent(wc.numberOfUses)))
-                .toArray(ChartData[]::new);
+        XChartRenderer.ChartData[] data = wordCounts.stream()
+                                                    .map(wc -> new XChartRenderer.ChartData(wc.word, calcPercent(wc.numberOfUses)))
+                                                    .toArray(XChartRenderer.ChartData[]::new);
 
         return renderer.createPieChart("Word frequency", data);
     }
