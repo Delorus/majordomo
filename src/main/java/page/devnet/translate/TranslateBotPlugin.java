@@ -1,13 +1,11 @@
 package page.devnet.translate;
 
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.User;
+import ru.sherb.bot.BotApiMethod;
 import page.devnet.bot.BotPlugin;
+import ru.sherb.bot.Message;
+import ru.sherb.bot.Update;
+import ru.sherb.bot.User;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,29 +36,30 @@ public final class TranslateBotPlugin implements BotPlugin {
         commands.put("ru_chat", upd -> {
             Long chatId = upd.getMessage().getChatId();
             if (chatId.equals(this.ruChatID)) {
-                return new SendMessage(chatId, "Прошу прощения, но этот чат и так обозначен как русский.");
+                return BotApiMethod.newSendMessage(chatId, "Прошу прощения, но этот чат и так обозначен как русский.");
             } else if (chatId.equals(this.enCharID)) {
                 this.ruChatID = chatId;
-                return new SendMessage(chatId, "Ваше указание выполнено, теперь этот чат определяется как русский и английский.");
+                return BotApiMethod.newSendMessage(chatId, "Ваше указание выполнено, теперь этот чат определяется как русский и английский.");
             } else {
                 this.ruChatID = chatId;
-                return new SendMessage(chatId, "Ваше указание выполнено, теперь этот чат определяется как русский.");
+                return BotApiMethod.newSendMessage(chatId, "Ваше указание выполнено, теперь этот чат определяется как русский.");
             }
         });
         commands.put("en_chat", upd -> {
             Long chatId = upd.getMessage().getChatId();
             if (chatId.equals(this.enCharID)) {
-                return new SendMessage(chatId, "I apologize, but this chat is denoted as english.");
+                return BotApiMethod.newSendMessage(chatId, "I apologize, but this chat is denoted as english.");
             } else if (chatId.equals(this.ruChatID)) {
                 this.enCharID = chatId;
-                return new SendMessage(chatId, "Your instruction is fulfilled, now this chat is defined as english and russian.");
+                return BotApiMethod.newSendMessage(chatId, "Your instruction is fulfilled, now this chat is defined as english and russian.");
             } else {
                 this.enCharID = chatId;
-                return new SendMessage(chatId, "Your instruction is fulfilled, now this chat is defined as english.");
+                return BotApiMethod.newSendMessage(chatId, "Your instruction is fulfilled, now this chat is defined as english.");
             }
         });
     }
 
+    @Override
     public List<BotApiMethod> onUpdate(Update update) {
         if (!update.hasMessage() || !update.getMessage().hasText()) {
             return Collections.emptyList();
@@ -80,7 +79,8 @@ public final class TranslateBotPlugin implements BotPlugin {
     private BotApiMethod executeCmd(Update upd) {
         String command = normalizeCmdMsg(upd.getMessage().getText());
         return commands.getOrDefault(command, __ ->
-                new SendMessage(upd.getMessage().getChatId(), "Извиняюсь, но я не понимаю о чем Вы меня просите.")
+                BotApiMethod.newSendMessage(upd.getMessage()
+                                               .getChatId(), "Извиняюсь, но я не понимаю о чем Вы меня просите.")
         ).apply(upd);
     }
 
@@ -99,7 +99,6 @@ public final class TranslateBotPlugin implements BotPlugin {
         return text.substring(begin, end);
     }
 
-    //todo replace BotApiMethod to special class (e.g. TelegramAnswer)
     private List<BotApiMethod> translate(Update update) {
         if (!isSupportedMsg(update)) {
             return Collections.emptyList();
@@ -117,13 +116,13 @@ public final class TranslateBotPlugin implements BotPlugin {
 
             List<BotApiMethod> result = new ArrayList<>();
             if (this.enCharID == null) {
-                result.add(new DeleteMessage(chatID, inMsg.getMessageId()));
+                result.add(BotApiMethod.newDeleteMessage(chatID, inMsg.getMessageId()));
             }
-            result.add(new SendMessage(chatID, response).enableMarkdown(true));
+            result.add(BotApiMethod.newSendMarkdownMessage(chatID, response));
             return result;
         } catch (IOException e) {
             log.error(e.getMessage(),e);
-            return Collections.singletonList(new SendMessage(inMsg.getChatId(), "Извините, произошла ошибка."));
+            return Collections.singletonList(BotApiMethod.newSendMessage(inMsg.getChatId(), "Извините, произошла ошибка."));
         }
     }
 
