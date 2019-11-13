@@ -12,6 +12,8 @@ import page.devnet.translate.yandex.YandexTranslateService;
 public class Launch {
 
     public static void main(String[] args) throws TelegramApiRequestException {
+        System.out.println("Java version: " + System.getProperty("java.version"));
+
         TranslateBotPlugin translatePlugin = createTranslatePlugin();
 
         BotManager manager = createBotManager(translatePlugin);
