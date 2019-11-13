@@ -1,4 +1,4 @@
-FROM openjdk:8u212-slim-stretch
+FROM openjdk:11-jre-slim
 
 COPY ./build/libs/ /apt/majordomo
 
