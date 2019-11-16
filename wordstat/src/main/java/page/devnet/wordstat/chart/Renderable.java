@@ -1,4 +1,4 @@
-package page.devnet.app.chart;
+package page.devnet.wordstat.chart;
 
 /**
  * @author maksim

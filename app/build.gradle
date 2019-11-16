@@ -11,9 +11,6 @@ dependencies {
     implementation project(":telegrambot")
     implementation project(":translate")
 
-    // https://github.com/knowm/XChart
-    implementation "org.knowm.xchart:xchart:3.6.0"
-
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api
