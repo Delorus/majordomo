@@ -31,13 +31,13 @@ import java.util.stream.IntStream;
 @Slf4j
 public class Interpreter {
 
-    private final MessageSubscriber subscriber;
+    private final MessageSubscriber<Event, String> subscriber;
 
     private String helpMsg = "Support commands:\n" +
             "\t\t:help :?       — print list of all available commands\n" +
             "\t\t:exit :q :quit — exit from interpreter\n";
 
-    public Interpreter(MessageSubscriber subscriber) {
+    public Interpreter(MessageSubscriber<Event, String> subscriber) {
         this.subscriber = subscriber;
     }
 
@@ -126,8 +126,7 @@ public class Interpreter {
             return helpMessage();
         }
 
-//        subscriber.consume()
-        return "Unknown command\n" + helpMsg;
+        return String.join("\n", subscriber.consume(new Event(cmd)));
     }
 
     private boolean isHelpRequest(String cmd) {
@@ -140,7 +139,6 @@ public class Interpreter {
     }
 
     private String sendToSubscriber(String line) {
-//        subscriber.consume()
-        return "";
+        return String.join("\n", subscriber.consume(new Event(line)));
     }
 }

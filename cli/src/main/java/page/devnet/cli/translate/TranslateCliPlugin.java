@@ -1,23 +1,18 @@
 package page.devnet.cli.translate;
 
 import page.devnet.cli.Commandable;
-import page.devnet.pluginmanager.BotApiMethod;
-import page.devnet.pluginmanager.Message;
+import page.devnet.cli.Event;
 import page.devnet.pluginmanager.Plugin;
-import page.devnet.pluginmanager.Update;
-import page.devnet.translate.TranslateException;
 import page.devnet.translate.TranslateService;
 import page.devnet.translate.yandex.YandexTranslateService;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 /**
  * @author maksim
  * @since 16.11.2019
  */
-public class TranslateCliPlugin implements Plugin, Commandable {
+public class TranslateCliPlugin implements Plugin<Event, String>, Commandable {
 
     public static TranslateCliPlugin newYandexTranslatePlugin() {
         TranslateService service = new YandexTranslateService(System.getenv("YNDX_TRNSL_API_KEY"));
@@ -27,33 +22,77 @@ public class TranslateCliPlugin implements Plugin, Commandable {
 
     private final TranslateService service;
 
+    private TranslateMode translateMode = TranslateMode.NONE;
+
+    private enum TranslateMode {
+        EN, RU, NONE
+    }
+
     public TranslateCliPlugin(TranslateService service) {
         this.service = service;
     }
 
     @Override
-    public List<BotApiMethod> onUpdate(Update update) {
-        if (!update.hasMessage() || !update.getMessage().hasText()) {
-            return Collections.emptyList();
+    public String onEvent(Event event) {
+        if (event.isEmpty()) {
+            return "";
         }
 
-        return dispatch(update);
+        return dispatch(event);
     }
 
-    private List<BotApiMethod> dispatch(Update update) {
-        return translate(update);
-    }
-
-    private List<BotApiMethod> translate(Update update) {
-        Message inMsg = update.getMessage();
-        try {
-            String en = service.transRuToEn(inMsg.getText());
-
-            return List.of(BotApiMethod.newSendMarkdownMessage(1l, en));
-        } catch (TranslateException e) {
-            System.err.println(e);
-            return Collections.singletonList(BotApiMethod.newSendMessage(inMsg.getChatId(), "Извините, произошла ошибка."));
+    private String dispatch(Event event) {
+        if (event.isCommand()) {
+            return executeCommand(event);
         }
+
+        return translate(event);
+    }
+
+    private String executeCommand(Event event) {
+        switch (event.getText()) {
+            case ":en":
+                translateMode = TranslateMode.EN;
+                return "set up translate to English";
+            case ":ru":
+                translateMode = TranslateMode.RU;
+                return "set up translate to Russian";
+            case ":stopTranslate":
+                translateMode = TranslateMode.NONE;
+                return "stop translating";
+            default:
+                return executeInlineCommand(event);
+        }
+    }
+
+    private String executeInlineCommand(Event event) {
+        var oldMode = translateMode;
+        var text = event.getText();
+        if (text.startsWith(":ru ")) {
+            translateMode = TranslateMode.RU;
+        } else if (text.startsWith(":en ")) {
+            translateMode = TranslateMode.EN;
+        } else {
+            return "";
+        }
+
+        var translated = translate(event);
+        translateMode = oldMode;
+        return translated;
+    }
+
+    private String translate(Event event) {
+        String text = event.getText();
+
+        switch (translateMode) {
+            case EN:
+                return service.transRuToEn(text);
+            case RU:
+                return service.transEnToRu(text);
+            case NONE:
+                return "";
+        }
+        return "";
     }
 
     @Override
@@ -64,7 +103,8 @@ public class TranslateCliPlugin implements Plugin, Commandable {
     @Override
     public Map<String, String> commandDescriptionList() {
         return Map.of(
-                ":en", "translate all line after command to English",
+                ":en", "translate all line after command to English. If you write text on the same line after command, only it will be translated",
+                ":ru", "translate all line after command to Russian. If you write text on the same line after command, only it will be translated",
                 ":stopTranslate", "stop translating");
     }
 }
