@@ -41,6 +41,7 @@ test {
 }
 
 jar {
+    archivesBaseName = 'majordomo'
     manifest {
         attributes 'Main-Class': 'page.devnet.app.App'
     }
