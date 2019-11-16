@@ -6,7 +6,7 @@ import java.util.List;
  * @author maksim
  * @since 16.11.2019
  */
-public interface MessageSubscriber {
+public interface MessageSubscriber<T, R> {
 
-    List<BotApiMethod> consume(Update update);
+    List<R> consume(T event);
 }

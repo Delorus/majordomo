@@ -3,8 +3,12 @@ package page.devnet.telegrambot;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 import page.devnet.pluginmanager.MessageSubscriber;
+
+import java.util.List;
 
 /**
  * @author maksim
@@ -27,7 +31,7 @@ public final class TelegramBotExecutor {
         this.isProd = isProd;
     }
 
-    public void runBotWith(MessageSubscriber subscriber) {
+    public void runBotWith(MessageSubscriber<Update, List<BotApiMethod>> subscriber) {
         var telegramBot = createTelegramBot(subscriber);
 
         try {
@@ -38,7 +42,7 @@ public final class TelegramBotExecutor {
         }
     }
 
-    private TelegramBot createTelegramBot(MessageSubscriber subscriber) {
+    private TelegramBot createTelegramBot(MessageSubscriber<Update, List<BotApiMethod>> subscriber) {
         TelegramBot.Setting setting = TelegramBot.Setting.builder()
                 .name(System.getenv("TG_BOT_NAME"))
                 .token(System.getenv("TG_BOT_TOKEN"))

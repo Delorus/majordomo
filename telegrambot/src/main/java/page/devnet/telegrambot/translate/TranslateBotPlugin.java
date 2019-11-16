@@ -1,11 +1,13 @@
-package page.devnet.app.translate;
+package page.devnet.telegrambot.translate;
 
 import lombok.extern.slf4j.Slf4j;
-import page.devnet.pluginmanager.BotApiMethod;
-import page.devnet.pluginmanager.Message;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 import page.devnet.pluginmanager.Plugin;
-import page.devnet.pluginmanager.Update;
-import page.devnet.pluginmanager.User;
 import page.devnet.translate.TranslateException;
 import page.devnet.translate.TranslateService;
 import page.devnet.translate.yandex.YandexTranslateService;
@@ -19,7 +21,7 @@ import java.util.List;
  * @since 23.03.19
  */
 @Slf4j
-public final class TranslateBotPlugin implements Plugin {
+public final class TranslateBotPlugin implements Plugin<Update, List<BotApiMethod>> {
 
     public static TranslateBotPlugin newYandexTranslatePlugin() {
         TranslateService service = new YandexTranslateService(System.getenv("YNDX_TRNSL_API_KEY"));
@@ -34,7 +36,7 @@ public final class TranslateBotPlugin implements Plugin {
     }
 
     @Override
-    public List<BotApiMethod> onUpdate(Update update) {
+    public List<BotApiMethod> onEvent(Update update) {
         if (!update.hasMessage() || !update.getMessage().hasText()) {
             return Collections.emptyList();
         }
@@ -56,12 +58,12 @@ public final class TranslateBotPlugin implements Plugin {
             String response = "*" + formatUserName(update.getMessage().getFrom()) + " wrote:*\n" + en;
 
             List<BotApiMethod> result = new ArrayList<>();
-            result.add(BotApiMethod.newDeleteMessage(chatID, inMsg.getMessageId()));
-            result.add(BotApiMethod.newSendMarkdownMessage(chatID, response));
+            result.add(new DeleteMessage(chatID, inMsg.getMessageId()));
+            result.add(new SendMessage(chatID, response).enableMarkdown(true));
             return result;
         } catch (TranslateException e) {
             log.error(e.getMessage(),e);
-            return Collections.singletonList(BotApiMethod.newSendMessage(inMsg.getChatId(), "Извините, произошла ошибка."));
+            return Collections.singletonList(new SendMessage(inMsg.getChatId(), "Извините, произошла ошибка."));
         }
     }
 

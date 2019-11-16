@@ -1,12 +1,10 @@
 package page.devnet.pluginmanager;
 
-import java.util.List;
-
 /**
  * @author maksim
  * @since 23.03.19
  */
-public interface Plugin {
+public interface Plugin<T, R> {
 
-    List<BotApiMethod> onUpdate(Update update);
+    R onEvent(T event);
 }

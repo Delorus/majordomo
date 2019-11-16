@@ -1,15 +1,14 @@
-package page.devnet.app;
+package page.devnet.telegrambot;
 
-import page.devnet.app.translate.TranslateBotPlugin;
 import page.devnet.pluginmanager.PluginManager;
-import page.devnet.telegrambot.TelegramBotExecutor;
+import page.devnet.telegrambot.translate.TranslateBotPlugin;
 
 public class App {
 
     public static void main(String[] args) {
         TranslateBotPlugin translatePlugin = TranslateBotPlugin.newYandexTranslatePlugin();
 
-        PluginManager manager = new PluginManager(translatePlugin);
+        var manager = new PluginManager<>(translatePlugin);
 
         if (isProd(args)) {
             TelegramBotExecutor.newInProdMode().runBotWith(manager);
