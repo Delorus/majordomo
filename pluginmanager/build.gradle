@@ -1,20 +1,10 @@
 plugins {
-    id 'java'
-    id 'application'
-    id "com.github.johnrengelman.shadow" version "5.0.0"
+    id 'java-library'
 }
 
-group 'page.devnet.app'
-
 dependencies {
-    implementation project(":pluginmanager")
-    implementation project(":telegrambot")
-
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.10.1"
-    implementation "org.apache.httpcomponents:httpclient:4.5.10"
-
-    // https://github.com/knowm/XChart
-    implementation "org.knowm.xchart:xchart:3.6.0"
+    // https://github.com/rubenlagus/TelegramBots
+    implementation "org.telegram:telegrambots-meta:4.1.2"
 
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
@@ -33,19 +23,6 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
 }
 
-application {
-    mainClassName = 'page.devnet.app.App'
-}
-
 test {
     useJUnitPlatform()
 }
-
-jar {
-    archivesBaseName = 'majordomo'
-    manifest {
-        attributes 'Main-Class': 'page.devnet.app.App'
-    }
-}
-
-task fullAsm(dependsOn: ['clean', 'shadowJar'])

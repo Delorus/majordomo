@@ -1,4 +1,5 @@
 rootProject.name = 'majordomo'
 
-include 'telegramapi'
+include 'pluginmanager'
+include 'telegrambot'
 include 'app'

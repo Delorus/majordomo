@@ -1,4 +1,4 @@
-package telegramapi;
+package page.devnet.telegrambot;
 
 import lombok.Builder;
 import lombok.Value;
@@ -6,21 +6,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import page.devnet.pluginmanager.BotApiMethod;
+import page.devnet.pluginmanager.TgMessageSubscriber;
+import page.devnet.pluginmanager.Update;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
  * @author maksim
- * @since 01.03.19
+ * @since 16.11.2019
  */
 @Slf4j
-public final class BotManager {
+class TelegramBot {
 
     @Value
     @Builder
-    public static class Setting {
+    static class Setting {
         String name;
         String token;
         String path;
@@ -29,15 +30,13 @@ public final class BotManager {
     private final String name;
     private final String token;
     private final String path;
-    private final List<BotPlugin> plugins = new ArrayList<>();
+    private final TgMessageSubscriber eventSubscriber;
 
-    public BotManager(Setting setting, BotPlugin plugin, BotPlugin... plugins) {
-        super();
+    public TelegramBot(Setting setting, TgMessageSubscriber subscriber) {
         this.name = setting.name;
         this.token = setting.token;
         this.path = setting.path;
-        this.plugins.add(plugin);
-        this.plugins.addAll(Arrays.asList(plugins));
+        this.eventSubscriber = subscriber;
     }
 
     public TelegramWebhookBot atProductionBotManager() {
@@ -52,10 +51,9 @@ public final class BotManager {
 
         @Override
         public org.telegram.telegrambots.meta.api.methods.BotApiMethod onWebhookUpdateReceived(org.telegram.telegrambots.meta.api.objects.Update update) {
-            for (BotPlugin plugin : plugins) {
-                List<BotApiMethod> response = plugin.onUpdate(Update.from(update));
-                execute(response);
-            }
+            var response = eventSubscriber.consume(Update.from(update));
+            execute(response);
+
             return null; //todo return last msg
         }
 
@@ -65,7 +63,7 @@ public final class BotManager {
                     execute(method.unwrap());
                 }
             } catch (TelegramApiException e) {
-                log.error(e.getMessage(),e);
+                log.error(e.getMessage(), e);
             }
         }
 
@@ -89,10 +87,8 @@ public final class BotManager {
 
         @Override
         public void onUpdateReceived(org.telegram.telegrambots.meta.api.objects.Update update) {
-            for (BotPlugin plugin : plugins) {
-                List<BotApiMethod> response = plugin.onUpdate(Update.from(update));
-                execute(response);
-            }
+            var response = eventSubscriber.consume(Update.from(update));
+            execute(response);
         }
 
         private void execute(List<BotApiMethod> response) {
@@ -101,7 +97,7 @@ public final class BotManager {
                     execute(method.unwrap());
                 }
             } catch (TelegramApiException e) {
-                log.error(e.getMessage(),e);
+                log.error(e.getMessage(), e);
             }
         }
 

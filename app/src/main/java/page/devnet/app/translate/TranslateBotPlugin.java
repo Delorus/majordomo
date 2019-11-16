@@ -1,11 +1,11 @@
 package page.devnet.app.translate;
 
 import lombok.extern.slf4j.Slf4j;
-import telegramapi.BotApiMethod;
-import telegramapi.BotPlugin;
-import telegramapi.Message;
-import telegramapi.Update;
-import telegramapi.User;
+import page.devnet.pluginmanager.BotApiMethod;
+import page.devnet.pluginmanager.BotPlugin;
+import page.devnet.pluginmanager.Message;
+import page.devnet.pluginmanager.Update;
+import page.devnet.pluginmanager.User;
 
 import java.io.IOException;
 import java.util.ArrayList;

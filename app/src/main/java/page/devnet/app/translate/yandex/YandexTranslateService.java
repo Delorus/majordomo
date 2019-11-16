@@ -6,14 +6,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import page.devnet.app.translate.TranslateService;
 
-import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
@@ -30,9 +31,15 @@ public final class YandexTranslateService implements TranslateService {
     private final HttpClient client;
 
     public YandexTranslateService(String apiKey) {
-        this.yandexTranslate = UriBuilder.fromUri("https://translate.yandex.net/api/v1.5/tr.json/translate")
-                .queryParam("key", apiKey)
-                .build();
+        try {
+            this.yandexTranslate = new URIBuilder(URI.create("https://translate.yandex.net/api/v1.5/tr.json/translate"))
+                    .addParameter("key", apiKey)
+                    .build();
+        } catch (URISyntaxException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+
         this.client = HttpClients.createMinimal();
     }
 
@@ -49,9 +56,15 @@ public final class YandexTranslateService implements TranslateService {
     }
 
     private String translate(String lang, String text) throws IOException {
-        URI uri = UriBuilder.fromUri(yandexTranslate)
-                .queryParam("lang", lang)
-                .build();
+        URI uri;
+        try {
+            uri = new URIBuilder(yandexTranslate)
+                    .addParameter("lang", lang)
+                    .build();
+        } catch (URISyntaxException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
 
         HttpPost post = new HttpPost(uri);
         post.setHeader("Content-Type", "application/x-www-form-urlencoded");

@@ -1,4 +1,4 @@
-package telegramapi;
+package page.devnet.pluginmanager;
 
 /**
  * @author maksim
