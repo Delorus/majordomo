@@ -1,4 +1,4 @@
-package page.devnet.app.translate;
+package page.devnet.translate;
 
 import java.io.IOException;
 

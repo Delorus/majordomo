@@ -1,4 +1,4 @@
-package page.devnet.app.translate.yandex;
+package page.devnet.translate.yandex;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
@@ -9,7 +9,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
-import page.devnet.app.translate.TranslateService;
+import page.devnet.translate.TranslateService;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

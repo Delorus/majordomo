@@ -6,6 +6,8 @@ import page.devnet.pluginmanager.BotPlugin;
 import page.devnet.pluginmanager.Message;
 import page.devnet.pluginmanager.Update;
 import page.devnet.pluginmanager.User;
+import page.devnet.translate.TranslateService;
+import page.devnet.translate.yandex.YandexTranslateService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +24,12 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public final class TranslateBotPlugin implements BotPlugin {
+
+    public static TranslateBotPlugin newYandexTranslatePlugin() {
+        TranslateService service = new YandexTranslateService(System.getenv("YNDX_TRNSL_API_KEY"));
+
+        return new TranslateBotPlugin(service);
+    }
 
     private final TranslateService service;
 
