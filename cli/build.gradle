@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+    id 'application'
+    id "com.github.johnrengelman.shadow" version "5.0.0"
+}
+
+group 'page.devnet.app'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    implementation project(":pluginmanager")
+    implementation project(":translate")
+
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api
+    implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+    implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
+}
+
+application {
+    mainClassName = 'page.devnet.cli.App'
+}
+
+jar {
+    archivesBaseName = 'majordomo-cli'
+    manifest {
+        attributes 'Main-Class': 'page.devnet.cli.App'
+    }
+}
+
+task cli(dependsOn: ['shadowJar'])
