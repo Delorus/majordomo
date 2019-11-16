@@ -1,8 +1,5 @@
 package page.devnet.bot;
 
-import ru.sherb.bot.BotApiMethod;
-import ru.sherb.bot.Update;
-
 import java.util.List;
 
 /**

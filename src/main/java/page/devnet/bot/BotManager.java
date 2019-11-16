@@ -6,8 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ru.sherb.bot.BotApiMethod;
-import ru.sherb.bot.Update;
 
 import java.util.ArrayList;
 import java.util.Arrays;

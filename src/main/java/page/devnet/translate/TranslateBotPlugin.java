@@ -1,11 +1,11 @@
 package page.devnet.translate;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.sherb.bot.BotApiMethod;
+import page.devnet.bot.BotApiMethod;
 import page.devnet.bot.BotPlugin;
-import ru.sherb.bot.Message;
-import ru.sherb.bot.Update;
-import ru.sherb.bot.User;
+import page.devnet.bot.Message;
+import page.devnet.bot.Update;
+import page.devnet.bot.User;
 
 import java.io.IOException;
 import java.util.ArrayList;
