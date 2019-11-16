@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
-import page.devnet.pluginmanager.TgMessageSubscriber;
+import page.devnet.pluginmanager.MessageSubscriber;
 
 /**
  * @author maksim
@@ -27,7 +27,7 @@ public final class TelegramBotExecutor {
         this.isProd = isProd;
     }
 
-    public void runBotWith(TgMessageSubscriber subscriber) {
+    public void runBotWith(MessageSubscriber subscriber) {
         var telegramBot = createTelegramBot(subscriber);
 
         try {
@@ -38,7 +38,7 @@ public final class TelegramBotExecutor {
         }
     }
 
-    private TelegramBot createTelegramBot(TgMessageSubscriber subscriber) {
+    private TelegramBot createTelegramBot(MessageSubscriber subscriber) {
         TelegramBot.Setting setting = TelegramBot.Setting.builder()
                 .name(System.getenv("TG_BOT_NAME"))
                 .token(System.getenv("TG_BOT_TOKEN"))

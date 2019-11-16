@@ -6,7 +6,7 @@ import java.util.List;
  * @author maksim
  * @since 23.03.19
  */
-public interface BotPlugin {
+public interface Plugin {
 
     List<BotApiMethod> onUpdate(Update update);
 }

@@ -7,7 +7,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import page.devnet.pluginmanager.BotApiMethod;
-import page.devnet.pluginmanager.TgMessageSubscriber;
+import page.devnet.pluginmanager.MessageSubscriber;
 import page.devnet.pluginmanager.Update;
 
 import java.util.List;
@@ -30,9 +30,9 @@ class TelegramBot {
     private final String name;
     private final String token;
     private final String path;
-    private final TgMessageSubscriber eventSubscriber;
+    private final MessageSubscriber eventSubscriber;
 
-    public TelegramBot(Setting setting, TgMessageSubscriber subscriber) {
+    public TelegramBot(Setting setting, MessageSubscriber subscriber) {
         this.name = setting.name;
         this.token = setting.token;
         this.path = setting.path;

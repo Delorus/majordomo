@@ -2,8 +2,8 @@ package page.devnet.app.translate;
 
 import lombok.extern.slf4j.Slf4j;
 import page.devnet.pluginmanager.BotApiMethod;
-import page.devnet.pluginmanager.BotPlugin;
 import page.devnet.pluginmanager.Message;
+import page.devnet.pluginmanager.Plugin;
 import page.devnet.pluginmanager.Update;
 import page.devnet.pluginmanager.User;
 import page.devnet.translate.TranslateException;
@@ -19,7 +19,7 @@ import java.util.List;
  * @since 23.03.19
  */
 @Slf4j
-public final class TranslateBotPlugin implements BotPlugin {
+public final class TranslateBotPlugin implements Plugin {
 
     public static TranslateBotPlugin newYandexTranslatePlugin() {
         TranslateService service = new YandexTranslateService(System.getenv("YNDX_TRNSL_API_KEY"));
