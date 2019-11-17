@@ -34,12 +34,16 @@ build:
     - ./gradlew --version
     - ./gradlew --status
     - ./gradlew assemblyBot
+  after_script:
+    - ./gradlew --status
   only:
     - master
     - develop
 
 test:
   stage: test
+  before_script:
+    - ./gradlew --status
   script:
     - ./gradlew --console verbose test
   only:
