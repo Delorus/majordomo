@@ -21,7 +21,7 @@ build:
   before_script:
     - whoami
     - echo $PWD
-    - ps aux | grep "GradleDaemon" | grep -v "grep"
+    - ps aux | grep "GradleDaemon" | grep -v "grep" || true
     - ls -la
     - ls -lah ./.gradle/
     - chmod u+x ./gradlew
@@ -30,7 +30,7 @@ build:
     - ./gradlew --status
     - ./gradlew assemblyBot
   after_script:
-    - ps aux | grep "GradleDaemon" | grep -v "grep"
+    - ps aux | grep "GradleDaemon" | grep -v "grep" || true
     - ./gradlew --status
   only:
     - master
@@ -41,7 +41,7 @@ test:
   before_script:
     - whoami
     - echo $PWD
-    - ps aux | grep "GradleDaemon" | grep -v "grep"
+    - ps aux | grep "GradleDaemon" | grep -v "grep" || true
     - ls -la
     - ls -lah ./.gradle/
     - chmod u+x ./gradlew
