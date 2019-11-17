@@ -5,19 +5,18 @@ plugins {
 
 dependencies {
     implementation project(":pluginmanager")
-    implementation project(":telegrambot")
     implementation project(":translate")
 }
 
 application {
-    mainClassName = 'page.devnet.app.App'
+    mainClassName = 'page.devnet.cli.App'
 }
 
 jar {
-    archivesBaseName = 'majordomo'
+    archivesBaseName = 'majordomo-cli'
     manifest {
         attributes 'Main-Class': application.mainClassName
     }
 }
 
-task assemblyBot(dependsOn: ['shadowJar'])
+task assembyCli(dependsOn: ['shadowJar'])

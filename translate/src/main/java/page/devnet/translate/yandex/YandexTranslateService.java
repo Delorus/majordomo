@@ -9,6 +9,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
+import page.devnet.translate.TranslateException;
 import page.devnet.translate.TranslateService;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * @author maksim
@@ -37,25 +39,35 @@ public final class YandexTranslateService implements TranslateService {
                     .build();
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+            throw new TranslateException(e);
         }
 
         this.client = HttpClients.createMinimal();
     }
 
-    public String transRuToEn(String text) throws IOException {
+    public String transRuToEn(String text) throws TranslateException {
         Objects.requireNonNull(text);
+
+        if (!isRuText(text)) {
+            throw new TranslateException("Unsupported symbols in text, expected only cyrillic", text);
+        }
 
         return translate("ru-en", text);
     }
 
-    public String transEnToRu(String text) throws IOException {
+    private static final Pattern cyrillic = Pattern.compile("[А-Яа-я]");
+
+    private boolean isRuText(String text) {
+        return cyrillic.matcher(text).find();
+    }
+
+    public String transEnToRu(String text) throws TranslateException {
         Objects.requireNonNull(text);
 
         return translate("en-ru", text);
     }
 
-    private String translate(String lang, String text) throws IOException {
+    private String translate(String lang, String text) throws TranslateException {
         URI uri;
         try {
             uri = new URIBuilder(yandexTranslate)
@@ -63,14 +75,14 @@ public final class YandexTranslateService implements TranslateService {
                     .build();
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+            throw new TranslateException(e, text);
         }
 
         HttpPost post = new HttpPost(uri);
         post.setHeader("Content-Type", "application/x-www-form-urlencoded");
         post.setEntity(new StringEntity("text=" + text, StandardCharsets.UTF_8));
 
-        HttpResponse response = client.execute(post);
+        HttpResponse response = tryExecute(post, text);
         try (InputStreamReader reader = new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)) {
             TranslateResponse resp = mapper.readValue(reader, TranslateResponse.class);
             if (resp.getCode() == 200) {
@@ -78,9 +90,19 @@ public final class YandexTranslateService implements TranslateService {
             } else {
                 log.error(response.toString());
             }
+        } catch (IOException e) {
+            throw new TranslateException(e, text);
         }
 
         return "";
+    }
+
+    private HttpResponse tryExecute(HttpPost post, String text) throws TranslateException {
+        try {
+            return client.execute(post);
+        } catch (IOException e) {
+            throw new TranslateException(e, text);
+        }
     }
 
     @Data

@@ -11,20 +11,21 @@ import java.util.List;
  * @since 01.03.19
  */
 @Slf4j
-public final class PluginManager implements TgMessageSubscriber {
+public final class PluginManager<T, R> implements MessageSubscriber<T, R> {
 
-    private final List<BotPlugin> plugins = new ArrayList<>();
+    private final List<Plugin<T, R>> plugins = new ArrayList<>();
 
-    public PluginManager(BotPlugin plugin, BotPlugin... plugins) {
+    @SafeVarargs
+    public PluginManager(Plugin<T, R> plugin, Plugin<T, R>... plugins) {
         this.plugins.add(plugin);
         this.plugins.addAll(Arrays.asList(plugins));
     }
 
     @Override
-    public List<BotApiMethod> consume(Update update) {
-        List<BotApiMethod> response = new ArrayList<>();
-        for (BotPlugin plugin : plugins) {
-            response.addAll(plugin.onUpdate(update));
+    public List<R> consume(T update) {
+        List<R> response = new ArrayList<>();
+        for (Plugin<T, R> plugin : plugins) {
+            response.add(plugin.onEvent(update));
         }
 
         return response;

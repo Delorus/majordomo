@@ -1,5 +1,6 @@
 plugins {
-    id 'java-library'
+    id 'application'
+    id "com.github.johnrengelman.shadow" version "5.0.0"
 }
 
 dependencies {
@@ -7,4 +8,18 @@ dependencies {
     implementation "org.telegram:telegrambots:4.1.2"
 
     implementation project(":pluginmanager")
+    implementation project(":translate")
 }
+
+application {
+    mainClassName = 'page.devnet.telegrambot.App'
+}
+
+jar {
+    archivesBaseName = 'majordomo'
+    manifest {
+        attributes 'Main-Class': application.mainClassName
+    }
+}
+
+task assemblyBot(dependsOn: ['shadowJar'])

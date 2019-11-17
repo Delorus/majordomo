@@ -5,10 +5,10 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import page.devnet.pluginmanager.BotApiMethod;
-import page.devnet.pluginmanager.TgMessageSubscriber;
-import page.devnet.pluginmanager.Update;
+import page.devnet.pluginmanager.MessageSubscriber;
 
 import java.util.List;
 
@@ -30,9 +30,9 @@ class TelegramBot {
     private final String name;
     private final String token;
     private final String path;
-    private final TgMessageSubscriber eventSubscriber;
+    private final MessageSubscriber<Update, List<BotApiMethod>> eventSubscriber;
 
-    public TelegramBot(Setting setting, TgMessageSubscriber subscriber) {
+    public TelegramBot(Setting setting, MessageSubscriber<Update, List<BotApiMethod>> subscriber) {
         this.name = setting.name;
         this.token = setting.token;
         this.path = setting.path;
@@ -50,9 +50,9 @@ class TelegramBot {
     private class ProdBotManager extends TelegramWebhookBot {
 
         @Override
-        public org.telegram.telegrambots.meta.api.methods.BotApiMethod onWebhookUpdateReceived(org.telegram.telegrambots.meta.api.objects.Update update) {
-            var response = eventSubscriber.consume(Update.from(update));
-            execute(response);
+        public BotApiMethod onWebhookUpdateReceived(Update update) {
+            eventSubscriber.consume(update)
+                    .forEach(this::execute);
 
             return null; //todo return last msg
         }
@@ -60,7 +60,7 @@ class TelegramBot {
         private void execute(List<BotApiMethod> response) {
             try {
                 for (BotApiMethod method : response) {
-                    execute(method.unwrap());
+                    execute(method);
                 }
             } catch (TelegramApiException e) {
                 log.error(e.getMessage(), e);
@@ -87,14 +87,14 @@ class TelegramBot {
 
         @Override
         public void onUpdateReceived(org.telegram.telegrambots.meta.api.objects.Update update) {
-            var response = eventSubscriber.consume(Update.from(update));
-            execute(response);
+            eventSubscriber.consume(update)
+                    .forEach(this::execute);
         }
 
         private void execute(List<BotApiMethod> response) {
             try {
                 for (BotApiMethod method : response) {
-                    execute(method.unwrap());
+                    execute(method);
                 }
             } catch (TelegramApiException e) {
                 log.error(e.getMessage(), e);
