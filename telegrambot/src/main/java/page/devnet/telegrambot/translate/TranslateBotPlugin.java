@@ -8,7 +8,6 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import page.devnet.pluginmanager.Plugin;
-import page.devnet.translate.TranslateException;
 import page.devnet.translate.TranslateService;
 import page.devnet.translate.yandex.YandexTranslateService;
 
@@ -52,6 +51,9 @@ public final class TranslateBotPlugin implements Plugin<Update, List<BotApiMetho
         Message inMsg = update.getMessage();
         try {
             String en = service.transRuToEn(inMsg.getText());
+            if (en.isEmpty()) {
+                return Collections.emptyList();
+            }
 
             Long chatID = inMsg.getChatId();
 
@@ -61,7 +63,7 @@ public final class TranslateBotPlugin implements Plugin<Update, List<BotApiMetho
             result.add(new DeleteMessage(chatID, inMsg.getMessageId()));
             result.add(new SendMessage(chatID, response).enableMarkdown(true));
             return result;
-        } catch (TranslateException e) {
+        } catch (Exception e) {
             log.error(e.getMessage(),e);
             return Collections.singletonList(new SendMessage(inMsg.getChatId(), "Извините, произошла ошибка."));
         }

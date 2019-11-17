@@ -49,7 +49,7 @@ public final class YandexTranslateService implements TranslateService {
         Objects.requireNonNull(text);
 
         if (!isRuText(text)) {
-            throw new TranslateException("Unsupported symbols in text, expected only cyrillic", text);
+            return "";
         }
 
         return translate("ru-en", text);
