@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'application'
+    id "com.github.johnrengelman.shadow" version "5.0.0"
+}
+
+group 'page.devnet.app'
+
+dependencies {
+    implementation project(":pluginmanager")
+    implementation project(":telegrambot")
+    implementation project(":translate")
+
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api
+    implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+    implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
+
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+}
+
+application {
+    mainClassName = 'page.devnet.app.App'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    archivesBaseName = 'majordomo'
+    manifest {
+        attributes 'Main-Class': 'page.devnet.app.App'
+    }
+}
+
+task fullAsm(dependsOn: ['clean', 'shadowJar'])

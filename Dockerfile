@@ -1,6 +1,6 @@
 FROM openjdk:11-jre-slim
 
-COPY ./build/libs/ /apt/majordomo
+COPY ./app/build/libs/ /apt/majordomo
 
 WORKDIR /apt/majordomo
 
