@@ -84,15 +84,15 @@ deploy:
     - docker pull $CI_REGISTRY/$CI_PROD_DOCKER_IMG
     - docker stop $CI_PROD_TG_BOT_NAME || true
     - docker rm $CI_PROD_TG_BOT_NAME || true
-    - docker run --name $CI_PROD_TG_BOT_NAME \
-      --env EXTERNAL_URI=$CI_PROD_TG_BOT_API_EXTRL_URI \
-      --env PORT=$CI_PROD_TG_BOT_API_INT_PORT \
-      --env TG_BOT_NAME=$CI_PROD_TG_BOT_NAME \
-      --env TG_BOT_TOKEN=$CI_PROD_TG_BOT_TOKEN \
-      --env YNDX_TRNSL_API_KEY=$CI_PROD_YNDX_TRSLT_API_KEY \
-      --network=dockernet \
-      -d \
-      -p $CI_PROD_DOCKER_PORT:$CI_PROD_TG_BOT_API_INT_PORT \
+    - docker run --name $CI_PROD_TG_BOT_NAME
+      --env EXTERNAL_URI=$CI_PROD_TG_BOT_API_EXTRL_URI
+      --env PORT=$CI_PROD_TG_BOT_API_INT_PORT
+      --env TG_BOT_NAME=$CI_PROD_TG_BOT_NAME
+      --env TG_BOT_TOKEN=$CI_PROD_TG_BOT_TOKEN
+      --env YNDX_TRNSL_API_KEY=$CI_PROD_YNDX_TRSLT_API_KEY
+      --network=dockernet
+      -d
+      -p $CI_PROD_DOCKER_PORT:$CI_PROD_TG_BOT_API_INT_PORT
       $CI_REGISTRY/$CI_PROD_DOCKER_IMG
   only:
     - master
@@ -108,15 +108,15 @@ deploy-dev:
     - docker pull $CI_REGISTRY/$CI_DEV_DOCKER_IMG
     - docker stop $CI_DEV_TG_BOT_NAME || true
     - docker rm $CI_DEV_TG_BOT_NAME || true
-    - docker run --name $CI_DEV_TG_BOT_NAME \
-      --env EXTERNAL_URI=$CI_DEV_TG_BOT_API_EXTRL_URI \
-      --env PORT=$CI_DEV_TG_BOT_API_INT_PORT \
-      --env TG_BOT_NAME=$CI_DEV_TG_BOT_NAME \
-      --env TG_BOT_TOKEN=$CI_DEV_TG_BOT_TOKEN \
-      --env YNDX_TRNSL_API_KEY=$CI_DEV_YNDX_TRSLT_API_KEY \
-      --network=dockernet \
-      -d \
-      -p $CI_DEV_DOCKER_PORT:$CI_DEV_TG_BOT_API_INT_PORT \
+    - docker run --name $CI_DEV_TG_BOT_NAME
+      --env EXTERNAL_URI=$CI_DEV_TG_BOT_API_EXTRL_URI
+      --env PORT=$CI_DEV_TG_BOT_API_INT_PORT
+      --env TG_BOT_NAME=$CI_DEV_TG_BOT_NAME
+      --env TG_BOT_TOKEN=$CI_DEV_TG_BOT_TOKEN
+      --env YNDX_TRNSL_API_KEY=$CI_DEV_YNDX_TRSLT_API_KEY
+      --network=dockernet
+      -d
+      -p $CI_DEV_DOCKER_PORT:$CI_DEV_TG_BOT_API_INT_PORT
       $CI_REGISTRY/$CI_DEV_DOCKER_IMG
   only:
     - develop
