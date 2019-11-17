@@ -21,20 +21,16 @@ build:
   before_script:
     - whoami
     - echo $PWD
-    - ps aux | grep "GradleDaemon"
+    - ps aux | grep "GradleDaemon" | grep -v "grep"
     - ls -la
-    - ls -la ./gradle/
-    - ls -la ./gradle/wrapper
-    - ls -la ./.gradle/
-    - gradle --version
-    - gradle --status
-    - docker info || true
+    - ls -lah ./.gradle/
     - chmod u+x ./gradlew
   script:
     - ./gradlew --version
     - ./gradlew --status
     - ./gradlew assemblyBot
   after_script:
+    - ps aux | grep "GradleDaemon" | grep -v "grep"
     - ./gradlew --status
   only:
     - master
@@ -43,6 +39,12 @@ build:
 test:
   stage: test
   before_script:
+    - whoami
+    - echo $PWD
+    - ps aux | grep "GradleDaemon" | grep -v "grep"
+    - ls -la
+    - ls -lah ./.gradle/
+    - chmod u+x ./gradlew
     - ./gradlew --status
   script:
     - ./gradlew --console verbose test
