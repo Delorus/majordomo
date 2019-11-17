@@ -92,8 +92,8 @@ deploy:
     - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
   script:
     - docker pull $CI_REGISTRY/$CI_PROD_DOCKER_IMG
-    - docker stop $CI_PROD_TG_BOT_NAME
-    - docker rm $CI_PROD_TG_BOT_NAME
+    - docker stop $CI_PROD_TG_BOT_NAME || true
+    - docker rm $CI_PROD_TG_BOT_NAME || true
     - docker run --name $CI_PROD_TG_BOT_NAME \
       --env EXTERNAL_URI=$CI_PROD_TG_BOT_API_EXTRL_URI \
       --env PORT=$CI_PROD_TG_BOT_API_INT_PORT \
@@ -116,8 +116,8 @@ deploy-dev:
     - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
   script:
     - docker pull $CI_REGISTRY/$CI_DEV_DOCKER_IMG
-    - docker stop $CI_DEV_TG_BOT_NAME
-    - docker rm $CI_DEV_TG_BOT_NAME
+    - docker stop $CI_DEV_TG_BOT_NAME || true
+    - docker rm $CI_DEV_TG_BOT_NAME || true
     - docker run --name $CI_DEV_TG_BOT_NAME \
       --env EXTERNAL_URI=$CI_DEV_TG_BOT_API_EXTRL_URI \
       --env PORT=$CI_DEV_TG_BOT_API_INT_PORT \
