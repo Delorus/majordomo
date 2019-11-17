@@ -16,6 +16,7 @@ stages:
 build:
   stage: build
   before_script:
+    - whoami
     - echo $PWD
     - ls -la
     - gradle --version
