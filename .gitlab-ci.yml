@@ -33,7 +33,7 @@ build:
 test:
   stage: test
   script:
-    - ./gradlew --console verbose test
+    - su root ./gradlew --console verbose test
   only:
     - master
     - develop
