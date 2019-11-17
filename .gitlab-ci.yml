@@ -21,17 +21,18 @@ build:
   before_script:
     - whoami
     - echo $PWD
-    - ps aux | grep "GradleDaemon" | grep -v "grep" || true
-    - ls -la
-    - ls -lah ./.gradle/
     - chmod u+x ./gradlew
   script:
     - ./gradlew --version
     - ./gradlew --status
     - ./gradlew assemblyBot
   after_script:
-    - ps aux | grep "GradleDaemon" | grep -v "grep" || true
+    - ps aux | grep "GradleDaemon"
     - ./gradlew --status
+  artifacts:
+    paths:
+      - bin/*.jar
+    expire_in: 1 hour
   only:
     - master
     - develop
@@ -39,13 +40,7 @@ build:
 test:
   stage: test
   before_script:
-    - whoami
-    - echo $PWD
-    - ps aux | grep "GradleDaemon" | grep -v "grep" || true
-    - ls -la
-    - ls -lah ./.gradle/
     - chmod u+x ./gradlew
-    - ./gradlew --status
   script:
     - ./gradlew --console verbose test
   only:
@@ -58,9 +53,10 @@ build_image:
   image: docker:stable
   dependencies:
     - build
+  #  services:
+  #    - docker:dind
   before_script:
     - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
-    - docker info
   script:
     - docker build -t $CI_REGISTRY/$CI_PROD_DOCKER_IMG .
     - docker push $CI_REGISTRY/$CI_PROD_DOCKER_IMG
@@ -72,9 +68,13 @@ build_image-dev:
   image: docker:stable
   dependencies:
     - build
+  #  services:
+  #    - docker:dind
   before_script:
     - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
-    - docker info
+    - whoami
+    - echo $PWD
+    - ls -la
   script:
     - docker build -t $CI_REGISTRY/$CI_DEV_DOCKER_IMG .
     - docker push $CI_REGISTRY/$CI_DEV_DOCKER_IMG

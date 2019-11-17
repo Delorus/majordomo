@@ -5,14 +5,4 @@ plugins {
 dependencies {
     // https://github.com/knowm/XChart
     implementation "org.knowm.xchart:xchart:3.6.0"
-
-    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
-
-    compileOnly "org.projectlombok:lombok:$lombokVersion"
-    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
-}
-
-test {
-    useJUnitPlatform()
 }
