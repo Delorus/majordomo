@@ -3,6 +3,9 @@ image: gradle:jdk11
 variables:
   DOCKER_DRIVER: overlay2
 
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+
 cache:
   paths:
     - .gradle/
@@ -19,9 +22,10 @@ build:
     - whoami
     - echo $PWD
     - ls -la
+    - ls -la ./gradle/
     - gradle --version
   script:
-    - ./gradlew assemblyBot
+    - sudo ./gradlew assemblyBot
   only:
     - master
     - develop
