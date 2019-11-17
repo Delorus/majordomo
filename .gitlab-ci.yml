@@ -29,10 +29,11 @@ build:
     - gradle --version
     - gradle --status
     - docker info || true
+    - chmod u+x ./gradlew
   script:
-    - su root -c "./gradlew --version"
-    - su root -c "./gradlew --status"
-    - su root -c "./gradlew assemblyBot"
+    - ./gradlew --version
+    - ./gradlew --status
+    - ./gradlew assemblyBot
   only:
     - master
     - develop
@@ -40,7 +41,7 @@ build:
 test:
   stage: test
   script:
-    - su root -c "./gradlew --console verbose test"
+    - ./gradlew --console verbose test
   only:
     - master
     - develop
