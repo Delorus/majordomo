@@ -43,4 +43,4 @@ jar {
     }
 }
 
-task fullAsm(dependsOn: ['clean', 'shadowJar'])
+task assemblyBot(dependsOn: ['shadowJar'])

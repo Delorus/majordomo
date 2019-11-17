@@ -4,21 +4,19 @@ variables:
   DOCKER_DRIVER: overlay2
 
 cache:
-  key: "$CI_PROJECT_NAME+$CI_COMMIT_REF_NAME"
   paths:
     - .gradle/
-    - build/
 
 stages:
   - build
   - test
-  - docker
+  - build_image
   - deploy
 
 build:
   stage: build
   script:
-    - gradle -q fullAsm
+    - ./gradlew assemblyBot
   only:
     - master
     - develop
@@ -26,39 +24,35 @@ build:
 test:
   stage: test
   script:
-    - gradle test
+    - ./gradlew --console verbose test
   only:
     - master
     - develop
+    - merge_requests
 
-
-docker:
-  stage: docker
+build_image:
+  stage: build_image
   image: docker:stable
   dependencies:
     - build
   before_script:
-    - cp ./build/libs/*.jar src/main/docker
-  services:
-    - docker:dind
-  script:
     - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+    - docker info
+  script:
     - docker build -t $CI_REGISTRY/$CI_PROD_DOCKER_IMG .
     - docker push $CI_REGISTRY/$CI_PROD_DOCKER_IMG
   only:
     - master
 
-docker-dev:
-  stage: docker
+build_image-dev:
+  stage: build_image
   image: docker:stable
   dependencies:
     - build
   before_script:
-    - cp ./build/libs/*.jar src/main/docker
-  services:
-    - docker:dind
-  script:
     - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+    - docker info
+  script:
     - docker build -t $CI_REGISTRY/$CI_DEV_DOCKER_IMG .
     - docker push $CI_REGISTRY/$CI_DEV_DOCKER_IMG
   only:
@@ -69,12 +63,23 @@ deploy:
   stage: deploy
   image: docker:stable
   dependencies:
-    - docker
-  script:
+    - build_image
+  before_script:
     - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+  script:
     - docker pull $CI_REGISTRY/$CI_PROD_DOCKER_IMG
-    - docker stop $CI_PROD_TG_BOT_NAME || true
-    - docker run --name $CI_PROD_TG_BOT_NAME --rm --env EXTERNAL_URI=$CI_PROD_TG_BOT_API_EXTRL_URI --env PORT=$CI_PROD_TG_BOT_API_INT_PORT --env TG_BOT_NAME=$CI_PROD_TG_BOT_NAME --env TG_BOT_TOKEN=$CI_PROD_TG_BOT_TOKEN --env YNDX_TRNSL_API_KEY=$CI_PROD_YNDX_TRSLT_API_KEY --network=dockernet -d -p $CI_PROD_DOCKER_PORT:$CI_PROD_TG_BOT_API_INT_PORT $CI_REGISTRY/$CI_PROD_DOCKER_IMG
+    - docker stop $CI_PROD_TG_BOT_NAME
+    - docker rm $CI_PROD_TG_BOT_NAME
+    - docker run --name $CI_PROD_TG_BOT_NAME \
+      --env EXTERNAL_URI=$CI_PROD_TG_BOT_API_EXTRL_URI \
+      --env PORT=$CI_PROD_TG_BOT_API_INT_PORT \
+      --env TG_BOT_NAME=$CI_PROD_TG_BOT_NAME \
+      --env TG_BOT_TOKEN=$CI_PROD_TG_BOT_TOKEN \
+      --env YNDX_TRNSL_API_KEY=$CI_PROD_YNDX_TRSLT_API_KEY \
+      --network=dockernet \
+      -d \
+      -p $CI_PROD_DOCKER_PORT:$CI_PROD_TG_BOT_API_INT_PORT \
+      $CI_REGISTRY/$CI_PROD_DOCKER_IMG
   only:
     - master
 
@@ -82,11 +87,22 @@ deploy-dev:
   stage: deploy
   image: docker:stable
   dependencies:
-    - docker
-  script:
+    - build_image
+  before_script:
     - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+  script:
     - docker pull $CI_REGISTRY/$CI_DEV_DOCKER_IMG
-    - docker stop $CI_DEV_TG_BOT_NAME || true
-    - docker run --name $CI_DEV_TG_BOT_NAME --rm --env EXTERNAL_URI=$CI_DEV_TG_BOT_API_EXTRL_URI --env PORT=$CI_DEV_TG_BOT_API_INT_PORT --env TG_BOT_NAME=$CI_DEV_TG_BOT_NAME --env TG_BOT_TOKEN=$CI_DEV_TG_BOT_TOKEN --env YNDX_TRNSL_API_KEY=$CI_DEV_YNDX_TRSLT_API_KEY --network=dockernet -d -p $CI_DEV_DOCKER_PORT:$CI_DEV_TG_BOT_API_INT_PORT $CI_REGISTRY/$CI_DEV_DOCKER_IMG
+    - docker stop $CI_DEV_TG_BOT_NAME
+    - docker rm $CI_DEV_TG_BOT_NAME
+    - docker run --name $CI_DEV_TG_BOT_NAME \
+      --env EXTERNAL_URI=$CI_DEV_TG_BOT_API_EXTRL_URI \
+      --env PORT=$CI_DEV_TG_BOT_API_INT_PORT \
+      --env TG_BOT_NAME=$CI_DEV_TG_BOT_NAME \
+      --env TG_BOT_TOKEN=$CI_DEV_TG_BOT_TOKEN \
+      --env YNDX_TRNSL_API_KEY=$CI_DEV_YNDX_TRSLT_API_KEY \
+      --network=dockernet \
+      -d \
+      -p $CI_DEV_DOCKER_PORT:$CI_DEV_TG_BOT_API_INT_PORT \
+      $CI_REGISTRY/$CI_DEV_DOCKER_IMG
   only:
     - develop
