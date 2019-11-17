@@ -21,11 +21,18 @@ build:
   before_script:
     - whoami
     - echo $PWD
+    - ps aux | grep "GradleDaemon"
     - ls -la
     - ls -la ./gradle/
+    - ls -la ./gradle/wrapper
+    - ls -la ./.gradle/
     - gradle --version
+    - gradle --status
+    - docker info || true
   script:
-    - su root ./gradlew assemblyBot
+    - su root -c "./gradlew --version"
+    - su root -c "./gradlew --status"
+    - su root -c "./gradlew assemblyBot"
   only:
     - master
     - develop
@@ -33,7 +40,7 @@ build:
 test:
   stage: test
   script:
-    - su root ./gradlew --console verbose test
+    - su root -c "./gradlew --console verbose test"
   only:
     - master
     - develop
