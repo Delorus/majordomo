@@ -30,6 +30,7 @@ build:
     - ps aux | grep "GradleDaemon"
     - ./gradlew --status
   artifacts:
+    untracked: true
     paths:
       - bin/*.jar
     expire_in: 1 hour
@@ -42,7 +43,7 @@ test:
   before_script:
     - chmod u+x ./gradlew
   script:
-    - ./gradlew --console verbose test
+    - ./gradlew test
   only:
     - master
     - develop
@@ -53,8 +54,8 @@ build_image:
   image: docker:stable
   dependencies:
     - build
-  #  services:
-  #    - docker:dind
+  services:
+    - docker:dind
   before_script:
     - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
   script:
@@ -68,8 +69,8 @@ build_image-dev:
   image: docker:stable
   dependencies:
     - build
-  #  services:
-  #    - docker:dind
+  services:
+    - docker:dind
   before_script:
     - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
     - whoami
