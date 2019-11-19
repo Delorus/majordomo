@@ -1,7 +1,7 @@
 package page.devnet.telegrambot.translate;
 
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -20,7 +20,10 @@ import java.util.List;
  * @since 23.03.19
  */
 @Slf4j
-public final class TranslateBotPlugin implements Plugin<Update, List<BotApiMethod>> {
+public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotApiMethod>> {
+
+    //todo it's not thread safe
+    private boolean stop = false;
 
     public static TranslateBotPlugin newYandexTranslatePlugin() {
         TranslateService service = new YandexTranslateService(System.getenv("YNDX_TRNSL_API_KEY"));
@@ -35,7 +38,11 @@ public final class TranslateBotPlugin implements Plugin<Update, List<BotApiMetho
     }
 
     @Override
-    public List<BotApiMethod> onEvent(Update update) {
+    public List<PartialBotApiMethod> onEvent(Update update) {
+        if (stop) {
+            return Collections.emptyList();
+        }
+
         if (!update.hasMessage() || !update.getMessage().hasText()) {
             return Collections.emptyList();
         }
@@ -43,11 +50,43 @@ public final class TranslateBotPlugin implements Plugin<Update, List<BotApiMetho
         return dispatch(update);
     }
 
-    private List<BotApiMethod> dispatch(Update update) {
+    private List<PartialBotApiMethod> dispatch(Update update) {
+        if (update.getMessage().isCommand()) {
+            return executeCommand(update.getMessage());
+        }
+
         return translate(update);
     }
 
-    private List<BotApiMethod> translate(Update update) {
+    private List<PartialBotApiMethod> executeCommand(Message message) {
+        String command = normalizeCmdMsg(message.getText());
+        switch (command) {
+            case "stop-trans":
+                stop = true;
+                break;
+            case "start-trans":
+                stop = false;
+                break;
+        }
+        return Collections.emptyList();
+    }
+
+    private String normalizeCmdMsg(String text) {
+        int begin = 0;
+        int end = text.length();
+
+        if (text.startsWith("/")) {
+            begin = 1;
+        }
+
+        if (text.contains("@")) {
+            end = text.indexOf('@');
+        }
+
+        return text.substring(begin, end);
+    }
+
+    private List<PartialBotApiMethod> translate(Update update) {
         Message inMsg = update.getMessage();
         try {
             String en = service.transRuToEn(inMsg.getText());
@@ -59,7 +98,7 @@ public final class TranslateBotPlugin implements Plugin<Update, List<BotApiMetho
 
             String response = "*" + formatUserName(update.getMessage().getFrom()) + " wrote:*\n" + en;
 
-            List<BotApiMethod> result = new ArrayList<>();
+            List<PartialBotApiMethod> result = new ArrayList<>();
             result.add(new DeleteMessage(chatID, inMsg.getMessageId()));
             result.add(new SendMessage(chatID, response).enableMarkdown(true));
             return result;

@@ -6,5 +6,5 @@ package page.devnet.wordstat.chart;
  */
 interface Renderable {
 
-    Chart renderBy(XChartRenderer renderService);
+    Chart renderBy(XChartRenderer renderService, String titlePostfix);
 }

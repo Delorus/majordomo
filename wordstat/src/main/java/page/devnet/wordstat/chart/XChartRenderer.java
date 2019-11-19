@@ -12,7 +12,7 @@ import java.util.Arrays;
  * @author maksim
  * @since 23.03.19
  */
-final class XChartRenderer {
+public final class XChartRenderer {
 
     @Value
     static class ChartData {
