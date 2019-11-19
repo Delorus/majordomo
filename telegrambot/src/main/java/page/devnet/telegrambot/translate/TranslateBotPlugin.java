@@ -39,10 +39,6 @@ public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotA
 
     @Override
     public List<PartialBotApiMethod> onEvent(Update update) {
-        if (stop) {
-            return Collections.emptyList();
-        }
-
         if (!update.hasMessage() || !update.getMessage().hasText()) {
             return Collections.emptyList();
         }
@@ -55,16 +51,20 @@ public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotA
             return executeCommand(update.getMessage());
         }
 
+        if (stop) {
+            return Collections.emptyList();
+        }
+
         return translate(update);
     }
 
     private List<PartialBotApiMethod> executeCommand(Message message) {
         String command = normalizeCmdMsg(message.getText());
         switch (command) {
-            case "stop-trans":
+            case "stoptrans":
                 stop = true;
                 break;
-            case "start-trans":
+            case "starttrans":
                 stop = false;
                 break;
         }

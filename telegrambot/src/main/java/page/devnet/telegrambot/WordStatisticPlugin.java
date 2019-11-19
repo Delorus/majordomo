@@ -42,7 +42,13 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
 
     @Override
     public List<PartialBotApiMethod> onEvent(Update event) {
-        if (!event.hasMessage() || isBeforeStart(event.getMessage())) {
+        if (isBeforeStart(event.getMessage())) {
+            try {
+                return List.of(new SendMessage(event.getMessage()
+                        .getChatId(), "Команда пришла раньше старта приложения:" + startTime));
+            } catch (NullPointerException ignored) { }
+        }
+        if (!event.hasMessage()) {
             return Collections.emptyList();
         }
 
@@ -65,7 +71,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         var date = Instant.ofEpochSecond(message.getDate());
         statistics.processText(String.valueOf(userId), date, message.getText());
 
-        return Collections.emptyList();
+        return List.of(new SendMessage(message.getChatId(), "you word is saved"));
     }
 
     private boolean isBeforeStart(Message message) {
@@ -75,7 +81,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
     private List<PartialBotApiMethod> executeCommand(Message message) throws IOException {
         var text = normalizeCmdMsg(message.getText());
         switch (text) {
-            case "stat-f":
+            case "statf":
                 var fromLastDay = ZonedDateTime.now().minusDays(1);
                 Chart top10UserWordsFromLastDay = statistics.getTop10UserWordsFrom(fromLastDay.toInstant());
                 SendPhoto sendPhoto = new SendPhoto();
@@ -92,7 +98,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                 sendDocument.setDocument(allStat.toFile());
                 return List.of(sendDocument);
             default:
-                return List.of(new SendMessage(message.getChatId(), "I don't understand this command: " + text));
+                return Collections.emptyList();
         }
     }
 
