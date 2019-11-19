@@ -9,6 +9,7 @@ dependencies {
 
     implementation project(":pluginmanager")
     implementation project(":translate")
+    implementation project(":wordstat")
 }
 
 application {

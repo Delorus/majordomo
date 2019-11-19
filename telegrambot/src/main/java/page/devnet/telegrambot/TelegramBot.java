@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import page.devnet.pluginmanager.MessageSubscriber;
@@ -30,9 +32,9 @@ class TelegramBot {
     private final String name;
     private final String token;
     private final String path;
-    private final MessageSubscriber<Update, List<BotApiMethod>> eventSubscriber;
+    private final MessageSubscriber<Update, List<PartialBotApiMethod>> eventSubscriber;
 
-    public TelegramBot(Setting setting, MessageSubscriber<Update, List<BotApiMethod>> subscriber) {
+    public TelegramBot(Setting setting, MessageSubscriber<Update, List<PartialBotApiMethod>> subscriber) {
         this.name = setting.name;
         this.token = setting.token;
         this.path = setting.path;
@@ -57,10 +59,14 @@ class TelegramBot {
             return null; //todo return last msg
         }
 
-        private void execute(List<BotApiMethod> response) {
+        private void execute(List<PartialBotApiMethod> response) {
             try {
-                for (BotApiMethod method : response) {
-                    execute(method);
+                for (PartialBotApiMethod method : response) {
+                    if (method instanceof BotApiMethod) {
+                        execute((BotApiMethod) method);
+                    } else if (method instanceof SendPhoto) {
+                        execute((SendPhoto) method);
+                    }
                 }
             } catch (TelegramApiException e) {
                 log.error(e.getMessage(), e);
@@ -86,15 +92,19 @@ class TelegramBot {
     private class DevBotManager extends TelegramLongPollingBot {
 
         @Override
-        public void onUpdateReceived(org.telegram.telegrambots.meta.api.objects.Update update) {
+        public void onUpdateReceived(Update update) {
             eventSubscriber.consume(update)
                     .forEach(this::execute);
         }
 
-        private void execute(List<BotApiMethod> response) {
+        private void execute(List<PartialBotApiMethod> response) {
             try {
-                for (BotApiMethod method : response) {
-                    execute(method);
+                for (PartialBotApiMethod method : response) {
+                    if (method instanceof BotApiMethod) {
+                        execute((BotApiMethod) method);
+                    } else if (method instanceof SendPhoto) {
+                        execute((SendPhoto) method);
+                    }
                 }
             } catch (TelegramApiException e) {
                 log.error(e.getMessage(), e);

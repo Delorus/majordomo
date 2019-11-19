@@ -9,7 +9,7 @@ import java.util.List;
  * @author maksim
  * @since 23.03.19
  */
-final class FrequentlyUsedWordsChart implements Renderable {
+public final class FrequentlyUsedWordsChart implements Renderable {
 
     @Value
     private static class WordCount {
@@ -25,19 +25,19 @@ final class FrequentlyUsedWordsChart implements Renderable {
         wordCounts.add(new WordCount(word, count));
     }
 
-    public void addAllWords(int count) {
+    public void setAllWordsCount(int count) {
         totalWords = count;
 
         assert totalWords >= wordCounts.stream().map(WordCount::getNumberOfUses).count();
     }
 
     @Override
-    public Chart renderBy(XChartRenderer renderer) {
+    public Chart renderBy(XChartRenderer renderer, String titlePostfix) {
         XChartRenderer.ChartData[] data = wordCounts.stream()
-                                                    .map(wc -> new XChartRenderer.ChartData(wc.word, calcPercent(wc.numberOfUses)))
-                                                    .toArray(XChartRenderer.ChartData[]::new);
+                .map(wc -> new XChartRenderer.ChartData(wc.word, calcPercent(wc.numberOfUses)))
+                .toArray(XChartRenderer.ChartData[]::new);
 
-        return renderer.createPieChart("Word frequency", data);
+        return renderer.createPieChart("Word frequency: " + titlePostfix, data);
     }
 
     private double calcPercent(int numberOfUses) {
