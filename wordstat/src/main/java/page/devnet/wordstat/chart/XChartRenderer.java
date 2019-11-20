@@ -29,6 +29,8 @@ public final class XChartRenderer {
         Arrays.stream(data)
                 .forEach(d -> chart.addSeries(d.getName(), d.getValue()));
 
+        chart.getStyler().setLegendVisible(true);
+
         return new Chart(BitmapEncoder.getBufferedImage(chart));
     }
 }

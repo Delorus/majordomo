@@ -6,6 +6,7 @@ plugins {
 dependencies {
     implementation project(":pluginmanager")
     implementation project(":translate")
+    implementation project(":wordstat")
 }
 
 application {
@@ -19,4 +20,4 @@ jar {
     }
 }
 
-task assembyCli(dependsOn: ['shadowJar'])
+task assemblyCli(dependsOn: ['shadowJar'])

@@ -17,15 +17,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-
-import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 
 /**
  * @author maksim
@@ -35,11 +30,10 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMethod>> {
 
     private final Statistics statistics;
-    private final Instant startTime;
 
-    public WordStatisticPlugin(Statistics statistics, Instant startTime) {
+    public WordStatisticPlugin(Statistics statistics) {
         this.statistics = statistics;
-        this.startTime = startTime;
+        log.info("Start Word Statistic plugin");
     }
 
     @Override
@@ -84,6 +78,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                     Files.copy(in, file, StandardCopyOption.REPLACE_EXISTING);
                 }
                 sendPhoto.setPhoto(file.toFile());
+                log.info("Send new chart {} with size: {}bytes", file.toFile().getName(), file.toFile().length());
                 return List.of(sendPhoto);
             case "flush":
                 List<String> all = statistics.flushAll();
@@ -91,7 +86,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                     return Collections.emptyList();
                 }
 
-                Path allStat = Files.createTempFile("allStat", ".csv", PosixFilePermissions.asFileAttribute(Set.of(OWNER_WRITE, OWNER_READ)));
+                Path allStat = Files.createTempFile("allStat", ".csv");
                 Files.writeString(allStat, String.join("\n", all), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
                 SendDocument sendDocument = new SendDocument();
                 sendDocument.setChatId(message.getChatId());

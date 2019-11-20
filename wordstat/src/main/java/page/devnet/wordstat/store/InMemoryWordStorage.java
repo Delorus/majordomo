@@ -24,10 +24,10 @@ public class InMemoryWordStorage implements WordStorage {
     }
 
     @Override
-    public List<String> findAllWordsFrom(Instant from) {
+    public List<String> findAllWordsFrom(Instant fromDate) {
         var result = new ArrayList<String>();
         dateToWords.forEach((date, words) -> {
-            if (from.isAfter(date)) {
+            if (date.isAfter(fromDate)) {
                 result.addAll(words);
             }
         });

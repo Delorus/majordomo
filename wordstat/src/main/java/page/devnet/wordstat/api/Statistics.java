@@ -51,14 +51,14 @@ public class Statistics {
         List<String> words = storage.findAllWordsFrom(from);
 
         var chart = new FrequentlyUsedWordsChart();
-        chart.setAllWordsCount(words.size());
 
         var wordCount = new HashMap<String, Integer>();
         for (String word : words) {
-            wordCount.compute(word, (w, i) -> i == null ? 0 : i + 1);
+            wordCount.compute(word, (w, i) -> i == null ? 1 : i + 1);
         }
-
         wordCount.forEach(chart::addWord);
+
+        chart.setAllWordsCount(words.size());
 
         return chart.renderBy(new XChartRenderer(), "from last day");
     }

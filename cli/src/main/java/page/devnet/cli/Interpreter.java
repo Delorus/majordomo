@@ -90,7 +90,7 @@ public class Interpreter {
                     result = sendToSubscriber(line);
                 }
 
-                if (!result.isEmpty()) {
+                if (!result.isBlank()) {
                     out.println(result);
                 }
             }
@@ -126,7 +126,7 @@ public class Interpreter {
             return helpMessage();
         }
 
-        return String.join("\n", subscriber.consume(new Event(cmd)));
+        return String.join("\n", subscriber.consume(new Event(cmd))).trim();
     }
 
     private boolean isHelpRequest(String cmd) {

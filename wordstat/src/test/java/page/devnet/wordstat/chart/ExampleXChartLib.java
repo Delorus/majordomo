@@ -65,6 +65,8 @@ public class ExampleXChartLib {
         chart.addSeries("keks", .05);
         chart.addSeries("other", .4);
 
+        chart.getStyler().setLegendVisible(true);
+
         BitmapEncoder.saveBitmap(chart, "./Word_Frequency_Chart", BitmapEncoder.BitmapFormat.PNG);
     }
 }
