@@ -10,10 +10,10 @@ import java.time.Instant;
 public class App {
 
     public static void main(String[] args) {
-        TranslateBotPlugin translatePlugin = TranslateBotPlugin.newYandexTranslatePlugin();
+//        TranslateBotPlugin translatePlugin = TranslateBotPlugin.newYandexTranslatePlugin();
         var statisticPlugin = new WordStatisticPlugin(new Statistics(new InMemoryWordStorage()), Instant.now());
 
-        var manager = new PluginManager<>(translatePlugin, statisticPlugin);
+        var manager = new PluginManager<>(/*translatePlugin, */statisticPlugin);
 
         if (isProd(args)) {
             TelegramBotExecutor.newInProdMode().runBotWith(manager);

@@ -54,14 +54,21 @@ class TelegramBot {
 
         @Override
         public BotApiMethod onWebhookUpdateReceived(Update update) {
+            try {
             eventSubscriber.consume(update)
                     .forEach(this::execute);
 
             return null; //todo return last msg
+            } catch (TelegramApiException e) {
+                log.error(e.getMessage(), e);
+                try {
+                    execute(new SendMessage(update.getMessage().getChatId(), e.toString()));
+                } catch (Exception e1) {
+                }
+            }    
         }
 
         private void execute(List<PartialBotApiMethod> response) {
-            try {
                 for (PartialBotApiMethod method : response) {
                     if (method instanceof BotApiMethod) {
                         execute((BotApiMethod) method);
@@ -71,9 +78,7 @@ class TelegramBot {
 						execute((SendDocument) method);
                     }
                 }
-            } catch (TelegramApiException e) {
-                log.error(e.getMessage(), e);
-            }
+
         }
 
         @Override
@@ -96,12 +101,19 @@ class TelegramBot {
 
         @Override
         public void onUpdateReceived(Update update) {
-            eventSubscriber.consume(update)
+            try {
+                eventSubscriber.consume(update)
                     .forEach(this::execute);
+            } catch (TelegramApiException e) {
+                log.error(e.getMessage(), e);
+                try {
+                    execute(new SendMessage(update.getMessage().getChatId(), e.toString()));
+                } catch (Exception e1) {
+                }
+            }
         }
 
         private void execute(List<PartialBotApiMethod> response) {
-            try {
                 for (PartialBotApiMethod method : response) {
                     if (method instanceof BotApiMethod) {
                         execute((BotApiMethod) method);
@@ -111,9 +123,6 @@ class TelegramBot {
 						execute((SendDocument) method);
                     }
                 }
-            } catch (TelegramApiException e) {
-                log.error(e.getMessage(), e);
-            }
         }
 
         @Override
