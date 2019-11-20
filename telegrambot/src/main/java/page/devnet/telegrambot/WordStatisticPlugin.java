@@ -71,7 +71,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         var date = Instant.ofEpochSecond(message.getDate());
         statistics.processText(String.valueOf(userId), date, message.getText());
 
-        return List.of(new SendMessage(message.getChatId(), "you word is saved"));
+        return Collections.emptyList();
     }
 
     private boolean isBeforeStart(Message message) {

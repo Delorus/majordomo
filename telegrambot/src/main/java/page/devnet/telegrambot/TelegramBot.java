@@ -11,6 +11,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import page.devnet.pluginmanager.MessageSubscriber;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 
 import java.util.List;
 
@@ -66,6 +67,8 @@ class TelegramBot {
                         execute((BotApiMethod) method);
                     } else if (method instanceof SendPhoto) {
                         execute((SendPhoto) method);
+                    } else if (method instanceof SendDocument) {
+						execute((SendDocument) method);
                     }
                 }
             } catch (TelegramApiException e) {
@@ -104,6 +107,8 @@ class TelegramBot {
                         execute((BotApiMethod) method);
                     } else if (method instanceof SendPhoto) {
                         execute((SendPhoto) method);
+                    } else if (method instanceof SendDocument) {
+						execute((SendDocument) method);
                     }
                 }
             } catch (TelegramApiException e) {
