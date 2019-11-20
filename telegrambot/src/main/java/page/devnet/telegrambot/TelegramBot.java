@@ -60,6 +60,7 @@ class TelegramBot {
         @Override
         public BotApiMethod onWebhookUpdateReceived(Update update) {
             if (update.hasMessage() && isBeforeStart(update.getMessage())) {
+                log.warn("skip message: [{}], that got before starting: [start: {}, got: {}]", update.getMessage().getText(), startTime, update.getMessage().getDate());
                 return null;
             }
 
