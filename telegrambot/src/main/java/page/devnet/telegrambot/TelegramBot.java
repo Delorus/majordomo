@@ -1,5 +1,6 @@
 package page.devnet.telegrambot;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -7,14 +8,12 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import page.devnet.pluginmanager.MessageSubscriber;
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-
-import java.util.List;
 
 /**
  * @author maksim
@@ -56,30 +55,32 @@ class TelegramBot {
         @Override
         public BotApiMethod onWebhookUpdateReceived(Update update) {
             try {
-            eventSubscriber.consume(update)
+                eventSubscriber.consume(update)
                     .forEach(this::execute);
-
-            return null; //todo return last msg
-            } catch (TelegramApiException e) {
+            } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 try {
                     execute(new SendMessage(update.getMessage().getChatId(), e.toString()));
                 } catch (Exception e1) {
                 }
-            }    
+            }
+            return null; //todo return last msg
         }
 
         private void execute(List<PartialBotApiMethod> response) {
+            try {
                 for (PartialBotApiMethod method : response) {
                     if (method instanceof BotApiMethod) {
                         execute((BotApiMethod) method);
                     } else if (method instanceof SendPhoto) {
                         execute((SendPhoto) method);
                     } else if (method instanceof SendDocument) {
-						execute((SendDocument) method);
+                        execute((SendDocument) method);
                     }
                 }
-
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
@@ -105,7 +106,7 @@ class TelegramBot {
             try {
                 eventSubscriber.consume(update)
                     .forEach(this::execute);
-            } catch (TelegramApiException e) {
+            } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 try {
                     execute(new SendMessage(update.getMessage().getChatId(), e.toString()));
@@ -115,15 +116,19 @@ class TelegramBot {
         }
 
         private void execute(List<PartialBotApiMethod> response) {
+            try {
                 for (PartialBotApiMethod method : response) {
                     if (method instanceof BotApiMethod) {
                         execute((BotApiMethod) method);
                     } else if (method instanceof SendPhoto) {
                         execute((SendPhoto) method);
                     } else if (method instanceof SendDocument) {
-						execute((SendDocument) method);
+                        execute((SendDocument) method);
                     }
                 }
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
