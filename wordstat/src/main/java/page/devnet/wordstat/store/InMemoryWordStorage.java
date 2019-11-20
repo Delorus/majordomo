@@ -2,6 +2,7 @@ package page.devnet.wordstat.store;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +40,10 @@ public class InMemoryWordStorage implements WordStorage {
         var result = new ArrayList<String>();
         userToDate.forEach((user, dates) -> {
             dates.forEach(date -> {
-                List<String> words = dateToWords.get(date);
-                result.add(user + ";" + date.getEpochSecond() + ";" + String.join(";", words));
+                List<String> words = dateToWords.getOrDefault(date, Collections.emptyList());
+                if (!words.isEmpty()) {
+                    result.add(user + ";" + date.getEpochSecond() + ";" + String.join(";", words));
+                }
             });
         });
 

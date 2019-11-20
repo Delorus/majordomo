@@ -42,12 +42,6 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
 
     @Override
     public List<PartialBotApiMethod> onEvent(Update event) {
-        if (isBeforeStart(event.getMessage())) {
-            try {
-                return List.of(new SendMessage(event.getMessage()
-                        .getChatId(), "Команда пришла раньше старта приложения:" + startTime));
-            } catch (NullPointerException ignored) { }
-        }
         if (!event.hasMessage()) {
             return Collections.emptyList();
         }
@@ -74,10 +68,6 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         return Collections.emptyList();
     }
 
-    private boolean isBeforeStart(Message message) {
-        return Instant.ofEpochSecond(message.getDate()).isBefore(startTime);
-    }
-
     private List<PartialBotApiMethod> executeCommand(Message message) throws IOException {
         var text = normalizeCmdMsg(message.getText());
         switch (text) {
@@ -91,6 +81,10 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                 return List.of(sendPhoto);
             case "flush":
                 List<String> all = statistics.flushAll();
+                if (all.isEmpty()) {
+                    return Collections.emptyList();
+                }
+
                 Path allStat = Files.createTempFile("allStat", ".csv", PosixFilePermissions.asFileAttribute(Set.of(OWNER_WRITE, OWNER_READ)));
                 Files.writeString(allStat, String.join("\n", all), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
                 SendDocument sendDocument = new SendDocument();

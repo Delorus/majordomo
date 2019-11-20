@@ -16,14 +16,17 @@ public final class Chart {
     private final BufferedImage bufferedImage;
 
     Chart(BufferedImage bufferedImage) {
+
         this.bufferedImage = bufferedImage;
     }
 
-    //todo переделать на нормальный способ, сейчас все плохо из-за кучи копирований в памяти
     public InputStream toInputStream() throws IOException {
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            ImageIO.write(bufferedImage, "jpeg", outputStream);
-            return new ByteArrayInputStream(outputStream.toByteArray());
+        byte[] imageInBytes;
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            ImageIO.write(bufferedImage, "png", baos);
+            baos.flush();
+            imageInBytes = baos.toByteArray();
         }
+        return new ByteArrayInputStream(imageInBytes);
     }
 }
