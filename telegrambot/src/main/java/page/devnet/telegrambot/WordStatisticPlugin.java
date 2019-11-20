@@ -12,8 +12,10 @@ import page.devnet.wordstat.api.Statistics;
 import page.devnet.wordstat.chart.Chart;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Instant;
@@ -77,7 +79,11 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                 SendPhoto sendPhoto = new SendPhoto();
                 sendPhoto.setChatId(message.getChatId());
 
-                sendPhoto.setPhoto("Word frequency in one day", top10UserWordsFromLastDay.toInputStream());
+                Path file = Files.createTempFile("chart", ".png");
+                try (InputStream in = top10UserWordsFromLastDay.toInputStream()) {
+                    Files.copy(in, file, StandardCopyOption.REPLACE_EXISTING);
+                }
+                sendPhoto.setPhoto(file.toFile());
                 return List.of(sendPhoto);
             case "flush":
                 List<String> all = statistics.flushAll();
