@@ -14,12 +14,12 @@ public class InMemoryWordStorage implements WordStorage {
 
     //todo it's not thread safe
     private final Map<Instant, List<String>> dateToWords = new HashMap<>();
-    private final Map<String, Instant> userToDate = new HashMap<>();
+    private final Map<String, List<Instant>> userToDate = new HashMap<>();
 
     @Override
     public void storeAll(String userId, Instant date, List<String> words) {
         dateToWords.put(date, words);
-        userToDate.put(userId, date);
+        userToDate.computeIfAbsent(userId, __ -> new ArrayList<>()).add(date);
     }
 
     @Override
@@ -37,9 +37,11 @@ public class InMemoryWordStorage implements WordStorage {
     @Override
     public List<String> flushAll() {
         var result = new ArrayList<String>();
-        userToDate.forEach((user, date) -> {
-            List<String> words = dateToWords.get(date);
-            result.add(user + ";" + date.getEpochSecond() + ";" + String.join(";", words));
+        userToDate.forEach((user, dates) -> {
+            dates.forEach(date -> {
+                List<String> words = dateToWords.get(date);
+                result.add(user + ";" + date.getEpochSecond() + ";" + String.join(";", words));
+            });
         });
 
         // because little memory
