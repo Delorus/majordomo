@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.wordstat.api.Statistics;
 import page.devnet.wordstat.chart.Chart;
@@ -57,7 +58,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         }
 
         var message = event.getMessage();
-        var userId = message.getFrom().getUserName();
+        var userId = formatUserName(message.getFrom()); //todo сохранять id и по нему уже потом восстанавливать нормальное имя
         var date = Instant.ofEpochSecond(message.getDate());
         statistics.processText(String.valueOf(userId), date, message.getText());
 
@@ -120,5 +121,18 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         }
 
         return text.substring(begin, end);
+    }
+
+    private String formatUserName(User user) {
+        String name = user.getUserName();
+        if (user.getFirstName() != null && !user.getFirstName().isEmpty()) {
+            name = user.getFirstName();
+
+            if (user.getLastName() != null && !user.getLastName().isEmpty()) {
+                name += " " + user.getLastName();
+            }
+        }
+
+        return name;
     }
 }
