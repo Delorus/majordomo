@@ -40,7 +40,7 @@ public final class FrequentlyUsedWordsChart implements Renderable {
     @Override
     public Chart renderBy(XChartRenderer renderer, String titlePostfix) {
         var sortedStream = wordCounts.stream()
-                .sorted(Comparator.comparing(WordCount::getNumberOfUses));
+                .sorted(Comparator.comparing(WordCount::getNumberOfUses).reversed());
         if (limit != 0) {
             sortedStream = sortedStream.limit(limit);
         }
