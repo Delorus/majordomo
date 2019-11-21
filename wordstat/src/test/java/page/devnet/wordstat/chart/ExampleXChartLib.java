@@ -12,6 +12,7 @@ import org.knowm.xchart.XYChart;
 import org.knowm.xchart.style.CategoryStyler;
 import org.knowm.xchart.style.Styler;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -47,6 +48,9 @@ public class ExampleXChartLib {
         styler.setLegendPosition(Styler.LegendPosition.OutsideS);
         styler.setOverlapped(true);
         styler.setLegendVisible(true);
+
+        Color[] sliceColors = new Color[] { new Color(133, 33, 120), new Color(212, 250, 62) };
+        styler.setSeriesColors(sliceColors);
 
         chart.addSeries("all word", Arrays.asList("user1", "user2", "user3"), Arrays.asList(10, 2, 4));
         chart.addSeries("unique word", Arrays.asList("user1", "user2", "user3"), Arrays.asList(3, 1, 3));

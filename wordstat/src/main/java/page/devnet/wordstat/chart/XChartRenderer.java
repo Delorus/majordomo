@@ -9,6 +9,7 @@ import org.knowm.xchart.PieChartBuilder;
 import org.knowm.xchart.style.CategoryStyler;
 import org.knowm.xchart.style.Styler;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -57,6 +58,9 @@ public final class XChartRenderer {
         styler.setLegendPosition(Styler.LegendPosition.OutsideS);
         styler.setOverlapped(true);
         styler.setLegendVisible(true);
+
+        Color[] sliceColors = new Color[] { new Color(133, 33, 120), new Color(195, 245, 0) };
+        styler.setSeriesColors(sliceColors);
 
         for (BarChartData d : data) {
             chart.addSeries(d.name, new ArrayList<>(d.values.keySet()), new ArrayList<>(d.values.values()));
