@@ -98,11 +98,8 @@ public class Statistics {
 
         userToWords.forEach((user, words) -> {
             HashMap<String, Integer> wordFrequency = calcWordFrequency(words);
-            long unique = wordFrequency.entrySet()
-                    .stream()
-                    .filter(entry -> entry.getValue() == 1)
-                    .count();
-            int all = wordFrequency.size();
+            long unique = wordFrequency.size();
+            int all = wordFrequency.values().stream().mapToInt(Integer::intValue).sum();
             chart.addUser(user, all, (int) unique);
         });
 
