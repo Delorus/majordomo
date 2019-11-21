@@ -59,6 +59,7 @@ public class Statistics {
         wordCount.forEach(chart::addWord);
 
         chart.setAllWordsCount(words.size());
+        chart.setLimit(10);
 
         return chart.renderBy(new XChartRenderer(), "from last day");
     }
