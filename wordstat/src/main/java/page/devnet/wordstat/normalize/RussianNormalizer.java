@@ -8,6 +8,7 @@ class RussianNormalizer implements Normalizer {
 
     @Override
     public String normalize(String word) {
+        word = word.toLowerCase();
         return word;
     }
 }

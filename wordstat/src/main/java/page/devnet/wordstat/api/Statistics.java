@@ -1,16 +1,20 @@
 package page.devnet.wordstat.api;
 
 import page.devnet.wordstat.chart.Chart;
+import page.devnet.wordstat.chart.FrequentlyUsedWordsByUserChart;
 import page.devnet.wordstat.chart.FrequentlyUsedWordsChart;
 import page.devnet.wordstat.chart.XChartRenderer;
+import page.devnet.wordstat.normalize.Normalizer;
 import page.devnet.wordstat.store.WordStorage;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author maksim
@@ -19,6 +23,8 @@ import java.util.regex.Pattern;
 public class Statistics {
 
     private static final Pattern WORD_PATTERN = Pattern.compile("\\w+", Pattern.UNICODE_CHARACTER_CLASS);
+    private static final Pattern RUSSIAN_WORD = Pattern.compile("^[А-Яа-я]+$");
+    private static final Pattern ENGLISH_WORD = Pattern.compile("^[A-Za-z]+$");
 
     private final WordStorage storage;
 
@@ -34,7 +40,20 @@ public class Statistics {
 
         var words = parseWords(text);
 
-        storage.storeAll(userId, date, words);
+        Normalizer russian = Normalizer.forRussian();
+        List<String> russiansWords = words.stream()
+                .filter(RUSSIAN_WORD.asMatchPredicate())
+                .map(russian::normalize)
+                .collect(Collectors.toList());
+
+        Normalizer english = Normalizer.forEnglish();
+        List<String> englishWords = words.stream()
+                .filter(ENGLISH_WORD.asMatchPredicate())
+                .map(english::normalize)
+                .collect(Collectors.toList());
+
+        russiansWords.addAll(englishWords);
+        storage.storeAll(userId, date, russiansWords);
     }
 
     private List<String> parseWords(String text) {
@@ -47,16 +66,12 @@ public class Statistics {
         return result;
     }
 
-    public Chart getTop10UserWordsFrom(Instant from) {
+    public Chart getTop10UsedWordsFrom(Instant from) {
         List<String> words = storage.findAllWordsFrom(from);
 
         var chart = new FrequentlyUsedWordsChart();
 
-        var wordCount = new HashMap<String, Integer>();
-        for (String word : words) {
-            wordCount.compute(word, (w, i) -> i == null ? 1 : i + 1);
-        }
-        wordCount.forEach(chart::addWord);
+        calcWordFrequency(words).forEach(chart::addWord);
 
         chart.setAllWordsCount(words.size());
         chart.setLimit(10);
@@ -64,7 +79,33 @@ public class Statistics {
         return chart.renderBy(new XChartRenderer(), "from last day");
     }
 
+    private HashMap<String, Integer> calcWordFrequency(List<String> words) {
+        var wordCount = new HashMap<String, Integer>();
+        for (String word : words) {
+            wordCount.compute(word, (w, i) -> i == null ? 1 : i + 1);
+        }
+        return wordCount;
+    }
+
     public List<String> flushAll() {
         return storage.flushAll();
+    }
+
+    public Chart getWordsCountByUserFrom(Instant from) {
+        Map<String, List<String>> userToWords =  storage.findAllWordsByUserFrom(from);
+
+        var chart = new FrequentlyUsedWordsByUserChart();
+
+        userToWords.forEach((user, words) -> {
+            HashMap<String, Integer> wordFrequency = calcWordFrequency(words);
+            long unique = wordFrequency.entrySet()
+                    .stream()
+                    .filter(entry -> entry.getValue() == 1)
+                    .count();
+            int all = wordFrequency.size();
+            chart.addUser(user, all, (int) unique);
+        });
+
+        return chart.renderBy(new XChartRenderer(), "from last day");
     }
 }

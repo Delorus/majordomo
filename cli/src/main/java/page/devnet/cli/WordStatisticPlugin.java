@@ -63,7 +63,7 @@ public class WordStatisticPlugin implements Plugin<Event, String>, Commandable {
         switch (text) {
             case ":statf":
                 var fromLastDay = ZonedDateTime.now().minusDays(1);
-                Chart top10UserWordsFromLastDay = statistics.getTop10UserWordsFrom(fromLastDay.toInstant());
+                Chart top10UserWordsFromLastDay = statistics.getTop10UsedWordsFrom(fromLastDay.toInstant());
 
                 File file = Paths.get("chart.png").toFile();
                 file.createNewFile();

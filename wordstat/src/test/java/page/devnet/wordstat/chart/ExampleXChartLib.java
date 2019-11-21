@@ -46,6 +46,7 @@ public class ExampleXChartLib {
         CategoryStyler styler = chart.getStyler();
         styler.setLegendPosition(Styler.LegendPosition.OutsideS);
         styler.setOverlapped(true);
+        styler.setLegendVisible(true);
 
         chart.addSeries("all word", Arrays.asList("user1", "user2", "user3"), Arrays.asList(10, 2, 4));
         chart.addSeries("unique word", Arrays.asList("user1", "user2", "user3"), Arrays.asList(3, 1, 3));

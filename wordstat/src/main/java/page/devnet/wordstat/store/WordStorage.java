@@ -2,6 +2,7 @@ package page.devnet.wordstat.store;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author maksim
@@ -14,4 +15,6 @@ public interface WordStorage {
     List<String> findAllWordsFrom(Instant from);
 
     List<String> flushAll();
+
+    Map<String, List<String>> findAllWordsByUserFrom(Instant from);
 }

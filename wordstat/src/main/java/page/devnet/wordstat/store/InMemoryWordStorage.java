@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author maksim
@@ -15,6 +16,8 @@ public class InMemoryWordStorage implements WordStorage {
 
     //todo it's not thread safe
     private final Map<Instant, List<String>> dateToWords = new HashMap<>();
+    //todo если каким-то образом оказалось так, что два пользователя написали
+    // одновременно, то будет коллизия и слова присвоятся обоим
     private final Map<String, List<Instant>> userToDate = new HashMap<>();
 
     @Override
@@ -30,6 +33,20 @@ public class InMemoryWordStorage implements WordStorage {
             if (date.isAfter(fromDate)) {
                 result.addAll(words);
             }
+        });
+
+        return result;
+    }
+
+    @Override
+    public Map<String, List<String>> findAllWordsByUserFrom(Instant fromDate) {
+        var result = new HashMap<String, List<String>>();
+        userToDate.forEach((user, dates) -> {
+            List<String> words = dates.stream()
+                    .filter(fromDate::isBefore)
+                    .flatMap(date -> dateToWords.get(date).stream())
+                    .collect(Collectors.toList());
+            result.put(user, words);
         });
 
         return result;

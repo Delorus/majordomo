@@ -57,7 +57,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         }
 
         var message = event.getMessage();
-        var userId = message.getFrom().getId();
+        var userId = message.getFrom().getUserName();
         var date = Instant.ofEpochSecond(message.getDate());
         statistics.processText(String.valueOf(userId), date, message.getText());
 
@@ -69,16 +69,13 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         switch (text) {
             case "statf":
                 var fromLastDay = ZonedDateTime.now().minusDays(1);
-                Chart top10UserWordsFromLastDay = statistics.getTop10UserWordsFrom(fromLastDay.toInstant());
-                SendPhoto sendPhoto = new SendPhoto();
-                sendPhoto.setChatId(message.getChatId());
-
-                Path file = Files.createTempFile("chart", ".png");
-                try (InputStream in = top10UserWordsFromLastDay.toInputStream()) {
-                    Files.copy(in, file, StandardCopyOption.REPLACE_EXISTING);
-                }
-                sendPhoto.setPhoto(file.toFile());
-                log.info("Send new chart {} with size: {}bytes", file.toFile().getName(), file.toFile().length());
+                Chart top10UsedWordsFromLastDay = statistics.getTop10UsedWordsFrom(fromLastDay.toInstant());
+                SendPhoto sendPhoto = wrapToSendPhoto(top10UsedWordsFromLastDay, message.getChatId());
+                return List.of(sendPhoto);
+            case "statu":
+                fromLastDay = ZonedDateTime.now().minusDays(1);
+                Chart top10WordsFromLastDayByUser = statistics.getWordsCountByUserFrom(fromLastDay.toInstant());
+                sendPhoto = wrapToSendPhoto(top10WordsFromLastDayByUser, message.getChatId());
                 return List.of(sendPhoto);
             case "flush":
                 List<String> all = statistics.flushAll();
@@ -95,6 +92,19 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
             default:
                 return Collections.emptyList();
         }
+    }
+
+    private SendPhoto wrapToSendPhoto(Chart chart, Long chatId) throws IOException {
+        SendPhoto sendPhoto = new SendPhoto();
+        sendPhoto.setChatId(chatId);
+
+        Path file = Files.createTempFile("chart", ".png");
+        try (InputStream in = chart.toInputStream()) {
+            Files.copy(in, file, StandardCopyOption.REPLACE_EXISTING);
+        }
+        sendPhoto.setPhoto(file.toFile());
+        log.info("Send new chart {} with size: {}bytes", file.toFile().getName(), file.toFile().length());
+        return sendPhoto;
     }
 
     private String normalizeCmdMsg(String text) {

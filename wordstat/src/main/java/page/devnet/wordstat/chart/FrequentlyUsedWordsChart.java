@@ -3,8 +3,8 @@ package page.devnet.wordstat.chart;
 import lombok.Value;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * @author maksim
@@ -45,9 +45,9 @@ public final class FrequentlyUsedWordsChart implements Renderable {
             sortedStream = sortedStream.limit(limit);
         }
 
-        XChartRenderer.ChartData[] data = sortedStream
-                .map(wc -> new XChartRenderer.ChartData(wc.word, calcPercent(wc.numberOfUses)))
-                .toArray(XChartRenderer.ChartData[]::new);
+        XChartRenderer.PieChartData[] data = sortedStream
+                .map(wc -> new XChartRenderer.PieChartData(wc.word, calcPercent(wc.numberOfUses)))
+                .toArray(XChartRenderer.PieChartData[]::new);
 
         return renderer.createPieChart("Word frequency: " + titlePostfix, data);
     }
