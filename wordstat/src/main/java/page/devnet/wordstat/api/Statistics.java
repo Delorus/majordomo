@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * @author maksim
  * @since 19.11.2019
  */
-public class Statistics {
+public final class Statistics {
 
     private static final Pattern WORD_PATTERN = Pattern.compile("\\w+", Pattern.UNICODE_CHARACTER_CLASS);
     private static final Pattern RUSSIAN_WORD = Pattern.compile("^[А-Яа-я]+$");
@@ -76,7 +76,8 @@ public class Statistics {
         chart.setAllWordsCount(words.size());
         chart.setLimit(10);
 
-        return chart.renderBy(new XChartRenderer(), "from last day");
+        XChartRenderer renderer = new XChartRenderer();
+        return renderer.render(chart, "from last day");
     }
 
     private HashMap<String, Integer> calcWordFrequency(List<String> words) {
@@ -100,9 +101,11 @@ public class Statistics {
             HashMap<String, Integer> wordFrequency = calcWordFrequency(words);
             long unique = wordFrequency.size();
             int all = wordFrequency.values().stream().mapToInt(Integer::intValue).sum();
-            chart.addUser(user, all, (int) unique);
+            if (all != 0) {
+                chart.addUser(user, all, (int) unique);
+            }
         });
-
-        return chart.renderBy(new XChartRenderer(), "from last day");
+        XChartRenderer renderer = new XChartRenderer();
+        return renderer.render(chart, "from last day");
     }
 }

@@ -48,12 +48,13 @@ public class ExampleXChartLib {
         styler.setLegendPosition(Styler.LegendPosition.OutsideS);
         styler.setOverlapped(true);
         styler.setLegendVisible(true);
+        styler.setXAxisLabelRotation(10);
 
         Color[] sliceColors = new Color[] { new Color(133, 33, 120), new Color(212, 250, 62) };
         styler.setSeriesColors(sliceColors);
 
-        chart.addSeries("all word", Arrays.asList("user1", "user2", "user3"), Arrays.asList(10, 2, 4));
-        chart.addSeries("unique word", Arrays.asList("user1", "user2", "user3"), Arrays.asList(3, 1, 3));
+        chart.addSeries("all word", Arrays.asList("long user name", "long user name2", "long user name3", "long user name4", "long user name5", "long user name6", "long user name7"), Arrays.asList(10, 2, 4, 5, 6, 7, 8));
+        chart.addSeries("unique word", Arrays.asList("long user name", "long user name2", "long user name3", "long user name4", "long user name5", "long user name6", "long user name7"), Arrays.asList(3, 1, 3, 2, 4, 7, 8));
 
         BitmapEncoder.saveBitmap(chart, "./Word_Count_Chart", BitmapEncoder.BitmapFormat.PNG);
     }

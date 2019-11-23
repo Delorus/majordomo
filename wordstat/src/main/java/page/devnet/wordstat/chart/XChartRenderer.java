@@ -20,13 +20,17 @@ import java.util.Map;
  */
 public final class XChartRenderer {
 
+    public Chart render(Renderable renderable, String titlePostfix) {
+        return renderable.renderBy(this, titlePostfix);
+    }
+
     @Value
     static class PieChartData {
         String name;
         Number value;
     }
 
-    public Chart createPieChart(String title, PieChartData... data) {
+    Chart createPieChart(String title, PieChartData... data) {
         PieChart chart = new PieChartBuilder()
                 .title(title)
                 .theme(Styler.ChartTheme.GGPlot2)
@@ -46,7 +50,7 @@ public final class XChartRenderer {
         Map<String, Integer> values;
     }
 
-    public Chart createBarChart(String title, BarChartData... data) {
+    Chart createBarChart(String title, BarChartData... data) {
         CategoryChart chart = new CategoryChartBuilder()
                 .title(title)
                 .xAxisTitle("user") //todo
@@ -58,6 +62,9 @@ public final class XChartRenderer {
         styler.setLegendPosition(Styler.LegendPosition.OutsideS);
         styler.setOverlapped(true);
         styler.setLegendVisible(true);
+        if (data.length >= 3) {
+            styler.setXAxisLabelRotation(10);
+        }
 
         Color[] sliceColors = new Color[] { new Color(133, 33, 120), new Color(195, 245, 0) };
         styler.setSeriesColors(sliceColors);

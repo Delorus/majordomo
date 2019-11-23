@@ -31,9 +31,9 @@ public final class FrequentlyUsedWordsByUserChart implements Renderable {
         var uniqueWords = userWordCounts.stream()
                 .collect(Collectors.toMap(UserWordCount::getUser, UserWordCount::getUniqueWords));
 
-        XChartRenderer.BarChartData all_words = new XChartRenderer.BarChartData("All words", allWords);
-        XChartRenderer.BarChartData unique_words = new XChartRenderer.BarChartData("Unique words", uniqueWords);
+        XChartRenderer.BarChartData allWordsData = new XChartRenderer.BarChartData("All words", allWords);
+        XChartRenderer.BarChartData uniqueWordsData = new XChartRenderer.BarChartData("Unique words", uniqueWords);
 
-        return renderer.createBarChart("Use of words by users: " + titlePostfix, all_words, unique_words);
+        return renderer.createBarChart("Use of words by users: " + titlePostfix, allWordsData, uniqueWordsData);
     }
 }
