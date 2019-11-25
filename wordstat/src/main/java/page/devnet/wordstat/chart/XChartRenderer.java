@@ -62,7 +62,7 @@ public final class XChartRenderer {
         styler.setLegendPosition(Styler.LegendPosition.OutsideS);
         styler.setOverlapped(true);
         styler.setLegendVisible(true);
-        if (data.length >= 3) {
+        if (data != null && data.length >= 1 && data[0].getValues().size() >= 3) {
             styler.setXAxisLabelRotation(10);
         }
 
