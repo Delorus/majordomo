@@ -1,18 +1,11 @@
 package page.devnet.wordstat.api;
 
-import page.devnet.wordstat.chart.Chart;
-import page.devnet.wordstat.chart.FrequentlyUsedWordsByUserChart;
-import page.devnet.wordstat.chart.FrequentlyUsedWordsChart;
-import page.devnet.wordstat.chart.XChartRenderer;
+import page.devnet.wordstat.chart.*;
 import page.devnet.wordstat.normalize.Normalizer;
 import page.devnet.wordstat.store.WordStorage;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -92,6 +85,32 @@ public final class Statistics {
         return storage.flushAll();
     }
 
+    //TODO
+    public Chart getTop10UsedWordsFromEachUser(Instant from){
+        Map<String,List<String>> userToWords = storage.findAllWordsByUserFrom(from);
+
+        FrequentlyUsedWordsByEachUserChart chart = new FrequentlyUsedWordsByEachUserChart();
+
+        userToWords.forEach((user, words)->{
+            //частота слов
+            HashMap<String, Integer> wordFrequency = calcWordFrequency(words);
+            List<Integer> listtosort =  new ArrayList<Integer>(wordFrequency.values());
+            Collections.sort(listtosort, Collections.reverseOrder());
+
+            HashMap<String, Integer> finalTop10words = new HashMap<>();
+            //sort and get first top 10
+            for (int i=0; i<10; i++) {
+                for (Map.Entry<String, Integer> entry : wordFrequency.entrySet()) {
+                    if (entry.getValue().equals(listtosort.get(i))) {
+                        finalTop10words.put(entry.getKey(), listtosort.get(i));
+                    }
+                }
+            }
+            chart.addUser(user,finalTop10words);
+        });
+        XChartRenderer renderer = new XChartRenderer();
+        return null;
+    }
     public Chart getWordsCountByUserFrom(Instant from) {
         Map<String, List<String>> userToWords =  storage.findAllWordsByUserFrom(from);
 

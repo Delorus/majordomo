@@ -75,4 +75,42 @@ public final class XChartRenderer {
 
         return new Chart(BitmapEncoder.getBufferedImage(chart));
     }
+
+    /**
+     * Konstantin
+     */
+    //TODO all
+    @Value
+    static class BarChartData2 {
+        String name;
+        String username;
+        Map<String, Integer> values;
+    }
+
+    Chart createBarChart2(String title, String username, BarChartData2... data) {
+        CategoryChart chart = new CategoryChartBuilder()
+                .title(title)
+                .xAxisTitle("user") //todo
+                .yAxisTitle("count")
+                .theme(Styler.ChartTheme.GGPlot2)
+                .build();
+
+        CategoryStyler styler = chart.getStyler();
+        styler.setLegendPosition(Styler.LegendPosition.OutsideS);
+        styler.setOverlapped(true);
+        styler.setLegendVisible(true);
+        if (data != null && data.length >= 1 && data[0].getValues().size() >= 3) {
+            styler.setXAxisLabelRotation(10);
+        }
+
+        Color[] sliceColors = new Color[] { new Color(133, 33, 120), new Color(195, 245, 0) };
+        styler.setSeriesColors(sliceColors);
+
+        for (BarChartData2 d : data) {
+            //               words           user                                numbers
+            chart.addSeries(d.name, new ArrayList<>(d.values.keySet()), new ArrayList<>(d.values.values()));
+        }
+
+        return new Chart(BitmapEncoder.getBufferedImage(chart));
+    }
 }

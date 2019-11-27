@@ -52,6 +52,7 @@ public class InMemoryWordStorage implements WordStorage {
         return result;
     }
 
+
     @Override
     public List<String> flushAll() {
         var result = new ArrayList<String>();
