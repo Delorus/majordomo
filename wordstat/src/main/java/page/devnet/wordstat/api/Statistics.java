@@ -105,16 +105,18 @@ public final class Statistics {
 
             Collections.sort(list1,Collections.reverseOrder());
             List<String> finalTop10words = new ArrayList<>();
-            for (int i=0; i<4;i++) {
+            HashMap<String,Integer> finalTop=new HashMap<>();
+            for (int i=0; i<list1.size();i++) {
                 int valueMaxCountWord = list1.get(i);
                 for (Map.Entry<String, Integer> entry : map.entrySet()) {
                     if (entry.getValue()==valueMaxCountWord & !finalTop10words.contains(entry.getKey())){
+                        finalTop.put(entry.getKey(),valueMaxCountWord);
                         finalTop10words.add(entry.getKey());
                         break;
                     }
                 }
             }
-            chart.addUser(user,finalTop10words);
+            chart.addUser(user, finalTop); //finalTop10words);
         });
         XChartRenderer renderer = new XChartRenderer();
         return renderer.renders(chart,"from last day");

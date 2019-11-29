@@ -84,7 +84,7 @@ public final class XChartRenderer {
     @Value
     static class BarChartEachUserData {
         String username;
-        List<String> words;
+        Map<String, Integer> words;
     }
 
     Chart createBarChartEachUserData(String title, BarChartEachUserData... data) {
@@ -105,9 +105,9 @@ public final class XChartRenderer {
 
         Color[] sliceColors = new Color[] { new Color(133, 33, 120), new Color(195, 245, 0) };
         styler.setSeriesColors(sliceColors);
-
         for (BarChartEachUserData d : data) {
-            chart.addSeries(d.username, new ArrayList<>(d.getWords()), new ArrayList<>(Collections.frequency(d.words,d.getWords())));
+            chart.addSeries(d.username, new ArrayList<>(d.words.keySet()), new ArrayList<>(d.words.values()));
+
         }
 
         return new Chart(BitmapEncoder.getBufferedImage(chart));
