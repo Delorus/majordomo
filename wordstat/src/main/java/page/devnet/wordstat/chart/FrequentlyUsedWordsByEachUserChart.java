@@ -48,8 +48,8 @@ public final class FrequentlyUsedWordsByEachUserChart implements Renderable {
         for (int i =0; i<eachUserTopWordCountList.size();i++) {
             XChartRenderer.BarChartEachUserData top10EachUser = new XChartRenderer.
                     BarChartEachUserData(eachUserTopWordCountList.get(i).user, eachUserTopWordCountList.get(i).wordsUser);
-
-            charts.add(renderService.createBarChartEachUserData("Top 10 words by users " + eachUserTopWordCountList.get(i) + " :" + titlePostfix,
+            System.out.println(eachUserTopWordCountList.get(i).user);
+            charts.add(renderService.createBarChartEachUserData("Top 10 words by user " + eachUserTopWordCountList.get(i).user + " :" + titlePostfix,
                     top10EachUser));
         }
 
