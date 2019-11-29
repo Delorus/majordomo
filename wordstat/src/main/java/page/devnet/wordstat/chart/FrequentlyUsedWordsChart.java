@@ -53,6 +53,11 @@ public final class FrequentlyUsedWordsChart implements Renderable {
         return renderer.createPieChart("Word frequency: " + titlePostfix, data);
     }
 
+    @Override
+    public List<Chart> renderList(XChartRenderer rendererService, String titlePostfix) {
+        return null;
+    }
+
     private double calcPercent(int numberOfUses) {
         return (double) numberOfUses / totalWords;
     }

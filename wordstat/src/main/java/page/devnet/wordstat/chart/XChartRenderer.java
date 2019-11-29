@@ -10,9 +10,7 @@ import org.knowm.xchart.style.CategoryStyler;
 import org.knowm.xchart.style.Styler;
 
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author maksim
@@ -24,6 +22,9 @@ public final class XChartRenderer {
         return renderable.renderBy(this, titlePostfix);
     }
 
+    public List<Chart> renders(Renderable renderable, String titlePostfix){
+        return renderable.renderList(this,titlePostfix);
+    }
     @Value
     static class PieChartData {
         String name;
@@ -81,16 +82,15 @@ public final class XChartRenderer {
      */
     //TODO all
     @Value
-    static class BarChartData2 {
-        String name;
+    static class BarChartEachUserData {
         String username;
-        Map<String, Integer> values;
+        List<String> words;
     }
 
-    Chart createBarChart2(String title, String username, BarChartData2... data) {
+    Chart createBarChartEachUserData(String title, BarChartEachUserData... data) {
         CategoryChart chart = new CategoryChartBuilder()
                 .title(title)
-                .xAxisTitle("user") //todo
+                .xAxisTitle("words")
                 .yAxisTitle("count")
                 .theme(Styler.ChartTheme.GGPlot2)
                 .build();
@@ -99,16 +99,15 @@ public final class XChartRenderer {
         styler.setLegendPosition(Styler.LegendPosition.OutsideS);
         styler.setOverlapped(true);
         styler.setLegendVisible(true);
-        if (data != null && data.length >= 1 && data[0].getValues().size() >= 3) {
+        if (data != null && data.length >= 1 && data[0].getWords().size() >= 3) {
             styler.setXAxisLabelRotation(10);
         }
 
         Color[] sliceColors = new Color[] { new Color(133, 33, 120), new Color(195, 245, 0) };
         styler.setSeriesColors(sliceColors);
 
-        for (BarChartData2 d : data) {
-            //               words           user                                numbers
-            chart.addSeries(d.name, new ArrayList<>(d.values.keySet()), new ArrayList<>(d.values.values()));
+        for (BarChartEachUserData d : data) {
+            chart.addSeries(d.username, new ArrayList<>(d.getWords()), new ArrayList<>(Collections.frequency(d.words,d.getWords())));
         }
 
         return new Chart(BitmapEncoder.getBufferedImage(chart));

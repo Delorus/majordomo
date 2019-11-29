@@ -86,30 +86,38 @@ public final class Statistics {
     }
 
     //TODO
-    public Chart getTop10UsedWordsFromEachUser(Instant from){
+    public List<Chart> getTop10UsedWordsFromEachUser(Instant from){
+
         Map<String,List<String>> userToWords = storage.findAllWordsByUserFrom(from);
 
         FrequentlyUsedWordsByEachUserChart chart = new FrequentlyUsedWordsByEachUserChart();
 
         userToWords.forEach((user, words)->{
-            //частота слов
-            HashMap<String, Integer> wordFrequency = calcWordFrequency(words);
-            List<Integer> listtosort =  new ArrayList<Integer>(wordFrequency.values());
-            Collections.sort(listtosort, Collections.reverseOrder());
+            HashMap<String,Integer> map = new HashMap<>();
+            List<Integer> list1 = new ArrayList<>();
+            Set<String> userWords = new HashSet<String>(words);
+            for (String s : userWords){
+                list1.add(Collections.frequency(words, s));
+                int i = Collections.frequency(words, s);
+                map.put(s,i);
+                if (list1.size()==10) break;
+            }
 
-            HashMap<String, Integer> finalTop10words = new HashMap<>();
-            //sort and get first top 10
-            for (int i=0; i<10; i++) {
-                for (Map.Entry<String, Integer> entry : wordFrequency.entrySet()) {
-                    if (entry.getValue().equals(listtosort.get(i))) {
-                        finalTop10words.put(entry.getKey(), listtosort.get(i));
+            Collections.sort(list1,Collections.reverseOrder());
+            List<String> finalTop10words = new ArrayList<>();
+            for (int i=0; i<4;i++) {
+                int valueMaxCountWord = list1.get(i);
+                for (Map.Entry<String, Integer> entry : map.entrySet()) {
+                    if (entry.getValue()==valueMaxCountWord & !finalTop10words.contains(entry.getKey())){
+                        finalTop10words.add(entry.getKey());
+                        break;
                     }
                 }
             }
             chart.addUser(user,finalTop10words);
         });
         XChartRenderer renderer = new XChartRenderer();
-        return null;
+        return renderer.renders(chart,"from last day");
     }
     public Chart getWordsCountByUserFrom(Instant from) {
         Map<String, List<String>> userToWords =  storage.findAllWordsByUserFrom(from);

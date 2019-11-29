@@ -73,6 +73,13 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                 Chart top10UsedWordsFromLastDay = statistics.getTop10UsedWordsFrom(fromLastDay.toInstant());
                 SendPhoto sendPhoto = wrapToSendPhoto(top10UsedWordsFromLastDay, message.getChatId());
                 return List.of(sendPhoto);
+            case "state":
+                fromLastDay = ZonedDateTime.now().minusDays(1);
+                List<Chart> top10WordsFromEachUserFromLastDay = statistics.getTop10UsedWordsFromEachUser(fromLastDay.toInstant());
+                for (Chart chart: top10WordsFromEachUserFromLastDay){
+                    sendPhoto = wrapToSendPhoto(chart,message.getChatId());
+                    return List.of(sendPhoto);
+                }
             case "statu":
                 fromLastDay = ZonedDateTime.now().minusDays(1);
                 Chart top10WordsFromLastDayByUser = statistics.getWordsCountByUserFrom(fromLastDay.toInstant());
