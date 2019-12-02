@@ -9,6 +9,8 @@ import java.util.*;
 //TODO
 public final class FrequentlyUsedWordsByEachUserChart implements Renderable {
 
+
+
     //Each user has list top words;
     private static final class EachUserTopWordCount {
         private final String user;

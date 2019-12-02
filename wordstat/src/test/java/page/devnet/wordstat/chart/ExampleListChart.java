@@ -1,5 +1,6 @@
 package page.devnet.wordstat.chart;
 
+import org.apache.logging.log4j.core.util.JsonUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import page.devnet.wordstat.api.Statistics;
@@ -24,37 +25,30 @@ public class ExampleListChart {
         HashMap<String, List<String>> wordsFrequency = new HashMap<>();
         WordStorage wordStorage = new InMemoryWordStorage();
         ArrayList<String> list = new ArrayList<>();
+        Statistics statistics = new Statistics(wordStorage);
 
-        list.add("Привет как дела? Я ушел очень далеко.");
+        list.add("Привет как дела? Я ушел очень далеко!");
         list.add("Очень далеко, это как?");
-        list.add("Как как, вот так.");
-        list.add("Я совсем забыл предупредить тебя, что дела очень хорошо");
+        //list.add("Как как, вот так. Прекрасное яркое и светлое будущее!");
+        //list.add("Я совсем забыл предупредить тебя, что дела очень хорошо!");
 
         for (int i = 0; i < 10; i++) {
             listUser.add("user" + i);
             wordsFrequency.put(listUser.get(i), list);
-
         }
-        Statistics statistics = new Statistics(wordStorage);
-       // System.out.println(wordsFrequency);
 
-        for (String s : wordsFrequency.keySet()) {
-           // System.out.println("s " + s);
-            Instant time = Instant.now();
-           // System.out.println("time " + time);
-
-            for (int i = 0; i < wordsFrequency.values().iterator().next().size(); i++) {
-               // System.out.println(" value " + wordsFrequency.values().iterator().next().get(i));
-                statistics.processText(s, time, wordsFrequency.values().iterator().next().get(i));
-
-            }
-
-        }
+        wordsFrequency.forEach((user, words) -> {
+            words.forEach(word -> {
+                Instant date = Instant.now();
+                statistics.processText(user, date, word);
+                date.plusMillis(1000);
+            });
+        });
         var fromLastDay = ZonedDateTime.now().minusDays(1);
         List<Chart> top10WordsFromEachUserFromLastDay = statistics.getTop10UsedWordsFromEachUser(fromLastDay.toInstant());
 
         for (int i = 0; i < top10WordsFromEachUserFromLastDay.size(); i++) {
-            Path path = Paths.get("/work/chart" + i + Instant.now()+ ".png");
+            Path path = Paths.get("/work/chart" + i+ ".png");
             Files file = null;
             try {
                 if (file.exists(path)) {

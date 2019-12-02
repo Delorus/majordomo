@@ -89,24 +89,33 @@ public final class Statistics {
     public List<Chart> getTop10UsedWordsFromEachUser(Instant from){
 
         Map<String,List<String>> userToWords = storage.findAllWordsByUserFrom(from);
+        for (Map.Entry<String, List<String>> entry: userToWords.entrySet()) {
+            System.out.println(entry.getKey() + " " + entry.getValue());
+        }
 
         FrequentlyUsedWordsByEachUserChart chart = new FrequentlyUsedWordsByEachUserChart();
         userToWords.forEach((user, words)->{
-            System.out.println("words " + words);
             HashMap<String,Integer> wordsFrequency = new HashMap<>();
             List<Integer> countFrequencyWordsToSort = new ArrayList<>();
             Set<String> userWords = new HashSet<String>(words);
+            System.out.println(user + " words " + words);
             for (String s : userWords){
                 countFrequencyWordsToSort.add(Collections.frequency(words, s));
                 int i = Collections.frequency(words, s);
                 wordsFrequency.put(s,i);
             }
+            System.out.println(user + " fre " + wordsFrequency);
+
+            /*wordsFrequency.entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                    .forEach(entry->chart.addUser(user,(HashMap)entry));
+*/
             //sort list frequency words integer
             Collections.sort(countFrequencyWordsToSort,Collections.reverseOrder());
+            System.out.println(countFrequencyWordsToSort);
             List<String> finalTop10words = new ArrayList<>();
             HashMap<String,Integer> finalTop = new HashMap<>();
             for (int i=0; i<10; i++) {
-                System.out.println("user " + user + " " + countFrequencyWordsToSort.get(i));
                 int valueMaxCountWord = countFrequencyWordsToSort.get(i);
                 for (Map.Entry<String, Integer> entry : wordsFrequency.entrySet()) {
                     if (entry.getValue()==valueMaxCountWord & !finalTop10words.contains(entry.getKey())){
