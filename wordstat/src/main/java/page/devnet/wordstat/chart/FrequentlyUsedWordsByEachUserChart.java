@@ -14,9 +14,9 @@ public final class FrequentlyUsedWordsByEachUserChart implements Renderable {
     //Each user has list top words;
     private static final class EachUserTopWordCount {
         private final String user;
-        private final HashMap<String, Integer> wordsUser;
+        private final LinkedHashMap<String, Integer> wordsUser;
 
-        private EachUserTopWordCount(String user, HashMap wordsUser) {
+        private EachUserTopWordCount(String user, LinkedHashMap wordsUser) {
             this.user = user;
             this.wordsUser = wordsUser;
         }
@@ -25,14 +25,14 @@ public final class FrequentlyUsedWordsByEachUserChart implements Renderable {
             return user;
         }
 
-        public HashMap<String, Integer> getWordsUser() {
+        public LinkedHashMap<String, Integer> getWordsUser() {
             return wordsUser;
         }
     }
 
     private final List<EachUserTopWordCount> eachUserTopWordCountList = new ArrayList<>();
 
-    public void addUser(String user, HashMap<String, Integer> wordsUser) {
+    public void addUser(String user, LinkedHashMap<String, Integer> wordsUser) {
         eachUserTopWordCountList.add(new EachUserTopWordCount(user, wordsUser));
     }
 

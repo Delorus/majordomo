@@ -105,27 +105,13 @@ public final class Statistics {
                 wordsFrequency.put(s,i);
             }
             System.out.println(user + " fre " + wordsFrequency);
-
-            /*wordsFrequency.entrySet().stream()
+            LinkedHashMap<String, Integer>  finalMap = new LinkedHashMap<>();
+            wordsFrequency.entrySet().stream()
                     .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                    .forEach(entry->chart.addUser(user,(HashMap)entry));
-*/
-            //sort list frequency words integer
-            Collections.sort(countFrequencyWordsToSort,Collections.reverseOrder());
-            System.out.println(countFrequencyWordsToSort);
-            List<String> finalTop10words = new ArrayList<>();
-            HashMap<String,Integer> finalTop = new HashMap<>();
-            for (int i=0; i<10; i++) {
-                int valueMaxCountWord = countFrequencyWordsToSort.get(i);
-                for (Map.Entry<String, Integer> entry : wordsFrequency.entrySet()) {
-                    if (entry.getValue()==valueMaxCountWord & !finalTop10words.contains(entry.getKey())){
-                        finalTop.put(entry.getKey(),valueMaxCountWord);
-                        finalTop10words.add(entry.getKey());
-                        break;
-                    }
-                }
-            }
-            chart.addUser(user, finalTop);
+                    .limit(10)
+                    .forEach(entry->finalMap.put(entry.getKey(),entry.getValue()));
+            System.out.println("ff " + finalMap);
+            chart.addUser(user, finalMap);
         });
         XChartRenderer renderer = new XChartRenderer();
         return renderer.renders(chart,"from last day");

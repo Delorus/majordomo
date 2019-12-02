@@ -29,8 +29,8 @@ public class ExampleListChart {
 
         list.add("Привет как дела? Я ушел очень далеко!");
         list.add("Очень далеко, это как?");
-        //list.add("Как как, вот так. Прекрасное яркое и светлое будущее!");
-        //list.add("Я совсем забыл предупредить тебя, что дела очень хорошо!");
+        list.add("Как как, вот так. Прекрасное яркое и светлое будущее!");
+        list.add("Я совсем забыл предупредить тебя, что дела очень хорошо!");
 
         for (int i = 0; i < 10; i++) {
             listUser.add("user" + i);
@@ -39,6 +39,7 @@ public class ExampleListChart {
 
         wordsFrequency.forEach((user, words) -> {
             words.forEach(word -> {
+                //TODO Think about time because words wrong from user
                 Instant date = Instant.now();
                 statistics.processText(user, date, word);
                 date.plusMillis(1000);
