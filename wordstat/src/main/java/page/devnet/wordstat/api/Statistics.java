@@ -98,19 +98,16 @@ public final class Statistics {
             HashMap<String,Integer> wordsFrequency = new HashMap<>();
             List<Integer> countFrequencyWordsToSort = new ArrayList<>();
             Set<String> userWords = new HashSet<String>(words);
-            System.out.println(user + " words " + words);
             for (String s : userWords){
                 countFrequencyWordsToSort.add(Collections.frequency(words, s));
                 int i = Collections.frequency(words, s);
                 wordsFrequency.put(s,i);
             }
-            System.out.println(user + " fre " + wordsFrequency);
             LinkedHashMap<String, Integer>  finalMap = new LinkedHashMap<>();
             wordsFrequency.entrySet().stream()
                     .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                     .limit(10)
                     .forEach(entry->finalMap.put(entry.getKey(),entry.getValue()));
-            System.out.println("ff " + finalMap);
             chart.addUser(user, finalMap);
         });
         XChartRenderer renderer = new XChartRenderer();
