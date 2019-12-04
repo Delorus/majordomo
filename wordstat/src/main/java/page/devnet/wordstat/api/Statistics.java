@@ -1,11 +1,24 @@
 package page.devnet.wordstat.api;
 
-import page.devnet.wordstat.chart.*;
+import page.devnet.wordstat.chart.Chart;
+import page.devnet.wordstat.chart.FrequentlyUsedWordsByEachUserChart;
+import page.devnet.wordstat.chart.FrequentlyUsedWordsByUserChart;
+import page.devnet.wordstat.chart.FrequentlyUsedWordsChart;
+import page.devnet.wordstat.chart.XChartRenderer;
 import page.devnet.wordstat.normalize.Normalizer;
 import page.devnet.wordstat.store.WordStorage;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -86,36 +99,39 @@ public final class Statistics {
     }
 
 
-    public List<Chart> getTop10UsedWordsFromEachUser(Instant from){
+    public List<Chart> getTop10UsedWordsFromEachUser(Instant from) {
 
-        Map<String,List<String>> userToWords = storage.findAllWordsByUserFrom(from);
-        for (Map.Entry<String, List<String>> entry: userToWords.entrySet()) {
-            System.out.println(entry.getKey() + " " + entry.getValue());
-        }
+        Map<String, List<String>> userToWords = storage.findAllWordsByUserFrom(from);
 
-        FrequentlyUsedWordsByEachUserChart chart = new FrequentlyUsedWordsByEachUserChart();
-        userToWords.forEach((user, words)->{
-            HashMap<String,Integer> wordsFrequency = new HashMap<>();
+        List<FrequentlyUsedWordsByEachUserChart> chart = new ArrayList<>();
+        userToWords.forEach((user, words) -> {
+            HashMap<String, Integer> wordsFrequency = new HashMap<>();
             List<Integer> countFrequencyWordsToSort = new ArrayList<>();
             Set<String> userWords = new HashSet<String>(words);
-            for (String s : userWords){
+            for (String s : userWords) {
                 countFrequencyWordsToSort.add(Collections.frequency(words, s));
                 int i = Collections.frequency(words, s);
-                wordsFrequency.put(s,i);
+                wordsFrequency.put(s, i);
             }
-            LinkedHashMap<String, Integer>  finalMap = new LinkedHashMap<>();
+            LinkedHashMap<String, Integer> finalWordsCount = new LinkedHashMap<>();
             wordsFrequency.entrySet().stream()
                     .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                     .limit(10)
-                    .forEach(entry->finalMap.put(entry.getKey(),entry.getValue()));
-            chart.addUser(user, finalMap);
+                    .forEach(entry -> finalWordsCount.put(entry.getKey(), entry.getValue()));
+            chart.add(new FrequentlyUsedWordsByEachUserChart(user, finalWordsCount));
+
+
         });
+        List<Chart> listResultChart = new ArrayList<>();
         XChartRenderer renderer = new XChartRenderer();
-        return renderer.renders(chart,"from last day");
+        for (FrequentlyUsedWordsByEachUserChart chart1 : chart) {
+            listResultChart.add(renderer.render(chart1, "from last day"));
+        }
+        return listResultChart; //renderer.renders(chart, "from last day");
     }
 
     public Chart getWordsCountByUserFrom(Instant from) {
-        Map<String, List<String>> userToWords =  storage.findAllWordsByUserFrom(from);
+        Map<String, List<String>> userToWords = storage.findAllWordsByUserFrom(from);
 
         var chart = new FrequentlyUsedWordsByUserChart();
 

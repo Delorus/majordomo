@@ -10,7 +10,9 @@ import org.knowm.xchart.style.CategoryStyler;
 import org.knowm.xchart.style.Styler;
 
 import java.awt.Color;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
 
 /**
  * @author maksim
@@ -22,9 +24,6 @@ public final class XChartRenderer {
         return renderable.renderBy(this, titlePostfix);
     }
 
-    public List<Chart> renders(Renderable renderable, String titlePostfix){
-        return renderable.renderList(this,titlePostfix);
-    }
     @Value
     static class PieChartData {
         String name;
@@ -67,7 +66,7 @@ public final class XChartRenderer {
             styler.setXAxisLabelRotation(10);
         }
 
-        Color[] sliceColors = new Color[] { new Color(133, 33, 120), new Color(195, 245, 0) };
+        Color[] sliceColors = new Color[]{new Color(133, 33, 120), new Color(195, 245, 0)};
         styler.setSeriesColors(sliceColors);
 
         for (BarChartData d : data) {
@@ -77,39 +76,4 @@ public final class XChartRenderer {
         return new Chart(BitmapEncoder.getBufferedImage(chart));
     }
 
-    /**
-     * Konstantin
-     */
-    //TODO all
-    @Value
-    static class BarChartEachUserData {
-        String username;
-        Map<String, Integer> words;
-    }
-
-    Chart createBarChartEachUserData(String title, BarChartEachUserData... data) {
-        CategoryChart chart = new CategoryChartBuilder()
-                .title(title)
-                .xAxisTitle("words")
-                .yAxisTitle("count")
-                .theme(Styler.ChartTheme.GGPlot2)
-                .build();
-
-        CategoryStyler styler = chart.getStyler();
-        styler.setLegendPosition(Styler.LegendPosition.OutsideS);
-        styler.setOverlapped(true);
-        styler.setLegendVisible(true);
-        if (data != null && data.length >= 1 && data[0].getWords().size() >= 3) {
-            styler.setXAxisLabelRotation(10);
-        }
-
-        Color[] sliceColors = new Color[] { new Color(133, 33, 120), new Color(195, 245, 0) };
-        styler.setSeriesColors(sliceColors);
-        for (BarChartEachUserData d : data) {
-            chart.addSeries(d.username, new ArrayList<>(d.words.keySet()), new ArrayList<>(d.words.values()));
-
-        }
-
-        return new Chart(BitmapEncoder.getBufferedImage(chart));
-    }
 }

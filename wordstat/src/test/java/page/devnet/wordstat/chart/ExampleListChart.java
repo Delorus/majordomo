@@ -7,13 +7,21 @@ import page.devnet.wordstat.api.Statistics;
 import page.devnet.wordstat.store.InMemoryWordStorage;
 import page.devnet.wordstat.store.WordStorage;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.time.*;
-import java.util.*;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -80,7 +88,6 @@ public class ExampleListChart {
 
         var fromLastDay = ZonedDateTime.now().minusDays(1);
         List<Chart> top10WordsFromEachUserFromLastDay = statistics.getTop10UsedWordsFromEachUser(fromLastDay.toInstant());
-        Files file = null;
         for (int i = 0; i < top10WordsFromEachUserFromLastDay.size(); i++) {
             Path path = Paths.get("/work/chart" + i + ".png");
 
