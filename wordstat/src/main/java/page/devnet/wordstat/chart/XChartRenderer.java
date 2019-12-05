@@ -66,7 +66,7 @@ public final class XChartRenderer {
             styler.setXAxisLabelRotation(10);
         }
 
-        Color[] sliceColors = new Color[] { new Color(133, 33, 120), new Color(195, 245, 0) };
+        Color[] sliceColors = new Color[]{new Color(133, 33, 120), new Color(195, 245, 0)};
         styler.setSeriesColors(sliceColors);
 
         for (BarChartData d : data) {
@@ -75,4 +75,5 @@ public final class XChartRenderer {
 
         return new Chart(BitmapEncoder.getBufferedImage(chart));
     }
+
 }

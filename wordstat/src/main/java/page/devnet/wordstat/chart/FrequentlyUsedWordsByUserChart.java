@@ -36,4 +36,5 @@ public final class FrequentlyUsedWordsByUserChart implements Renderable {
 
         return renderer.createBarChart("Use of words by users: " + titlePostfix, allWordsData, uniqueWordsData);
     }
+
 }
