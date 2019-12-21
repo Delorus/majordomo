@@ -102,7 +102,9 @@ public final class Statistics {
     public List<Chart> getTop10UsedWordsFromEachUser(Instant from) {
 
         Map<String, List<String>> userToWords = storage.findAllWordsByUserFrom(from);
-
+        //remove user, if message is empty.
+        userToWords.entrySet().removeIf(entry -> entry.getValue().size() == 0);
+        
         List<FrequentlyUsedWordsByEachUserChart> chart = new ArrayList<>();
         userToWords.forEach((user, words) -> {
             HashMap<String, Integer> wordsFrequency = new HashMap<>();
