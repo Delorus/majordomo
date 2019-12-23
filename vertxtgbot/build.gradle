@@ -12,4 +12,5 @@ repositories {
 
 dependencies {
     implementation "io.vertx:vertx-core:3.8.4"
+    implementation "io.vertx:vertx-web:3.4.1"
 }
