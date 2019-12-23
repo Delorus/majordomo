@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+
+group 'page.devnet'
+version 'unspecified'
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "io.vertx:vertx-core:3.8.4"
+}

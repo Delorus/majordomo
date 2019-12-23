@@ -6,3 +6,5 @@ include 'pluginmanager'
 include 'telegrambot'
 include 'cli'
 include 'database'
+include 'vertxtgbot'
+
