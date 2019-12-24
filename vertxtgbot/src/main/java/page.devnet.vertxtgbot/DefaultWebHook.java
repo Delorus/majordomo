@@ -4,6 +4,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.ext.web.Route;
+import io.vertx.ext.web.Router;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 import org.telegram.telegrambots.meta.generics.Webhook;
 import org.telegram.telegrambots.meta.generics.WebhookBot;
@@ -17,7 +20,9 @@ public class DefaultWebHook  implements Webhook {
 
     private String internalUrl;
     private WebhookBot webhookBot;
-
+    private Route route;
+    private Router router;
+    private Vertx vertx;
     public DefaultWebHook() throws TelegramApiRequestException{
     }
 
@@ -31,14 +36,28 @@ public class DefaultWebHook  implements Webhook {
                 .setPort(uri.getPort())
                 .setHost(uri.getHost());
 
-        final Vertx vertx = Vertx.vertx();
+        vertx = Vertx.vertx();
         HttpServer server = vertx.createHttpServer(options);
+        router = Router.router(vertx);
+        router.route("/{botPath}").handler(routingContext -> {
+            routingContext.data();
+            HttpServerResponse response = routingContext.response();
+            response
+                    .putHeader("content-type", "text/html")
+                    .end("<h1>Hello from my first Vert.x 3 application</h1>");
+        });
         try {
-            server.listen();
+            server.listen()
+                    .requestHandler(router::accept)
+                    .requestHandler();
         }catch (VertxException e){
             throw new TelegramApiRequestException("Error starting server", e);
         }
+
     }
+
+
+
 
     @Override
     public void setInternalUrl(String internalUrl) {
