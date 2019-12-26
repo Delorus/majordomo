@@ -11,6 +11,7 @@ import io.vertx.core.json.Json;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -55,6 +56,7 @@ public class DefaultWebHook implements Webhook {
 
     public DefaultWebHook() throws TelegramApiRequestException {
     }
+    public Vertx getVertex(){return this.vertx;}
 
     @Override
     public void startServer() throws TelegramApiRequestException {
