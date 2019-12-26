@@ -1,6 +1,5 @@
 package page.devnet.vertxtgbot;
 
-import io.vertx.core.Vertx;
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
@@ -10,8 +9,9 @@ public abstract class TelegramWebHookBot extends AbsSender implements WebhookBot
 
     private SetWebhook setWebhook;
     public TelegramWebHookBot( ){
-
+        super();
     }
+
 
     @Override
     public void setWebhook(String url, String publicCertificatePath) throws TelegramApiRequestException {
