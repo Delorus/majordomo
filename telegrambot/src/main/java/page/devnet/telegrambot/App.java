@@ -10,7 +10,7 @@ public class App {
 //        TranslateBotPlugin translatePlugin = TranslateBotPlugin.newYandexTranslatePlugin();
         var statisticPlugin = new WordStatisticPlugin(new Statistics(new InMemoryWordStorage()));
 
-        var manager = new PluginManager<>(/*translatePlugin, */statisticPlugin);
+        var manager = new PluginManager<>(/*translatePlugin, */statisticPlugin, new WordLimiterPlugin());
 
         if (isProd(args)) {
             TelegramBotExecutor.newInProdMode().runBotWith(manager);
