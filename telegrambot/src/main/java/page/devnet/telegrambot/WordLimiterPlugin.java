@@ -97,7 +97,7 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
         int prevCount;
 
         public WordCount add(WordCount wc) {
-            return new WordCount(count + wc.count, prevCount);
+            return new WordCount(count + wc.count, count);
         }
 
         public boolean inRange(int c) {
