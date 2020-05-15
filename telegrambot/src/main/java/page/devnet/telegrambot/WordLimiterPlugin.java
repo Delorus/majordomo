@@ -1,5 +1,6 @@
 package page.devnet.telegrambot;
 
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
@@ -25,7 +26,7 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
 
     private static final Pattern WORD_PATTERN = Pattern.compile("\\w+", Pattern.UNICODE_CHARACTER_CLASS);
 
-    private final ConcurrentMap<String, Integer> countWordsByUser = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, WordCount> countWordsByUser = new ConcurrentHashMap<>();
 
     @Override
     public List<PartialBotApiMethod> onEvent(Update event) {
@@ -37,18 +38,20 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
         var userId = formatUserName(message.getFrom());
         int wordsCount = parseWords(message.getText()).size();
 
-        Integer result = countWordsByUser.merge(userId, wordsCount, Integer::sum);
+        var wc = countWordsByUser.merge(userId, WordCount.ofCount(wordsCount), WordCount::add);
 
         String msg = "";
-        int rounded = result / 100;
-        if (rounded == 4) {
+        if (wc.inRange(400)) {
             msg = "0YHQtdCz0L7QtNC90Y8g0JLRiyDQtNC+0YHRgtCw0YLQvtGH0L3QviDQvdCw0L/QuNGB0LDQu9C4LCDQvtGC0LTQvtGF0L3QuNGC0LUu";
-        } else if (rounded == 6) {
+        } else if (wc.inRange(600)) {
             msg = "0JLRiyDRg9C20LUg0LTQvtCy0L7Qu9GM0L3QviDQvNC90L7Qs9C+INC90LDQv9C40YHQsNC70LgsINC80L7QttC10YIg0L/QvtGA0LAg0L7RgdGC0LDQvdC+0LLQuNGC0YzRgdGPPw==";
-        } else if (rounded == 10) {
+        } else if (wc.inRange(1000)) {
             msg = "0L/QvtGB0LvQtdC00L3QtdC1INC/0YDQtdC00YPQv9GA0LXQttC00LXQvdC40LUsINCS0Ysg0YPQttC1INC/0L7Rh9GC0Lgg0LTQvtGB0YLQuNCz0LvQuCDQv9C10YDQstC+0LPQviDQvNC10YHRgtCwINCyINC90LjQutGH0LXQvNC90L7RgdGC0LgsINGF0LLQsNGC0LjRgi4=";
-        } else if (rounded >= 13) {
-            msg = "KirQntCh0KLQkNCd0J7QktCY0KHQrCEhISoq";
+        } else {
+            int limit = 1300;
+            if (wc.inRange(limit) || wc.count > limit && (wc.count - wc.prevCount >= 10)) {
+                msg = "KirQntCh0KLQkNCd0J7QktCY0KHQrCEhISoq";
+            }
         }
 
         if (msg.isEmpty()) {
@@ -82,5 +85,23 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
         }
 
         return result;
+    }
+
+    @Value
+    private static class WordCount {
+        public static WordCount ofCount(int count) {
+            return new WordCount(count, 0);
+        }
+
+        int count;
+        int prevCount;
+
+        public WordCount add(WordCount wc) {
+            return new WordCount(count + wc.count, prevCount);
+        }
+
+        public boolean inRange(int c) {
+            return prevCount <= c && count > c;
+        }
     }
 }
