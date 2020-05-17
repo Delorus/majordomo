@@ -10,6 +10,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import page.devnet.pluginmanager.Plugin;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +40,13 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
         var userId = formatUserName(message.getFrom());
         int wordsCount = parseWords(message.getText()).size();
 
-        var wc = countWordsByUser.merge(userId, WordCount.ofCount(wordsCount), WordCount::add);
+        var wc = countWordsByUser.merge(userId, WordCount.ofCount(wordsCount), (old, next) -> {
+            if (Duration.between(old.timestamp, next.timestamp).compareTo(Duration.ofDays(1)) >= 0) {
+                return next;
+            } else {
+                return old.add(next);
+            }
+        });
 
         String msg = "";
         if (wc.inRange(400)) {
@@ -90,14 +98,15 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
     @Value
     private static class WordCount {
         public static WordCount ofCount(int count) {
-            return new WordCount(count, 0);
+            return new WordCount(count, 0, Instant.now());
         }
 
         int count;
         int prevCount;
+        Instant timestamp;
 
         public WordCount add(WordCount wc) {
-            return new WordCount(count + wc.count, count);
+            return new WordCount(count + wc.count, count, timestamp);
         }
 
         public boolean inRange(int c) {
