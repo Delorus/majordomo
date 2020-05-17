@@ -1,0 +1,26 @@
+plugins {
+    id 'application'
+    id "com.github.johnrengelman.shadow" version "5.0.0"
+}
+
+dependencies {
+    // https://github.com/rubenlagus/TelegramBots
+    implementation "org.telegram:telegrambots:4.4.0.1"
+
+    implementation project(":pluginmanager")
+    implementation project(":translate")
+    implementation project(":wordstat")
+}
+
+application {
+    mainClassName = 'page.devnet.telegrambot.App'
+}
+
+jar {
+    archivesBaseName = 'majordomo'
+    manifest {
+        attributes 'Main-Class': application.mainClassName
+    }
+}
+
+task assemblyBot(dependsOn: ['shadowJar'])

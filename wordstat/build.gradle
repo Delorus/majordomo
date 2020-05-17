@@ -1,0 +1,8 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    // https://github.com/knowm/XChart
+    implementation "org.knowm.xchart:xchart:3.6.0"
+}
