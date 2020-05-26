@@ -1,4 +1,4 @@
-package page.devnet.vertxtgbot;
+package page.devnet.vertxbot;
 
 import org.telegram.telegrambots.meta.ApiContext;
 import org.telegram.telegrambots.meta.generics.Webhook;

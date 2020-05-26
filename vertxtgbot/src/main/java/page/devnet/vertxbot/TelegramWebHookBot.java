@@ -1,4 +1,4 @@
-package page.devnet.vertxtgbot;
+package page.devnet.vertxbot;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
