@@ -10,6 +10,6 @@ public final class ApiContextInitializer {
 
     public static void init(){
 
-        ApiContext.register(Webhook.class, DefaultWebHook.class);
+        ApiContext.register(Webhook.class, VertxWebhook.class);
     }
 }
