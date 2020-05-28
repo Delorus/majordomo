@@ -1,4 +1,4 @@
-package page.devnet.vertxbot;
+package page.devnet.vertxtgbot;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
