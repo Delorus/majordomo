@@ -117,6 +117,7 @@ deploy-dev:
       --network=dockernet
       -d
       -p $CI_DEV_DOCKER_PORT:$CI_DEV_TG_BOT_API_INT_PORT
+      -p 5005:5005
       $CI_REGISTRY/$CI_DEV_DOCKER_IMG
   only:
     - develop
