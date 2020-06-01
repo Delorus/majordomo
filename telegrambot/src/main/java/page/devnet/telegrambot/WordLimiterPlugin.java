@@ -92,9 +92,11 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
         switch (command) {
             case "unsubscribe": {
                 unsubscribe(formatUserName(message.getFrom()));
+                break;
             }
             case "subscribe": {
                 subscribe(formatUserName(message.getFrom()));
+                break;
             }
         }
     }
