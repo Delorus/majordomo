@@ -1,5 +1,6 @@
 package page.devnet.telegrambot;
 
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
@@ -9,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import page.devnet.pluginmanager.Plugin;
+import page.devnet.telegrambot.util.CommandUtils;
 import page.devnet.wordstat.api.Statistics;
 import page.devnet.wordstat.chart.Chart;
 
@@ -32,6 +34,9 @@ import java.util.List;
 public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMethod>> {
 
     private final Statistics statistics;
+
+    @Setter
+    private CommandUtils commandUtils = new CommandUtils();
 
     public WordStatisticPlugin(Statistics statistics) {
         this.statistics = statistics;
@@ -67,7 +72,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
     }
 
     private List<PartialBotApiMethod> executeCommand(Message message) throws IOException {
-        var text = normalizeCmdMsg(message.getText());
+        var text = commandUtils.normalizeCmdMsg(message.getText());
         switch (text) {
             case "statf":
                 var fromLastDay = ZonedDateTime.now().minusDays(1);
@@ -118,20 +123,6 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         return sendPhoto;
     }
 
-    private String normalizeCmdMsg(String text) {
-        int begin = 0;
-        int end = text.length();
-
-        if (text.startsWith("/")) {
-            begin = 1;
-        }
-
-        if (text.contains("@")) {
-            end = text.indexOf('@');
-        }
-
-        return text.substring(begin, end);
-    }
 
     private String formatUserName(User user) {
         String name = user.getUserName();
