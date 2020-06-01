@@ -1,5 +1,6 @@
 package page.devnet.telegrambot.translate;
 
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -8,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import page.devnet.pluginmanager.Plugin;
+import page.devnet.telegrambot.util.CommandUtils;
 import page.devnet.translate.TranslateService;
 import page.devnet.translate.yandex.YandexTranslateService;
 
@@ -24,6 +26,9 @@ public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotA
 
     //todo it's not thread safe
     private boolean stop = false;
+
+    @Setter
+    private CommandUtils commandUtils = new CommandUtils();
 
     public static TranslateBotPlugin newYandexTranslatePlugin() {
         TranslateService service = new YandexTranslateService(System.getenv("YNDX_TRNSL_API_KEY"));
@@ -59,7 +64,7 @@ public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotA
     }
 
     private List<PartialBotApiMethod> executeCommand(Message message) {
-        String command = normalizeCmdMsg(message.getText());
+        String command = commandUtils.normalizeCmdMsg(message.getText());
         switch (command) {
             case "stoptrans":
                 stop = true;
@@ -69,21 +74,6 @@ public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotA
                 break;
         }
         return Collections.emptyList();
-    }
-
-    private String normalizeCmdMsg(String text) {
-        int begin = 0;
-        int end = text.length();
-
-        if (text.startsWith("/")) {
-            begin = 1;
-        }
-
-        if (text.contains("@")) {
-            end = text.indexOf('@');
-        }
-
-        return text.substring(begin, end);
     }
 
     private List<PartialBotApiMethod> translate(Update update) {

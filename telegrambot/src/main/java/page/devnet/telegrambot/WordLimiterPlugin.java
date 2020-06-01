@@ -1,5 +1,6 @@
 package page.devnet.telegrambot;
 
+import lombok.Setter;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
@@ -9,14 +10,14 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import page.devnet.pluginmanager.Plugin;
+import page.devnet.telegrambot.util.CommandUtils;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 /**
@@ -30,14 +31,30 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
 
     private final ConcurrentMap<String, WordCount> countWordsByUser = new ConcurrentHashMap<>();
 
+    private volatile Set<String> unsubscribeUser = new HashSet<>();
+
+    private AtomicBoolean copyOnWriteCasLock = new AtomicBoolean(false);
+
+    @Setter
+    private CommandUtils commandUtils = new CommandUtils();
+
     @Override
     public List<PartialBotApiMethod> onEvent(Update event) {
         if (!event.hasMessage() || !event.getMessage().hasText()) {
             return Collections.emptyList();
         }
 
+        if (event.getMessage().isCommand()) {
+            executeCommand(event.getMessage());
+            return Collections.emptyList();
+        }
+
         Message message = event.getMessage();
         var userId = formatUserName(message.getFrom());
+        if (unsubscribeUser.contains(userId)) {
+            return Collections.emptyList();
+        }
+
         int wordsCount = parseWords(message.getText()).size();
 
         var wc = countWordsByUser.merge(userId, WordCount.ofCount(wordsCount), (old, next) -> {
@@ -68,6 +85,40 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
 
         msg = String.join(", ", userId, new String(Base64.decodeBase64(msg)));
         return List.of(new SendMessage(message.getChatId(), msg).enableMarkdown(true));
+    }
+
+    private void executeCommand(Message message) {
+        var command = commandUtils.normalizeCmdMsg(message.getText());
+        switch (command) {
+            case "unsubscribe": {
+                unsubscribe(formatUserName(message.getFrom()));
+            }
+            case "subscribe": {
+                subscribe(formatUserName(message.getFrom()));
+            }
+        }
+    }
+
+    private void unsubscribe(final String userId) {
+        try {
+            while (!copyOnWriteCasLock.compareAndSet(false, true));
+            Set<String> copySet = new HashSet<>(unsubscribeUser);
+            copySet.add(userId);
+            unsubscribeUser = copySet;
+        } finally {
+            copyOnWriteCasLock.set(false);
+        }
+    }
+
+    private void subscribe(final String userId) {
+        try {
+            while (!copyOnWriteCasLock.compareAndSet(false, true));
+            Set<String> copySet = new HashSet<>(unsubscribeUser);
+            copySet.remove(userId);
+            unsubscribeUser = copySet;
+        } finally {
+            copyOnWriteCasLock.set(false);
+        }
     }
 
     // copy-paste
