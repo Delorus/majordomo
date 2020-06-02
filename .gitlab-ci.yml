@@ -84,6 +84,7 @@ deploy:
     - docker pull $CI_REGISTRY/$CI_PROD_DOCKER_IMG
     - docker stop $CI_PROD_TG_BOT_NAME || true
     - docker rm $CI_PROD_TG_BOT_NAME || true
+    - docker volume create majordomo_volume_prod
     - docker run --name $CI_PROD_TG_BOT_NAME
       --env EXTERNAL_URI=$CI_PROD_TG_BOT_API_EXTRL_URI
       --env PORT=$CI_PROD_TG_BOT_API_INT_PORT
@@ -91,6 +92,7 @@ deploy:
       --env TG_BOT_TOKEN=$CI_PROD_TG_BOT_TOKEN
       --env YNDX_TRNSL_API_KEY=$CI_PROD_YNDX_TRSLT_API_KEY
       --network=dockernet
+      -v majordomo_volume_prod:/storage
       -d
       -p $CI_PROD_DOCKER_PORT:$CI_PROD_TG_BOT_API_INT_PORT
       $CI_REGISTRY/$CI_PROD_DOCKER_IMG
@@ -108,6 +110,7 @@ deploy-dev:
     - docker pull $CI_REGISTRY/$CI_DEV_DOCKER_IMG
     - docker stop $CI_DEV_TG_BOT_NAME || true
     - docker rm $CI_DEV_TG_BOT_NAME || true
+    - docker volume create majordomo_volume_dev
     - docker run --name $CI_DEV_TG_BOT_NAME
       --env EXTERNAL_URI=$CI_DEV_TG_BOT_API_EXTRL_URI
       --env PORT=$CI_DEV_TG_BOT_API_INT_PORT
@@ -115,6 +118,7 @@ deploy-dev:
       --env TG_BOT_TOKEN=$CI_DEV_TG_BOT_TOKEN
       --env YNDX_TRNSL_API_KEY=$CI_DEV_YNDX_TRSLT_API_KEY
       --network=dockernet
+      -v majordomo_volume_dev:/storage
       -d
       -p $CI_DEV_DOCKER_PORT:$CI_DEV_TG_BOT_API_INT_PORT
       -p 5005:5005
