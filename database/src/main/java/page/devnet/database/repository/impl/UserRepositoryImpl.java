@@ -32,7 +32,8 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User createOrUpdate(Integer id, User user) {
-        return table.put(id, user);
+        table.put(id, user);
+        return user;
     }
 
     @Override
