@@ -32,12 +32,14 @@ public class UnsubscribeRepositoryImpl implements UnsubscribeRepository {
     @Override
     public Integer createOrUpdate(Integer id, Integer entity) {
         table.add(id);
+        dataSource.getDatabase().commit();
         return id;
     }
 
     @Override
     public Integer delete(Integer id) {
         table.remove(id);
+        dataSource.getDatabase().commit();
         return id;
     }
 }

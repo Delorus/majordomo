@@ -33,11 +33,15 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public User createOrUpdate(Integer id, User user) {
         table.put(id, user);
+        dataSource.getDatabase().commit();
         return user;
     }
 
     @Override
     public User delete(Integer id) {
-        return table.remove(id);
+        User user = table.remove(id);
+        dataSource.getDatabase().commit();
+
+        return user;
     }
 }
