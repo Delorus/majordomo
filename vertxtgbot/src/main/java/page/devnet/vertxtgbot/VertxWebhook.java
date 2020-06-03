@@ -33,8 +33,7 @@ public class VertxWebhook implements Webhook {
     private String internalUrl;
 
     public VertxWebhook() {
-        //todo use single vertx instance
-        this.vertx = Vertx.vertx();
+        this.vertx = GlobalVertxHolder.getVertx();
 
         router = Router.router(vertx);
     }

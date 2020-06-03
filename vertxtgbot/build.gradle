@@ -13,6 +13,9 @@ repositories {
 dependencies {
     implementation 'io.vertx:vertx-core:3.9.1'
     implementation 'io.vertx:vertx-web:3.9.1'
-    implementation 'io.vertx:vertx-unit:3.9.1'
+    implementation 'io.vertx:vertx-web-client:3.9.1'
+    implementation 'io.vertx:vertx-junit5:3.9.1'
     implementation 'org.telegram:telegrambots-meta:4.8.1'
+
+    testImplementation 'org.telegram:telegrambots:4.8.1'
 }
