@@ -17,6 +17,7 @@ public class SerializerInstant extends GroupSerializerObjectArray <Instant> {
 
     @Override
     public Instant deserialize(@NotNull DataInput2 input, int available) throws IOException {
-        return Instant.ofEpochMilli(input.readLong());
+
+        return  Instant.ofEpochMilli(input.readLong());
     }
 }

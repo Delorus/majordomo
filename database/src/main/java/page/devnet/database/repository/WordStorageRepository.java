@@ -10,6 +10,7 @@ public interface WordStorageRepository {
 
     List<String> findAllWordsFrom(Instant from);
 
+    //todo no need flush?
     List<String> flushAll();
 
     Map<String, List<String>> findAllWordsByUserFrom(Instant from);

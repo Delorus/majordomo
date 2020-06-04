@@ -10,7 +10,7 @@ public class App {
     public static void main(String[] args) {
 //        TranslateBotPlugin translatePlugin = TranslateBotPlugin.newYandexTranslatePlugin();
         var repositoryManager = new RepositoryManager();
-        var statisticPlugin = new WordStatisticPlugin(new Statistics(new InMemoryWordStorage()), repositoryManager.getUserRepository());
+        var statisticPlugin = new WordStatisticPlugin(new Statistics(repositoryManager.getWordStorageRepository()), repositoryManager.getUserRepository());
 
         var manager = new PluginManager<>(/*translatePlugin, */statisticPlugin, new WordLimiterPlugin(repositoryManager.getUnsubscribeRepository()));
 

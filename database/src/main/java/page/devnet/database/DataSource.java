@@ -10,6 +10,6 @@ public class DataSource {
     private final DB database;
 
     public DataSource() {
-        this.database = DBMaker.fileDB("/storage/devnetdb").transactionEnable().make();
+        this.database = DBMaker.memoryDB().transactionEnable().make();
     }
 }
