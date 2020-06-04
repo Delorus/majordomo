@@ -8,6 +8,7 @@ import java.util.Map;
  * @author maksim
  * @since 19.11.2019
  */
+@Deprecated
 public interface WordStorage {
 
     void storeAll(String userId, Instant date, List<String> words);

@@ -81,11 +81,6 @@ public final class Statistics {
         return wordCount;
     }
 
-    public List<String> flushAll() {
-        return storageRepository.flushAll();
-    }
-
-
     public List<Chart> getTop10UsedWordsFromEachUser(Instant from) {
 
         Map<String, List<String>> userToWords = storageRepository.findAllWordsByUserFrom(from);
