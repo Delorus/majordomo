@@ -1,12 +1,13 @@
 package page.devnet.telegrambot;
 
+import io.vertx.core.Vertx;
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 import page.devnet.pluginmanager.MessageSubscriber;
+import page.devnet.vertxtgbot.ApiContextInitializer;
 
 import java.util.List;
 
@@ -17,18 +18,20 @@ import java.util.List;
 @Slf4j
 public final class TelegramBotExecutor {
 
-    public static TelegramBotExecutor newInDevMode() {
-        return new TelegramBotExecutor(false);
+    public static TelegramBotExecutor newInDevMode(Vertx vertx) {
+        return new TelegramBotExecutor(vertx, false);
     }
 
-    public static TelegramBotExecutor newInProdMode() {
-        return new TelegramBotExecutor(true);
+    public static TelegramBotExecutor newInProdMode(Vertx vertx) {
+        return new TelegramBotExecutor(vertx, true);
     }
 
+    private final Vertx vertx;
     private final boolean isProd;
 
-    private TelegramBotExecutor(boolean isProd) {
+    private TelegramBotExecutor(Vertx vertx, boolean isProd) {
         this.isProd = isProd;
+        this.vertx = vertx;
     }
 
     public void runBotWith(MessageSubscriber<Update, List<PartialBotApiMethod>> subscriber) {
@@ -49,7 +52,7 @@ public final class TelegramBotExecutor {
                 .path(System.getenv("TG_BOT_NAME"))
                 .build();
 
-        return new TelegramBot(setting, subscriber);
+        return new TelegramBot(vertx, setting, subscriber);
     }
 
     private void initTelegramConnection(TelegramBot bot, boolean isProdEnv) throws TelegramApiRequestException {
@@ -60,7 +63,8 @@ public final class TelegramBotExecutor {
         if (isProdEnv) {
             api.registerBot(bot.atProductionBotManager());
         } else {
-            api.registerBot(bot.atDevBotManager());
+            //todo not supported
+            //            api.registerBot(bot.atDevBotManager());
         }
     }
 }

@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'page.devnet'
-version 'unspecified'
+version '0.1.0'
 
 
 repositories {

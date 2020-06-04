@@ -4,6 +4,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
@@ -30,11 +31,18 @@ public final class TelegramSender {
             action = new SendVideoAction((SendVideo) message);
         } else if (message instanceof SendDocument) {
             action = new SendDocumentAction((SendDocument) message);
+        } else if (message instanceof BotApiMethod<?>){
+            action = new DefaultBotAction((BotApiMethod<?>) message);
         } else {
-            //todo throw exception?
+            //todo throw exceptions
             action = null;
         }
 
         action.execute(httpClient);
+    }
+
+    // лайфхак для собственных экшенов, которые не маппятся на классы из либы (PartialBotApiMethod)
+    public void send(SetupWebhookAction setupWebhookAction) {
+        setupWebhookAction.execute(httpClient);
     }
 }

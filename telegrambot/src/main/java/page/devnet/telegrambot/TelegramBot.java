@@ -1,10 +1,12 @@
 package page.devnet.telegrambot;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClientOptions;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.bots.TelegramWebhookBot;
+import org.telegram.telegrambots.meta.ApiConstants;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
@@ -13,9 +15,13 @@ import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.generics.WebhookBot;
 import page.devnet.pluginmanager.MessageSubscriber;
+import page.devnet.vertxtgbot.tgapi.SetupWebhookAction;
+import page.devnet.vertxtgbot.tgapi.TelegramSender;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -37,17 +43,20 @@ class TelegramBot {
     private final String token;
     private final String path;
     private final MessageSubscriber<Update, List<PartialBotApiMethod>> eventSubscriber;
+    private final TelegramSender telegramSender;
     private final Instant startTime;
 
-    public TelegramBot(Setting setting, MessageSubscriber<Update, List<PartialBotApiMethod>> subscriber) {
+    public TelegramBot(Vertx vertx, Setting setting, MessageSubscriber<Update, List<PartialBotApiMethod>> subscriber) {
         this.name = setting.name;
         this.token = setting.token;
         this.path = setting.path;
         this.eventSubscriber = subscriber;
+        this.telegramSender = new TelegramSender(vertx, new HttpClientOptions()
+            .setDefaultHost(ApiConstants.BASE_URL + token + "/"));
         startTime = Instant.now();
     }
 
-    public TelegramWebhookBot atProductionBotManager() {
+    public WebhookBot atProductionBotManager() {
         return new ProdBotManager();
     }
 
@@ -55,7 +64,7 @@ class TelegramBot {
         return new DevBotManager();
     }
 
-    private class ProdBotManager extends TelegramWebhookBot {
+    private class ProdBotManager implements WebhookBot {
 
         @Override
         public BotApiMethod onWebhookUpdateReceived(Update update) {
@@ -65,36 +74,19 @@ class TelegramBot {
             }
 
             try {
-                eventSubscriber.consume(update)
-                        .forEach(this::execute);
+                eventSubscriber.consume(update).stream()
+                        .flatMap(Collection::stream)
+                        .forEach(telegramSender::send);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-                try {
-                    execute(new SendMessage(update.getMessage().getChatId(), e.toString()));
-                } catch (Exception e1) {
-                }
+                telegramSender.send(new SendMessage(update.getMessage().getChatId(), e.toString()));
             }
-            return null; //todo return last msg
+
+            return null;
         }
 
         private boolean isBeforeStart(Message message) {
             return Instant.ofEpochSecond(message.getDate()).isBefore(startTime);
-        }
-
-        private void execute(List<PartialBotApiMethod> response) {
-            try {
-                for (PartialBotApiMethod method : response) {
-                    if (method instanceof BotApiMethod) {
-                        execute((BotApiMethod) method);
-                    } else if (method instanceof SendPhoto) {
-                        execute((SendPhoto) method);
-                    } else if (method instanceof SendDocument) {
-                        execute((SendDocument) method);
-                    }
-                }
-            } catch (TelegramApiException e) {
-                throw new RuntimeException(e);
-            }
         }
 
         @Override
@@ -105,6 +97,11 @@ class TelegramBot {
         @Override
         public String getBotToken() {
             return token;
+        }
+
+        @Override
+        public void setWebhook(String url, String publicCertificatePath) {
+            telegramSender.send(new SetupWebhookAction(url, publicCertificatePath));
         }
 
         @Override
