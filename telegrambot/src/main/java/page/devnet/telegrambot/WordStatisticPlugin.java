@@ -103,7 +103,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                 Chart top10WordsFromLastDayByUser = statistics.getWordsCountByUserFrom(fromLastDay.toInstant());
                 sendPhoto = wrapToSendPhoto(top10WordsFromLastDayByUser, message.getChatId());
                 return List.of(sendPhoto);
-            case "flush":
+            /*case "flush":
                 List<String> all = statistics.flushAll();
                 if (all.isEmpty()) {
                     return Collections.emptyList();
@@ -114,7 +114,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                 SendDocument sendDocument = new SendDocument();
                 sendDocument.setChatId(message.getChatId());
                 sendDocument.setDocument(allStat.toFile());
-                return List.of(sendDocument);
+                return List.of(sendDocument);*/
             default:
                 return Collections.emptyList();
         }

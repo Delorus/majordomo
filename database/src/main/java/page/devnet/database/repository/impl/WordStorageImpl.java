@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class WordStorageImpl implements WordStorageRepository {
 
@@ -30,7 +31,6 @@ public class WordStorageImpl implements WordStorageRepository {
                 .keySerializer(Serializer.STRING)
                 .valueSerializer(Serializer.JAVA)
                 .createOrOpen();
-
     }
 
     @Override
@@ -43,11 +43,15 @@ public class WordStorageImpl implements WordStorageRepository {
     @Override
     public List<String> findAllWordsFrom(Instant fromDate) {
         var result = new ArrayList<String>();
-        dateToWordsTable.forEach((date, words) -> {
+        dateToWordsTable.entrySet().stream()
+                .filter(x -> x.getKey().isAfter(fromDate))
+                .forEach((date)-> result.addAll(date.getValue()));
+        /*dateToWordsTable.forEach((date, words) -> {
+           // System.out.println(date);
             if (date.isAfter(fromDate)) {
                 result.addAll(words);
             }
-        });
+        });*/
         return result;
     }
 
@@ -55,7 +59,8 @@ public class WordStorageImpl implements WordStorageRepository {
     public Map<String, List<String>> findAllWordsByUserFrom(Instant fromDate) {
         var result = new HashMap<String, List<String>>();
         userToDateTable.forEach((user, dates) -> {
-            List<String> words = dates.stream()
+            List<String> words;
+            words = dates.stream()
                     .filter(fromDate::isBefore)
                     .flatMap(date -> dateToWordsTable.get(date).stream())
                     .collect(Collectors.toList());

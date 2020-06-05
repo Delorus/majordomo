@@ -3,9 +3,11 @@ package page.devnet.wordstat.chart;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import page.devnet.database.DataSource;
+import page.devnet.database.RepositoryManager;
+import page.devnet.database.repository.WordStorageRepository;
+import page.devnet.database.repository.impl.WordStorageImpl;
 import page.devnet.wordstat.api.Statistics;
-import page.devnet.wordstat.store.InMemoryWordStorage;
-import page.devnet.wordstat.store.WordStorage;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,19 +30,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ExampleListChart {
 
-    WordStorage wordStorage;
+    //WordStorage wordStorage;
+    WordStorageRepository wordStorageRepository;
     List<String> listUser;
     HashMap<String, List<String>> wordsFrequency;
     ArrayList<String> list;
     Statistics statistics;
+    DataSource dataSource = new DataSource();
+    RepositoryManager repositoryManager = new RepositoryManager();
 
     @BeforeEach
     void initTest() {
-        wordStorage = new InMemoryWordStorage();
+        //wordStorage = new InMemoryWordStorage();
+        wordStorageRepository = new WordStorageImpl(dataSource);
         listUser = new ArrayList<>();
         wordsFrequency = new HashMap<>();
         list = new ArrayList<>();
-        statistics = new Statistics(wordStorage);
+        statistics = new Statistics(repositoryManager.getWordStorageRepository());
         list.add("Привет как дела? Я ушел очень далеко!");
         list.add("Очень далеко, это как?");
         list.add("Как как, вот так. Прекрасное яркое и светлое будущее!");
@@ -53,7 +59,6 @@ public class ExampleListChart {
         ZoneId zoneId = ZoneId.of("Asia/Yekaterinburg");
         final Map<Instant, Integer> countRepeatInstantce = new HashMap<>();
         countRepeatInstantce.put(Clock.tickMillis(zoneId).instant(), 1);
-
         wordsFrequency.forEach((user, words) -> {
 
             words.forEach(word -> {
@@ -81,6 +86,7 @@ public class ExampleListChart {
 
             });
         });
+
     }
 
     @Test
@@ -110,12 +116,22 @@ public class ExampleListChart {
     void dataTest() {
         String checkStr = "привет, как, дела, я, ушел, очень, далеко, очень, далеко, это, как, как, как, вот, так, прекрасное, яркое, и, светлое, будущее, я, совсем, забыл, предупредить, тебя, что, дела, очень, хорошо";
         List<String> checkWords = Arrays.asList(checkStr.split("\\s*,\\s*"));
-        Map<String, List<String>> userWordsByStorage = wordStorage.findAllWordsByUserFrom(Instant.now().minusSeconds(9000));
+        Map<String, List<String>> userWordsByStorage = repositoryManager.getWordStorageRepository().findAllWordsByUserFrom(Instant.now().minusSeconds(9000));
+        System.out.println(checkWords.size());
+        System.out.println(userWordsByStorage);
         for (Map.Entry<String, List<String>> entry : userWordsByStorage.entrySet()) {
             for (int i = 0; i < checkWords.size(); i++) {
                 assertEquals(checkWords.get(i), entry.getValue().get(i));
             }
         }
+    }
+
+    @Test
+    void dataTest2(){
+        String checkStr = "привет, как, дела, я, ушел, очень, далеко, очень, далеко, это, как, как, как, вот, так, прекрасное, яркое, и, светлое, будущее, я, совсем, забыл, предупредить, тебя, что, дела, очень, хорошо";
+        List<String> checkWords = Arrays.asList(checkStr.split("\\s*,\\s*"));
+        List<String> foo = repositoryManager.getWordStorageRepository().findAllWordsFrom(Instant.now().minusSeconds(9000));
+
     }
 
 
