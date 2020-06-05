@@ -4,10 +4,6 @@ plugins {
 }
 
 dependencies {
-    // https://github.com/rubenlagus/TelegramBots
-    implementation "org.telegram:telegrambots:4.4.0.1"
-    implementation "io.vertx:vertx-core:3.9.1" //todo one root of version truth
-
     // core
     implementation project(":pluginmanager")
     implementation project(":database")

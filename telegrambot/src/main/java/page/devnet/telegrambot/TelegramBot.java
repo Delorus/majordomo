@@ -5,16 +5,15 @@ import io.vertx.core.http.HttpClientOptions;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.ApiConstants;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
+import org.telegram.telegrambots.meta.generics.BotOptions;
+import org.telegram.telegrambots.meta.generics.LongPollingBot;
 import org.telegram.telegrambots.meta.generics.WebhookBot;
 import page.devnet.pluginmanager.MessageSubscriber;
 import page.devnet.vertxtgbot.tgapi.SetupWebhookAction;
@@ -60,7 +59,7 @@ class TelegramBot {
         return new ProdBotManager();
     }
 
-    public TelegramLongPollingBot atDevBotManager() {
+    public LongPollingBot atDevBotManager() {
         return new DevBotManager();
     }
 
@@ -110,7 +109,7 @@ class TelegramBot {
         }
     }
 
-    private class DevBotManager extends TelegramLongPollingBot {
+    private class DevBotManager implements LongPollingBot {
 
         @Override
         public void onUpdateReceived(Update update) {
@@ -120,35 +119,17 @@ class TelegramBot {
             }
 
             try {
-                eventSubscriber.consume(update)
-                        .forEach(this::execute);
+                eventSubscriber.consume(update).stream()
+                        .flatMap(Collection::stream)
+                        .forEach(telegramSender::send);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-                try {
-                    execute(new SendMessage(update.getMessage().getChatId(), e.toString()));
-                } catch (Exception e1) {
-                }
+                telegramSender.send(new SendMessage(update.getMessage().getChatId(), e.toString()));
             }
         }
 
         private boolean isBeforeStart(Message message) {
             return Instant.ofEpochSecond(message.getDate()).isBefore(startTime);
-        }
-
-        private void execute(List<PartialBotApiMethod> response) {
-            try {
-                for (PartialBotApiMethod method : response) {
-                    if (method instanceof BotApiMethod) {
-                        execute((BotApiMethod) method);
-                    } else if (method instanceof SendPhoto) {
-                        execute((SendPhoto) method);
-                    } else if (method instanceof SendDocument) {
-                        execute((SendDocument) method);
-                    }
-                }
-            } catch (TelegramApiException e) {
-                throw new RuntimeException(e);
-            }
         }
 
         @Override
@@ -159,6 +140,16 @@ class TelegramBot {
         @Override
         public String getBotToken() {
             return token;
+        }
+
+        @Override
+        public BotOptions getOptions() {
+            return null;
+        }
+
+        @Override
+        public void clearWebhook() throws TelegramApiRequestException {
+
         }
     }
 }

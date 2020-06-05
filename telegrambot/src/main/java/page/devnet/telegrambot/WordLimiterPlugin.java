@@ -3,7 +3,6 @@ package page.devnet.telegrambot;
 import lombok.Setter;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -16,6 +15,7 @@ import page.devnet.telegrambot.util.CommandUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -88,7 +88,7 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
             return Collections.emptyList();
         }
 
-        msg = String.join(", ", formattedUserName, new String(Base64.decodeBase64(msg)));
+        msg = String.join(", ", formattedUserName, new String(Base64.getDecoder().decode(msg)));
         return List.of(new SendMessage(message.getChatId(), msg).enableMarkdown(true));
     }
 
