@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class WordStorageImpl implements WordStorageRepository {
 
     private static final String TABLE_NAME_DATE_TO_WORDS = "dateToWords";
-    private static final String TABLE_NAME_USER_TO_DATE = "UserToDate";
+    private static final String TABLE_NAME_USER_TO_DATE = "userToDate";
 
     private final Map<Instant, List<String>> dateToWordsTable;
 
@@ -36,7 +36,16 @@ public class WordStorageImpl implements WordStorageRepository {
     @Override
     public void storeAll(String userId, Instant date, List<String> words) {
         dateToWordsTable.put(date, words);
-        userToDateTable.computeIfAbsent(userId, __ -> new ArrayList<>()).add(date);
+        //TODO list is different, userToDateTable.value is empty;
+        System.out.println(userId + " " + date);
+        System.out.println(userToDateTable.size());
+        System.out.println(userToDateTable + " " + userToDateTable.hashCode());
+        userToDateTable.computeIfAbsent(userId, __ -> {
+            List<Instant> list = new ArrayList<>();
+            System.out.println("work" + list.hashCode());
+            return list;
+        }).add(date);
+        System.out.println(userToDateTable.values());
         dataSource.getDatabase().commit();
     }
 

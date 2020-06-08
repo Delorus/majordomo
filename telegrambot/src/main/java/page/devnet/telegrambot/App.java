@@ -3,7 +3,6 @@ package page.devnet.telegrambot;
 import page.devnet.database.RepositoryManager;
 import page.devnet.pluginmanager.PluginManager;
 import page.devnet.wordstat.api.Statistics;
-import page.devnet.wordstat.store.InMemoryWordStorage;
 
 public class App {
 

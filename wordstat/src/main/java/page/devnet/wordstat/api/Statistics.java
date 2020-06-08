@@ -47,6 +47,7 @@ public final class Statistics {
 
         russiansWords.addAll(englishWords);
         storageRepository.storeAll(userId, date, russiansWords);
+
     }
 
     private List<String> parseWords(String text) {

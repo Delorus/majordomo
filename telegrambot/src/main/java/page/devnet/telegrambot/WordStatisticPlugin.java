@@ -103,18 +103,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                 Chart top10WordsFromLastDayByUser = statistics.getWordsCountByUserFrom(fromLastDay.toInstant());
                 sendPhoto = wrapToSendPhoto(top10WordsFromLastDayByUser, message.getChatId());
                 return List.of(sendPhoto);
-            /*case "flush":
-                List<String> all = statistics.flushAll();
-                if (all.isEmpty()) {
-                    return Collections.emptyList();
-                }
 
-                Path allStat = Files.createTempFile("allStat", ".csv");
-                Files.writeString(allStat, String.join("\n", all), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
-                SendDocument sendDocument = new SendDocument();
-                sendDocument.setChatId(message.getChatId());
-                sendDocument.setDocument(allStat.toFile());
-                return List.of(sendDocument);*/
             default:
                 return Collections.emptyList();
         }

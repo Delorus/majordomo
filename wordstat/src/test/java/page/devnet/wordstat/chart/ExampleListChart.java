@@ -116,23 +116,12 @@ public class ExampleListChart {
     void dataTest() {
         String checkStr = "привет, как, дела, я, ушел, очень, далеко, очень, далеко, это, как, как, как, вот, так, прекрасное, яркое, и, светлое, будущее, я, совсем, забыл, предупредить, тебя, что, дела, очень, хорошо";
         List<String> checkWords = Arrays.asList(checkStr.split("\\s*,\\s*"));
-        Map<String, List<String>> userWordsByStorage = repositoryManager.getWordStorageRepository().findAllWordsByUserFrom(Instant.now().minusSeconds(9000));
-        System.out.println(checkWords.size());
-        System.out.println(userWordsByStorage);
+        Map<String, List<String>> userWordsByStorage = repositoryManager.getWordStorageRepository().findAllWordsByUserFrom(Instant.now().plusMillis(9000));
         for (Map.Entry<String, List<String>> entry : userWordsByStorage.entrySet()) {
             for (int i = 0; i < checkWords.size(); i++) {
                 assertEquals(checkWords.get(i), entry.getValue().get(i));
             }
         }
     }
-
-    @Test
-    void dataTest2(){
-        String checkStr = "привет, как, дела, я, ушел, очень, далеко, очень, далеко, это, как, как, как, вот, так, прекрасное, яркое, и, светлое, будущее, я, совсем, забыл, предупредить, тебя, что, дела, очень, хорошо";
-        List<String> checkWords = Arrays.asList(checkStr.split("\\s*,\\s*"));
-        List<String> foo = repositoryManager.getWordStorageRepository().findAllWordsFrom(Instant.now().minusSeconds(9000));
-
-    }
-
 
 }
