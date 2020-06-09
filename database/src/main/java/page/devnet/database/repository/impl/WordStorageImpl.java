@@ -36,31 +36,21 @@ public class WordStorageImpl implements WordStorageRepository {
     @Override
     public void storeAll(String userId, Instant date, List<String> words) {
         dateToWordsTable.put(date, words);
-        //TODO list is different, userToDateTable.value is empty;
-        System.out.println(userId + " " + date);
-        System.out.println(userToDateTable.size());
-        System.out.println(userToDateTable + " " + userToDateTable.hashCode());
-        userToDateTable.computeIfAbsent(userId, __ -> {
-            List<Instant> list = new ArrayList<>();
-            System.out.println("work" + list.hashCode());
-            return list;
-        }).add(date);
-        System.out.println(userToDateTable.values());
+        List<Instant> list = new ArrayList<>();
+        List<Instant> listToUpdateUser = userToDateTable.computeIfAbsent(userId, __ -> list);
+        listToUpdateUser.add(date);
+        userToDateTable.put(userId,listToUpdateUser);
         dataSource.getDatabase().commit();
     }
 
     @Override
     public List<String> findAllWordsFrom(Instant fromDate) {
         var result = new ArrayList<String>();
-        dateToWordsTable.entrySet().stream()
-                .filter(x -> x.getKey().isAfter(fromDate))
-                .forEach((date)-> result.addAll(date.getValue()));
-        /*dateToWordsTable.forEach((date, words) -> {
-           // System.out.println(date);
-            if (date.isAfter(fromDate)) {
-                result.addAll(words);
+        dateToWordsTable.keySet().forEach(date ->{
+            if (date.isAfter(fromDate)){
+                result.addAll(dateToWordsTable.get(date));
             }
-        });*/
+        });
         return result;
     }
 

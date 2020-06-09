@@ -25,8 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ExampleListChart {
 
@@ -38,10 +37,11 @@ public class ExampleListChart {
     Statistics statistics;
     DataSource dataSource = new DataSource();
     RepositoryManager repositoryManager = new RepositoryManager();
+    String checkStr;
+    List<String> checkWords;
 
     @BeforeEach
     void initTest() {
-        //wordStorage = new InMemoryWordStorage();
         wordStorageRepository = new WordStorageImpl(dataSource);
         listUser = new ArrayList<>();
         wordsFrequency = new HashMap<>();
@@ -51,7 +51,8 @@ public class ExampleListChart {
         list.add("Очень далеко, это как?");
         list.add("Как как, вот так. Прекрасное яркое и светлое будущее!");
         list.add("Я совсем забыл предупредить тебя, что дела очень хорошо!");
-
+        checkStr = "привет, как, дела, я, ушел, очень, далеко, очень, далеко, это, как, как, как, вот, так, прекрасное, яркое, и, светлое, будущее, я, совсем, забыл, предупредить, тебя, что, дела, очень, хорошо";
+        checkWords = Arrays.asList(checkStr.split("\\s*,\\s*"));
         for (int i = 0; i < 10; i++) {
             listUser.add("user" + i);
             wordsFrequency.put(listUser.get(i), list);
@@ -113,15 +114,13 @@ public class ExampleListChart {
     }
 
     @Test
-    void dataTest() {
-        String checkStr = "привет, как, дела, я, ушел, очень, далеко, очень, далеко, это, как, как, как, вот, так, прекрасное, яркое, и, светлое, будущее, я, совсем, забыл, предупредить, тебя, что, дела, очень, хорошо";
-        List<String> checkWords = Arrays.asList(checkStr.split("\\s*,\\s*"));
-        Map<String, List<String>> userWordsByStorage = repositoryManager.getWordStorageRepository().findAllWordsByUserFrom(Instant.now().plusMillis(9000));
+    void dataTestFindAllWordsByUserFrom() {
+        // 9000 for the catch all test instant.
+        Map<String, List<String>> userWordsByStorage = repositoryManager.getWordStorageRepository().findAllWordsByUserFrom(Instant.now().minusSeconds(9000));
         for (Map.Entry<String, List<String>> entry : userWordsByStorage.entrySet()) {
             for (int i = 0; i < checkWords.size(); i++) {
                 assertEquals(checkWords.get(i), entry.getValue().get(i));
             }
         }
     }
-
 }
