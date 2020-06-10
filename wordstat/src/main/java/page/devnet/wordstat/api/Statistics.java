@@ -1,24 +1,11 @@
 package page.devnet.wordstat.api;
 
-import page.devnet.wordstat.chart.Chart;
-import page.devnet.wordstat.chart.FrequentlyUsedWordsByEachUserChart;
-import page.devnet.wordstat.chart.FrequentlyUsedWordsByUserChart;
-import page.devnet.wordstat.chart.FrequentlyUsedWordsChart;
-import page.devnet.wordstat.chart.XChartRenderer;
+import page.devnet.database.repository.WordStorageRepository;
+import page.devnet.wordstat.chart.*;
 import page.devnet.wordstat.normalize.Normalizer;
-import page.devnet.wordstat.store.WordStorage;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -32,10 +19,10 @@ public final class Statistics {
     private static final Pattern RUSSIAN_WORD = Pattern.compile("^[А-Яа-я]+$");
     private static final Pattern ENGLISH_WORD = Pattern.compile("^[A-Za-z]+$");
 
-    private final WordStorage storage;
+    private final WordStorageRepository storageRepository;
 
-    public Statistics(WordStorage storage) {
-        this.storage = storage;
+    public Statistics(WordStorageRepository storageRepository) {
+        this.storageRepository = storageRepository;
     }
 
     public void processText(String userId, Instant date, String text) {
@@ -59,7 +46,8 @@ public final class Statistics {
                 .collect(Collectors.toList());
 
         russiansWords.addAll(englishWords);
-        storage.storeAll(userId, date, russiansWords);
+        storageRepository.storeAll(userId, date, russiansWords);
+
     }
 
     private List<String> parseWords(String text) {
@@ -73,7 +61,7 @@ public final class Statistics {
     }
 
     public Chart getTop10UsedWordsFrom(Instant from) {
-        List<String> words = storage.findAllWordsFrom(from);
+        List<String> words = storageRepository.findAllWordsFrom(from);
 
         var chart = new FrequentlyUsedWordsChart();
 
@@ -94,14 +82,9 @@ public final class Statistics {
         return wordCount;
     }
 
-    public List<String> flushAll() {
-        return storage.flushAll();
-    }
-
-
     public List<Chart> getTop10UsedWordsFromEachUser(Instant from) {
 
-        Map<String, List<String>> userToWords = storage.findAllWordsByUserFrom(from);
+        Map<String, List<String>> userToWords = storageRepository.findAllWordsByUserFrom(from);
         //remove user, if message is empty.
         userToWords.entrySet().removeIf(entry -> entry.getValue().size() == 0);
         
@@ -133,7 +116,7 @@ public final class Statistics {
     }
 
     public Chart getWordsCountByUserFrom(Instant from) {
-        Map<String, List<String>> userToWords = storage.findAllWordsByUserFrom(from);
+        Map<String, List<String>> userToWords = storageRepository.findAllWordsByUserFrom(from);
 
         var chart = new FrequentlyUsedWordsByUserChart();
 
