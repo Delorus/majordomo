@@ -31,9 +31,15 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 public class WordStatisticPlugin implements Plugin<Event, String>, Commandable {
 
     private final Statistics statistics;
+    private final String nameWordStatisticsPlugin = "statsPlug";
 
     public WordStatisticPlugin(Statistics statistics) {
         this.statistics = statistics;
+    }
+
+    @Override
+    public String getPluginId() {
+        return nameWordStatisticsPlugin;
     }
 
     @Override

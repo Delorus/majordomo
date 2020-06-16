@@ -27,7 +27,27 @@ public final class PluginManager<T, R> implements MessageSubscriber<T, R> {
         for (Plugin<T, R> plugin : plugins) {
             response.add(plugin.onEvent(update));
         }
-
         return response;
+    }
+
+    public void deletePlugin(String namePlugin) {
+        System.out.println(namePlugin);
+        List<Plugin<T, R>> plugins1 = new ArrayList<>();
+        plugins.forEach(Plug -> {
+            if (!Plug.getPluginId().equals(namePlugin)) {
+                plugins1.add(Plug);
+            }
+        });
+        plugins.clear();
+        plugins.addAll(plugins1);
+
+    }
+
+    public void addPlugin(Plugin<T, R> plugin) {
+        this.plugins.add(plugin);
+    }
+
+    public void print() {
+        System.out.println(plugins.size() + " " + plugins);
     }
 }
