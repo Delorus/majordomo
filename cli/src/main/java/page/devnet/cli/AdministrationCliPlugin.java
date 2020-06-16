@@ -1,8 +1,6 @@
 package page.devnet.cli;
 
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import page.devnet.cli.translate.TranslateCliPlugin;
 import page.devnet.database.RepositoryManager;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.pluginmanager.PluginManager;
@@ -12,14 +10,16 @@ import java.io.IOException;
 import java.util.Map;
 
 @Slf4j
-public class AdministrationPlugin implements Plugin<Event, String>, Commandable {
+public class AdministrationCliPlugin implements Plugin<Event, String>, Commandable {
 
     private final String nameAdministrationPlugin = "adminPlug";
 
-    private PluginManager plugManager;
+    private final PluginManager plugManager;
+    private final RepositoryManager repositoryManager;
 
-    public AdministrationPlugin(PluginManager plugManager) {
+    public AdministrationCliPlugin(PluginManager plugManager, RepositoryManager repositoryManager) {
         this.plugManager = plugManager;
+        this.repositoryManager = repositoryManager;
     }
 
     @Override
@@ -43,41 +43,38 @@ public class AdministrationPlugin implements Plugin<Event, String>, Commandable 
         }
         return "";
     }
-
+    //TODO
     private String executeCommand(Event event) throws IOException {
         String text = event.getText();
         switch (text) {
-            case ":adminPlug":
-                plugManager.deletePlugin(text);
-                plugManager.print();
+            case ":addStatsPlug":
+                plugManager.addPlugin(new WordStatisticPlugin(new Statistics(repositoryManager.getWordStorageRepository())));
                 return "";
-            case ":statsPlug":
-                System.out.println("test");
-                plugManager.print();
+            case ":addLimitPlug":
+                //plugManager.addPlugin(new TranslateCliPlugin());
+                return "";
+            case ":deleteStatsPlug":
                 plugManager.deletePlugin("statsPlug");
-                plugManager.print();
                 return "";
-            case ":limitPlug":
-                plugManager.deletePlugin(text);
-                plugManager.print();
-                return "";
-            case ":statPlug":
-                plugManager.deletePlugin(text);
-                plugManager.print();
+            case ":deleteTransCliPlug":
+                plugManager.deletePlugin("transCliPlug");
                 return "";
         }
         return "";
 
-}
+    }
 
 
     @Override
     public String serviceName() {
-        return null;
+        return "Administration plugin";
     }
 
     @Override
     public Map<String, String> commandDescriptionList() {
-        return null;
+        return Map.of(
+                ":statsPlug", "remove wordStatisticsPlugin",
+                ":limitPlug", "remove wordLimitPlugin"
+        );
     }
 }

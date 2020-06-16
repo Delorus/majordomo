@@ -26,7 +26,7 @@ public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotA
 
     //todo it's not thread safe
     private boolean stop = false;
-
+    private final String nameTranslatePlugin = "transPlug";
     @Setter
     private CommandUtils commandUtils = new CommandUtils();
 
@@ -42,10 +42,9 @@ public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotA
         this.service = service;
     }
 
-    //TODO string
     @Override
     public String getPluginId() {
-        return null;
+        return nameTranslatePlugin;
     }
 
     @Override

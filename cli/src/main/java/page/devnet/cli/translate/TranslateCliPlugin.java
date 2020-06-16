@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public class TranslateCliPlugin implements Plugin<Event, String>, Commandable {
 
-    private final String nameWordTranslatePlugin = "transPlug";
+    private final String nameWordTranslatePlugin = "transCliPlug";
 
     @Override
     public String getPluginId() {

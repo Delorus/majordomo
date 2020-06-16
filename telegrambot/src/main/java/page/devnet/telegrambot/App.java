@@ -11,10 +11,9 @@ public class App {
         var repositoryManager = new RepositoryManager();
         var statisticPlugin = new WordStatisticPlugin(new Statistics(repositoryManager.getWordStorageRepository()), repositoryManager.getUserRepository());
         var wordLimiterPlugin = new WordLimiterPlugin(repositoryManager.getUnsubscribeRepository());
-        var administrationPlugin = new AdministrationPlugin();
 
-        var manager = new PluginManager<>(/*translatePlugin,*/ statisticPlugin, wordLimiterPlugin, administrationPlugin);
-
+        var manager = new PluginManager<>(/*translatePlugin,*/ statisticPlugin, wordLimiterPlugin);
+        manager.addPlugin(new AdministrationPlugin(manager));
         if (isProd(args)) {
             TelegramBotExecutor.newInProdMode().runBotWith(manager);
         } else {

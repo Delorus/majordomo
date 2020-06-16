@@ -2,23 +2,23 @@ package page.devnet.telegrambot;
 
 import lombok.Setter;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.pluginmanager.PluginManager;
 import page.devnet.telegrambot.util.CommandUtils;
-import page.devnet.wordstat.chart.Chart;
 
 import java.io.IOException;
-import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class AdministrationPlugin implements Plugin<Update, List<PartialBotApiMethod>> {
 
     private final String nameAdministrationPlugin = "adminPlug";
+
+    PluginManager pluginManager;
+    public AdministrationPlugin(PluginManager<Update, List<PartialBotApiMethod>> manager) {
+    }
 
     @Override
     public String getPluginId() {
@@ -47,21 +47,18 @@ public class AdministrationPlugin implements Plugin<Update, List<PartialBotApiMe
 
         return null;
     }
-
+    //TODO addplugin and other
     private List<PartialBotApiMethod> executeCommand(Message message) throws IOException {
         var text = commandUtils.normalizeCmdMsg(message.getText());
         switch (text) {
             case "adminPlug":
-                plugManager.deletePlugin(text);
-                return Collections.emptyList();
-            case "statsPlug":
-                plugManager.deletePlugin(text);
+                pluginManager.deletePlugin(text);
                 return Collections.emptyList();
             case "limitPlug":
-                plugManager.deletePlugin(text);
+                pluginManager.deletePlugin(text);
                 return Collections.emptyList();
             case "statPlug":
-                plugManager.deletePlugin(text);
+                pluginManager.deletePlugin(text);
                 return Collections.emptyList();
         }
         return Collections.emptyList();

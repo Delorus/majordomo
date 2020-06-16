@@ -14,6 +14,7 @@ import java.util.List;
 public final class PluginManager<T, R> implements MessageSubscriber<T, R> {
 
     private final List<Plugin<T, R>> plugins = new ArrayList<>();
+    private List<Plugin<T,R>> pluginToDelete = new ArrayList<>();
 
     @SafeVarargs
     public PluginManager(Plugin<T, R> plugin, Plugin<T, R>... plugins) {
@@ -27,20 +28,21 @@ public final class PluginManager<T, R> implements MessageSubscriber<T, R> {
         for (Plugin<T, R> plugin : plugins) {
             response.add(plugin.onEvent(update));
         }
+        if (pluginToDelete.size()>0){
+            plugins.removeAll(pluginToDelete);
+        }
+        pluginToDelete.clear();
+        print();
         return response;
     }
 
     public void deletePlugin(String namePlugin) {
         System.out.println(namePlugin);
-        List<Plugin<T, R>> plugins1 = new ArrayList<>();
-        plugins.forEach(Plug -> {
-            if (!Plug.getPluginId().equals(namePlugin)) {
-                plugins1.add(Plug);
+        plugins.forEach(Q->{
+            if (Q.getPluginId().equals(namePlugin)){
+                pluginToDelete.add(Q);
             }
         });
-        plugins.clear();
-        plugins.addAll(plugins1);
-
     }
 
     public void addPlugin(Plugin<T, R> plugin) {
