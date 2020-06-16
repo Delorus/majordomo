@@ -42,6 +42,12 @@ public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotA
         this.service = service;
     }
 
+    //TODO string
+    @Override
+    public String getPluginId() {
+        return null;
+    }
+
     @Override
     public List<PartialBotApiMethod> onEvent(Update update) {
         if (!update.hasMessage() || !update.getMessage().hasText()) {

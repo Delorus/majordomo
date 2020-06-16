@@ -14,6 +14,13 @@ import java.util.Map;
  */
 public class TranslateCliPlugin implements Plugin<Event, String>, Commandable {
 
+    private final String nameWordTranslatePlugin = "transPlug";
+
+    @Override
+    public String getPluginId() {
+        return nameWordTranslatePlugin;
+    }
+
     public static TranslateCliPlugin newYandexTranslatePlugin() {
         TranslateService service = new YandexTranslateService(System.getenv("YNDX_TRNSL_API_KEY"));
 
@@ -31,6 +38,7 @@ public class TranslateCliPlugin implements Plugin<Event, String>, Commandable {
     public TranslateCliPlugin(TranslateService service) {
         this.service = service;
     }
+
 
     @Override
     public String onEvent(Event event) {

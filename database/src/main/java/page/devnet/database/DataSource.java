@@ -12,6 +12,6 @@ public class DataSource {
     public DataSource() {
 
         //for the memoryDb need DBMaker.memoryDB().transactionEnable().make();
-        this.database = DBMaker.fileDB("/storage/devnetdb").transactionEnable().make();
+        this.database = DBMaker.memoryDB().transactionEnable().make();//DBMaker.fileDB("/storage/devnetdb").transactionEnable().make();
     }
 }
