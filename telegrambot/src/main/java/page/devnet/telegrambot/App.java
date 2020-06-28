@@ -13,7 +13,9 @@ public class App {
         var wordLimiterPlugin = new WordLimiterPlugin(repositoryManager.getUnsubscribeRepository());
 
         var manager = new PluginManager<>(/*translatePlugin,*/ statisticPlugin, wordLimiterPlugin);
-        manager.addPlugin(new AdministrationPlugin(manager));
+        var administartionPlugin = new AdministrationPlugin(manager, repositoryManager);
+
+        manager.addPlugin(administartionPlugin);
         if (isProd(args)) {
             TelegramBotExecutor.newInProdMode().runBotWith(manager);
         } else {

@@ -1,6 +1,7 @@
 package page.devnet.cli;
 
 import lombok.extern.slf4j.Slf4j;
+import page.devnet.cli.translate.TranslateCliPlugin;
 import page.devnet.database.RepositoryManager;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.pluginmanager.PluginManager;
@@ -43,15 +44,14 @@ public class AdministrationCliPlugin implements Plugin<Event, String>, Commandab
         }
         return "";
     }
-    //TODO
     private String executeCommand(Event event) throws IOException {
         String text = event.getText();
         switch (text) {
             case ":addStatsPlug":
                 plugManager.addPlugin(new WordStatisticPlugin(new Statistics(repositoryManager.getWordStorageRepository())));
                 return "";
-            case ":addLimitPlug":
-                //plugManager.addPlugin(new TranslateCliPlugin());
+            case ":addTransCliPlug":
+                plugManager.addPlugin(TranslateCliPlugin.newYandexTranslatePlugin());
                 return "";
             case ":deleteStatsPlug":
                 plugManager.deletePlugin("statsPlug");
@@ -59,11 +59,13 @@ public class AdministrationCliPlugin implements Plugin<Event, String>, Commandab
             case ":deleteTransCliPlug":
                 plugManager.deletePlugin("transCliPlug");
                 return "";
+            case ":workPlug":
+                plugManager.getWorkPlug();
+                return "";
         }
         return "";
 
     }
-
 
     @Override
     public String serviceName() {
@@ -73,8 +75,12 @@ public class AdministrationCliPlugin implements Plugin<Event, String>, Commandab
     @Override
     public Map<String, String> commandDescriptionList() {
         return Map.of(
-                ":statsPlug", "remove wordStatisticsPlugin",
-                ":limitPlug", "remove wordLimitPlugin"
+                ":addStatsPlug", "add wordStatisticsPlugin",
+                ":deleteStatsPlug", "delete wordStatisticsPlugin",
+                ":addTransCliPlug", "add wordLimitPlugin",
+                ":deleteTransCliPlug", "delete wordLimitPlugin",
+                ":workPlug", "get work Plugin"
+
         );
     }
 }

@@ -4,9 +4,12 @@ import lombok.Setter;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import page.devnet.database.RepositoryManager;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.pluginmanager.PluginManager;
+import page.devnet.telegrambot.translate.TranslateBotPlugin;
 import page.devnet.telegrambot.util.CommandUtils;
+import page.devnet.wordstat.api.Statistics;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -16,16 +19,18 @@ public class AdministrationPlugin implements Plugin<Update, List<PartialBotApiMe
 
     private final String nameAdministrationPlugin = "adminPlug";
 
-    PluginManager pluginManager;
-    public AdministrationPlugin(PluginManager<Update, List<PartialBotApiMethod>> manager) {
+    private PluginManager pluginManager;
+    private RepositoryManager repositoryManager;
+
+    public AdministrationPlugin(PluginManager<Update, List<PartialBotApiMethod>> pluginManager, RepositoryManager repositoryManager) {
+        this.pluginManager = pluginManager;
+        this.repositoryManager = repositoryManager;
     }
 
     @Override
     public String getPluginId() {
         return nameAdministrationPlugin;
     }
-
-    private PluginManager plugManager;
 
     @Setter
     private CommandUtils commandUtils = new CommandUtils();
@@ -47,18 +52,26 @@ public class AdministrationPlugin implements Plugin<Update, List<PartialBotApiMe
 
         return null;
     }
-    //TODO addplugin and other
     private List<PartialBotApiMethod> executeCommand(Message message) throws IOException {
         var text = commandUtils.normalizeCmdMsg(message.getText());
         switch (text) {
-            case "adminPlug":
-                pluginManager.deletePlugin(text);
+            case "addStatsPlug":
+                pluginManager.addPlugin(new WordStatisticPlugin(new Statistics(repositoryManager.getWordStorageRepository()), repositoryManager.getUserRepository()));
                 return Collections.emptyList();
-            case "limitPlug":
-                pluginManager.deletePlugin(text);
+            case "addTransPlug":
+                pluginManager.addPlugin(TranslateBotPlugin.newYandexTranslatePlugin());
                 return Collections.emptyList();
-            case "statPlug":
-                pluginManager.deletePlugin(text);
+            case "addLimitPlug":
+                pluginManager.addPlugin(new WordLimiterPlugin(repositoryManager.getUnsubscribeRepository()));
+                return Collections.emptyList();
+            case "delStatsPlug":
+                pluginManager.deletePlugin("statsPlug");
+                return Collections.emptyList();
+            case "delTransCliPlug":
+                pluginManager.deletePlugin("transPlug");
+                return Collections.emptyList();
+            case "delLimitPlug":
+                pluginManager.deletePlugin("transPlug");
                 return Collections.emptyList();
         }
         return Collections.emptyList();
