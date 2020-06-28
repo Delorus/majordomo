@@ -15,10 +15,11 @@ public class App {
         WordStatisticPlugin statisticPlugin = new WordStatisticPlugin(new Statistics(repositoryManager.buildWordStorageRepository()));
 
         var manager = new PluginManager<>(translatePlugin, statisticPlugin);
-        manager.addPlugin(new AdministrationCliPlugin(manager, repositoryManager));
+        AdministrationCliPlugin administrationCliPlugin = new AdministrationCliPlugin(manager, repositoryManager);
+        manager.addPlugin(administrationCliPlugin);
 
         Interpreter interpreter = new Interpreter(manager);
-        interpreter.setCommands(translatePlugin, statisticPlugin);
+        interpreter.setCommands(translatePlugin, statisticPlugin, administrationCliPlugin);
         interpreter.run(System.in, System.out);
     }
 }
