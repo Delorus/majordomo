@@ -9,37 +9,28 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 
 /**
  * @author maksim
  * @since 19.11.2019
  */
 @Slf4j
-public class WordStatisticPlugin implements Plugin<Event, String>, Commandable {
+public class WordStatisticCliPlugin implements Plugin<Event, String>, Commandable {
 
     private final Statistics statistics;
-    private final String nameWordStatisticsPlugin = "statsPlug";
 
-    public WordStatisticPlugin(Statistics statistics) {
+    public WordStatisticCliPlugin(Statistics statistics) {
         this.statistics = statistics;
     }
 
     @Override
     public String getPluginId() {
-        return nameWordStatisticsPlugin;
+        return "statsPlug";
     }
 
     @Override
@@ -77,7 +68,7 @@ public class WordStatisticPlugin implements Plugin<Event, String>, Commandable {
                     Files.copy(in, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 }
 
-                return "file://" + file.toPath().toAbsolutePath().toString();
+                return "file://" + file.toPath().toAbsolutePath();
             default:
                 return "";
         }
