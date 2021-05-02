@@ -1,11 +1,9 @@
 package page.devnet.cli;
 
 import lombok.extern.slf4j.Slf4j;
-import page.devnet.cli.translate.TranslateCliPlugin;
 import page.devnet.database.RepositoryManager;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.pluginmanager.PluginManager;
-import page.devnet.wordstat.api.Statistics;
 
 import java.io.IOException;
 import java.util.Map;
@@ -13,19 +11,15 @@ import java.util.Map;
 @Slf4j
 public class AdministrationCliPlugin implements Plugin<Event, String>, Commandable {
 
-    private final String nameAdministrationPlugin = "adminPlug";
-
     private final PluginManager plugManager;
-    private final RepositoryManager repositoryManager;
 
     public AdministrationCliPlugin(PluginManager plugManager, RepositoryManager repositoryManager) {
         this.plugManager = plugManager;
-        this.repositoryManager = repositoryManager;
     }
 
     @Override
     public String getPluginId() {
-        return nameAdministrationPlugin;
+        return "adminPlug";
     }
 
     @Override
@@ -44,26 +38,45 @@ public class AdministrationCliPlugin implements Plugin<Event, String>, Commandab
         }
         return "";
     }
+
     private String executeCommand(Event event) throws IOException {
-        String text = event.getText();
-        switch (text) {
-            case ":addStatsPlug":
-                plugManager.addPlugin(new WordStatisticPlugin(new Statistics(repositoryManager.getWordStorageRepository())));
-                return "";
-            case ":addTransCliPlug":
-                plugManager.addPlugin(TranslateCliPlugin.newYandexTranslatePlugin());
-                return "";
-            case ":deleteStatsPlug":
-                plugManager.deletePlugin("statsPlug");
-                return "";
-            case ":deleteTransCliPlug":
-                plugManager.deletePlugin("transCliPlug");
-                return "";
+        String message = event.getText();
+        String command, namePlugin = "";
+
+        if (message.indexOf(" ") > 0) {
+            command = message.substring(0, message.indexOf(" "));
+            namePlugin = message.substring(message.indexOf(" ")).trim();
+        } else {
+            command = message;
+        }
+
+        switch (command) {
+            case ":enable":
+
+                Plugin pluginToEnable = plugManager.getPluginById(namePlugin);
+                if (pluginToEnable == null) return "please input pluginId";
+                if (!plugManager.getWorkPlugins().contains(pluginToEnable)) {
+                    plugManager.enablePlugin(pluginToEnable);
+                    return "enable " + namePlugin;
+                }
+                return "plugin " + namePlugin + " now work";
+            case ":disable":
+                Plugin pluginToDisable = plugManager.getPluginById(namePlugin);
+                if (pluginToDisable == null & namePlugin.equals("adminPlug"))
+                    return "please input pluginId, adminPlug - prohibited  ";
+                if (plugManager.getWorkPlugins().contains(pluginToDisable)) {
+                    plugManager.disablePlugin(namePlugin);
+                    return "disable " + namePlugin;
+                }
+                return "plugin " + namePlugin + " now isn't work";
+
             case ":workPlug":
-                plugManager.getWorkPlug();
+                return plugManager.getWorkPlugins().toString();
+            case ":allPlug":
+                return plugManager.getAllPlugins().keySet().toString();
+            default:
                 return "";
         }
-        return "";
 
     }
 
@@ -75,11 +88,10 @@ public class AdministrationCliPlugin implements Plugin<Event, String>, Commandab
     @Override
     public Map<String, String> commandDescriptionList() {
         return Map.of(
-                ":addStatsPlug", "add wordStatisticsPlugin",
-                ":deleteStatsPlug", "delete wordStatisticsPlugin",
-                ":addTransCliPlug", "add wordLimitPlugin",
-                ":deleteTransCliPlug", "delete wordLimitPlugin",
-                ":workPlug", "get work Plugin"
+                ":enable PLUGIN", " enable PLUGIN-must set pluginId ",
+                ":disable PLUGIN", "disable PLUGIN-must set pluginId ",
+                ":workPlug", "get work Plugin ",
+                ":allPlug", "get all Plug"
 
         );
     }

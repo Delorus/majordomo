@@ -16,7 +16,7 @@ public class App {
 
         var manager = new PluginManager<>(translatePlugin, statisticPlugin);
         AdministrationCliPlugin administrationCliPlugin = new AdministrationCliPlugin(manager, repositoryManager);
-        manager.addPlugin(administrationCliPlugin);
+        manager.enablePlugin(administrationCliPlugin);
 
         Interpreter interpreter = new Interpreter(manager);
         interpreter.setCommands(translatePlugin, statisticPlugin, administrationCliPlugin);

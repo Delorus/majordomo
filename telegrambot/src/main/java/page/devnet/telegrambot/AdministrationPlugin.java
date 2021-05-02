@@ -56,22 +56,22 @@ public class AdministrationPlugin implements Plugin<Update, List<PartialBotApiMe
         var text = commandUtils.normalizeCmdMsg(message.getText());
         switch (text) {
             case "addStatsPlug":
-                pluginManager.addPlugin(new WordStatisticPlugin(new Statistics(repositoryManager.getWordStorageRepository()), repositoryManager.getUserRepository()));
+                pluginManager.enablePlugin(new WordStatisticPlugin(new Statistics(repositoryManager.getWordStorageRepository()), repositoryManager.getUserRepository()));
                 return Collections.emptyList();
             case "addTransPlug":
-                pluginManager.addPlugin(TranslateBotPlugin.newYandexTranslatePlugin());
+                pluginManager.enablePlugin(TranslateBotPlugin.newYandexTranslatePlugin());
                 return Collections.emptyList();
             case "addLimitPlug":
-                pluginManager.addPlugin(new WordLimiterPlugin(repositoryManager.getUnsubscribeRepository()));
+                pluginManager.enablePlugin(new WordLimiterPlugin(repositoryManager.getUnsubscribeRepository()));
                 return Collections.emptyList();
             case "delStatsPlug":
-                pluginManager.deletePlugin("statsPlug");
+                pluginManager.disablePlugin("statsPlug");
                 return Collections.emptyList();
             case "delTransCliPlug":
-                pluginManager.deletePlugin("transPlug");
+                pluginManager.disablePlugin("transPlug");
                 return Collections.emptyList();
             case "delLimitPlug":
-                pluginManager.deletePlugin("transPlug");
+                pluginManager.disablePlugin("transPlug");
                 return Collections.emptyList();
         }
         return Collections.emptyList();

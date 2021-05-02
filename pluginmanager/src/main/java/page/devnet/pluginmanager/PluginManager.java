@@ -2,10 +2,9 @@ package page.devnet.pluginmanager;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * @author maksim
@@ -15,45 +14,60 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class PluginManager<T, R> implements MessageSubscriber<T, R> {
 
     private final List<Plugin<T, R>> plugins = new ArrayList<>();
-    private final List<Plugin<T, R>> pluginToDelete = new ArrayList<>();
-    private final List<Plugin<T, R>> pluginToAdd = new ArrayList<>();
+    private final List<Plugin<T, R>> pluginToDisable = new ArrayList<>();
+    private final List<Plugin<T, R>> pluginToEnable = new ArrayList<>();
+    private final Map<String, Plugin<T, R>> pluginsWithName = new HashMap<>();
+
 
     @SafeVarargs
     public PluginManager(Plugin<T, R> plugin, Plugin<T, R>... plugins) {
         this.plugins.add(plugin);
         this.plugins.addAll(Arrays.asList(plugins));
+        this.pluginsWithName.put(plugin.getPluginId(), plugin);
+        this.pluginsWithName.putAll(Arrays.stream(plugins)
+                .collect(Collectors.toMap(Plugin::getPluginId, w -> w)));
     }
 
     @Override
     public List<R> consume(T update) {
         List<R> response = new ArrayList<>();
+
+        if (pluginToDisable.size() > 0) {
+            plugins.removeAll(pluginToDisable);
+        }
+
+        if (pluginToEnable.size() > 0) {
+            plugins.addAll(pluginToEnable);
+        }
+
+        pluginToDisable.clear();
+        pluginToEnable.clear();
+
         for (Plugin<T, R> plugin : plugins) {
             response.add(plugin.onEvent(update));
         }
-        if (pluginToDelete.size() > 0) {
-            plugins.removeAll(pluginToDelete);
-        }
-        if (pluginToAdd.size() > 0) {
-            plugins.addAll(pluginToAdd);
-        }
 
-        pluginToDelete.clear();
-        pluginToAdd.clear();
         return response;
     }
 
-    // delete plagin by name. to safe delete use pluginToDelete list.
-    public void deletePlugin(String namePlugin) {
+    // delete plugin by name. to safe delete use pluginToDelete list.
+    public void disablePlugin(String namePlugin) {
         plugins.forEach(q -> {
             if (q.getPluginId().equals(namePlugin)) {
-                pluginToDelete.add(q);
+                pluginToDisable.add(q);
             }
         });
     }
 
     //Find plugin by id to add plug.
-    public void addPlugin(Plugin<T, R> plugin) {
+    public void enablePlugin(Plugin<T, R> plugin) {
         AtomicBoolean flag = new AtomicBoolean(false);
+
+        if (plugin.getPluginId().equals("adminPlug")) {
+            plugins.add(plugin);
+            pluginsWithName.put(plugin.getPluginId(), plugin);
+            return;
+        }
         plugins.forEach(w -> {
             if (w.getPluginId().equals(plugin.getPluginId())) {
                 flag.set(false);
@@ -62,13 +76,18 @@ public final class PluginManager<T, R> implements MessageSubscriber<T, R> {
                 flag.set(true);
             }
         });
-        if (flag.get()) pluginToAdd.add(plugin);
+        if (flag.get()) pluginToEnable.add(plugin);
     }
 
-    public void getWorkPlug() {
-        System.out.println(plugins.size());
-        for (Plugin<T, R> plugin : plugins) {
-            System.out.println(plugin.getPluginId());
-        }
+    public List<Plugin<T, R>> getWorkPlugins() {
+        return plugins;
+    }
+
+    public Plugin<T, R> getPluginById(String pluginId) {
+        return pluginsWithName.get(pluginId);
+    }
+
+    public Map<String, Plugin<T, R>> getAllPlugins() {
+        return pluginsWithName;
     }
 }
