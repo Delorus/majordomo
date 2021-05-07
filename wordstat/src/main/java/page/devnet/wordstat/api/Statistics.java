@@ -117,7 +117,9 @@ public final class Statistics {
 
     public Chart getWordsCountByUserFrom(Instant from) {
         Map<String, List<String>> userToWords = storageRepository.findAllWordsByUserFrom(from);
+        if (userToWords.values().equals(0)) {
 
+        }
         var chart = new FrequentlyUsedWordsByUserChart();
 
         userToWords.forEach((user, words) -> {
