@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -25,7 +26,7 @@ public final class PluginManager<T, R> implements MessageSubscriber<T, R> {
         this.plugins.addAll(Arrays.asList(plugins));
         this.pluginsWithName.put(plugin.getPluginId(), plugin);
         this.pluginsWithName.putAll(Arrays.stream(plugins)
-                .collect(Collectors.toMap(Plugin::getPluginId, w -> w)));
+                .collect(Collectors.toMap(Plugin::getPluginId, Function.identity())));
     }
 
     @Override

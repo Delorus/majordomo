@@ -24,6 +24,9 @@ public final class FrequentlyUsedWordsByUserChart implements Renderable {
         userWordCounts.add(new UserWordCount(user, allWordsCount, uniqueWordsCount));
     }
 
+    /**
+     * bug statu empty exception
+     **/
     @Override
     public Chart renderBy(XChartRenderer renderer, String titlePostfix) {
         var allWords = userWordCounts.stream()
