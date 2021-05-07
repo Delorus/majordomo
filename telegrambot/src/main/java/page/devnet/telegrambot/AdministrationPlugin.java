@@ -6,7 +6,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.pluginmanager.PluginManager;
-import page.devnet.telegrambot.util.Parser;
+import page.devnet.telegrambot.util.ParserMessage;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -40,29 +40,28 @@ public class AdministrationPlugin implements Plugin<Update, List<PartialBotApiMe
             return Collections.emptyList();
         }
 
-        return null;
+        return Collections.emptyList();
     }
 
     private List<PartialBotApiMethod> executeCommand(Message message) throws IOException {
-        Parser parserMessage = new Parser();
+        ParserMessage parserMessage = new ParserMessage();
         var parsedCommand = parserMessage.getCommandFromMessage(message.getText());
-        var commandParametr = parserMessage.getCommandParametrFromMessage(message.getText());
+        var commandParameter = parserMessage.getCommandParameterFromMessage(message.getText());
 
         switch (parsedCommand) {
             case ENABLE:
-                if (commandParametr.equals("")) {
+                if (commandParameter.equals("")) {
                     return List.of(new SendMessage(message.getChatId(), "please input pluginId as second parametr, example: '/enable limitPlug' " + pluginManager.getAllPlugins()).enableMarkdown(true));
                 }
-                Plugin pluginToEnable = pluginManager.getPluginById(commandParametr);
+                var pluginToEnable = pluginManager.getPluginById(commandParameter);
                 pluginManager.enablePlugin(pluginToEnable);
                 return List.of(new SendMessage(message.getChatId(), "Enable plugin " + pluginToEnable.getPluginId()).enableMarkdown(true));
             case DISABLE:
-                if (commandParametr.equals("")) {
+                if (commandParameter.equals("")) {
                     return List.of(new SendMessage(message.getChatId(), "please input pluginId as second parametr, example: '/disable limitPlug' " + pluginManager.getAllPlugins()).enableMarkdown(true));
                 }
-                Plugin pluginToDisable = pluginManager.getPluginById(commandParametr);
-                pluginManager.disablePlugin(pluginToDisable.getPluginId());
-                return List.of(new SendMessage(message.getChatId(), "Disable plugin " + pluginToDisable.getPluginId()).enableMarkdown(true));
+                pluginManager.disablePlugin(commandParameter);
+                return List.of(new SendMessage(message.getChatId(), "Disable plugin " + commandParameter).enableMarkdown(true));
         }
         return Collections.emptyList();
     }

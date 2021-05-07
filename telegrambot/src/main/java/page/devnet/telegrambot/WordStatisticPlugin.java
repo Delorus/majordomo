@@ -33,11 +33,9 @@ import java.util.Optional;
 @Slf4j
 public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMethod>> {
 
-    private final String nameWordStatisticPlugin = "statPlug";
-
     @Override
     public String getPluginId() {
-        return nameWordStatisticPlugin;
+        return "statPlug";
     }
 
     private final Statistics statistics;
