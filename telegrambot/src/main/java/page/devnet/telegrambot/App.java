@@ -13,7 +13,7 @@ public class App {
         var wordLimiterPlugin = new WordLimiterPlugin(repositoryManager.getUnsubscribeRepository());
 
         var manager = new PluginManager<>(/*translatePlugin,*/ statisticPlugin, wordLimiterPlugin);
-        var administartionPlugin = new AdministrationPlugin(manager, repositoryManager);
+        var administartionPlugin = new AdministrationPlugin(manager);
 
         manager.enablePlugin(administartionPlugin);
         if (isProd(args)) {
