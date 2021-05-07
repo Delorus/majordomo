@@ -26,7 +26,6 @@ public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotA
 
     //todo it's not thread safe
     private boolean stop = false;
-    private final String nameTranslatePlugin = "transPlug";
     @Setter
     private CommandUtils commandUtils = new CommandUtils();
 
@@ -44,7 +43,7 @@ public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotA
 
     @Override
     public String getPluginId() {
-        return nameTranslatePlugin;
+        return "transPlug";
     }
 
     @Override
@@ -98,7 +97,7 @@ public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotA
             result.add(new SendMessage(chatID, response).enableMarkdown(true));
             return result;
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
             return Collections.singletonList(new SendMessage(inMsg.getChatId(), "Извините, произошла ошибка."));
         }
     }
