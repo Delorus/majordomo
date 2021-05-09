@@ -1,7 +1,6 @@
 package page.devnet.vertxtgbot.tgapi;
 
 import io.vertx.core.json.Json;
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.multipart.MultipartForm;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageMedia;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiValidationException;
@@ -21,7 +20,7 @@ final class EditMessageMediaAction implements TelegramAction {
     }
 
     @Override
-    public void execute(WebClient transport) {
+    public void execute(Transport transport) {
         try {
             editMessageMedia.validate();
         } catch (TelegramApiValidationException e) {
@@ -48,10 +47,6 @@ final class EditMessageMediaAction implements TelegramAction {
         InputFileHelper.addInputMediaToForm(form, editMessageMedia.getMedia(), EditMessageMedia.MEDIA_FIELD);
 
 
-        transport.post(url).sendMultipartForm(form, resp -> {
-            if (resp.failed()) {
-                throw new TelegramActionException("Failed to send EditMessageMedia", resp.cause());
-            }
-        });
+        transport.send(url, form);
     }
 }

@@ -1,7 +1,5 @@
 package page.devnet.vertxtgbot.tgapi;
 
-import io.vertx.ext.web.client.WebClient;
-
 /**
  * Интерфейс для объединения всех действий с телеграмом.
  * <p/>
@@ -13,5 +11,5 @@ import io.vertx.ext.web.client.WebClient;
  */
 interface TelegramAction {
 
-    void execute(WebClient transport);
+    void execute(Transport transport);
 }

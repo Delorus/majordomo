@@ -8,6 +8,7 @@ import io.vertx.core.json.Json;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -52,11 +53,14 @@ public class VertxWebhook implements Webhook {
 
     @Override
     public void registerWebhook(WebhookBot callback) {
-        router.route(callback.getBotPath()).handler(createHandler(callback));
+        log.info("Register route on path: /{}", callback.getBotPath());
+        router.route("/callback/" + callback.getBotPath()).handler(BodyHandler.create());
+        router.route("/callback/" + callback.getBotPath()).handler(createHandler(callback));
     }
 
     private Handler<RoutingContext> createHandler(WebhookBot callback) {
         return ctx -> {
+            log.debug("Got new update: {}", ctx.getBodyAsString());
             Update update = ctx.getBodyAsJson().mapTo(Update.class);
             BotApiMethod<?> response = callback.onWebhookUpdateReceived(update);
 
@@ -78,7 +82,6 @@ public class VertxWebhook implements Webhook {
     public void startServer() {
         URI uri = URI.create(internalUrl);
         HttpServerOptions options = new HttpServerOptions()
-                .setSsl(true)
                 .setPort(uri.getPort())
                 .setHost(uri.getHost());
 
@@ -87,6 +90,7 @@ public class VertxWebhook implements Webhook {
         }
 
         if (keystoreServerFile != null && keystoreServerPwd != null) {
+            options.setSsl(true);
             options.setKeyStoreOptions(new JksOptions()
                     .setPath(keystoreServerFile)
                     .setPassword(keystoreServerPwd));
@@ -94,6 +98,9 @@ public class VertxWebhook implements Webhook {
 
         vertx.createHttpServer(options)
                 .requestHandler(router)
+                .connectionHandler(event -> {
+                    log.info("Connect to the telegram: {}", event.remoteAddress() != null ? event.remoteAddress().host() : "[local]");
+                })
                 .listen();
     }
 

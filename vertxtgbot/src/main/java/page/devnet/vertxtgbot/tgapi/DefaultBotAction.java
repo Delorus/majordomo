@@ -1,6 +1,5 @@
 package page.devnet.vertxtgbot.tgapi;
 
-import io.vertx.ext.web.client.WebClient;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiValidationException;
 
@@ -19,19 +18,13 @@ public class DefaultBotAction implements TelegramAction {
     }
 
     @Override
-    public void execute(WebClient transport) {
+    public void execute(Transport transport) {
         try {
             apiMessage.validate();
         } catch (TelegramApiValidationException e) {
             throw new TelegramActionException(e);
         }
 
-        String url = apiMessage.getMethod();
-
-        transport.post(url).sendJson(apiMessage, resp -> {
-            if (resp.failed()) {
-                throw new TelegramActionException("Failed to send " + apiMessage.getClass().getSimpleName(), resp.cause());
-            }
-        });
+        transport.sendJson(apiMessage.getMethod(), apiMessage);
     }
 }

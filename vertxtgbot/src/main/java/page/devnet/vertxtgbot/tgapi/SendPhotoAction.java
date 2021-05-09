@@ -1,7 +1,6 @@
 package page.devnet.vertxtgbot.tgapi;
 
 import io.vertx.core.json.Json;
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.multipart.MultipartForm;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiValidationException;
@@ -21,7 +20,7 @@ final class SendPhotoAction implements TelegramAction {
     }
 
     @Override
-    public void execute(WebClient transport) {
+    public void execute(Transport transport) {
         try {
             sendPhoto.validate();
         } catch (TelegramApiValidationException e) {
@@ -51,10 +50,6 @@ final class SendPhotoAction implements TelegramAction {
                 form.attribute(SendPhoto.DISABLENOTIFICATION_FIELD, sendPhoto.getDisableNotification().toString());
             }
 
-        transport.post(url).sendMultipartForm(form, resp -> {
-            if (resp.failed()) {
-                throw new TelegramActionException("Failed to send photo", resp.cause());
-            }
-        });
+        transport.send(url, form);
     }
 }

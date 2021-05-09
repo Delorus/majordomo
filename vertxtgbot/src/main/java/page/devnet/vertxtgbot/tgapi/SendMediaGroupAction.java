@@ -1,6 +1,5 @@
 package page.devnet.vertxtgbot.tgapi;
 
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.multipart.MultipartForm;
 import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
@@ -21,7 +20,7 @@ final class SendMediaGroupAction implements TelegramAction {
     }
 
     @Override
-    public void execute(WebClient transport) {
+    public void execute(Transport transport) {
         try {
             sendMediaGroup.validate();
         } catch (TelegramApiValidationException e) {
@@ -45,10 +44,6 @@ final class SendMediaGroupAction implements TelegramAction {
                     .toString());
         }
 
-        transport.post(url).sendMultipartForm(form, resp -> {
-            if (resp.failed()) {
-                throw new TelegramActionException("Failed to send SendMediaGroup", resp.cause());
-            }
-        });
+        transport.send(url, form);
     }
 }

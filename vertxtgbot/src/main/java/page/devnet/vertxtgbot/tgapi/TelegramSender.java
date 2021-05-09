@@ -7,7 +7,10 @@ import io.vertx.ext.web.client.WebClientOptions;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
+
+import java.util.Objects;
 
 /**
  * @author maksim
@@ -15,14 +18,27 @@ import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
  */
 public final class TelegramSender {
 
-    private final WebClient httpClient;
+    public static class TelegramSenderSetting {
+        private final WebClientOptions webClientOptions;
+        private String botToken = "";
 
-    public TelegramSender(Vertx vertx, HttpClientOptions options) {
-        this.httpClient = WebClient.create(vertx, new WebClientOptions(options));
+        public TelegramSenderSetting(HttpClientOptions other) {
+            this.webClientOptions = new WebClientOptions(other);
+        }
+
+        public TelegramSenderSetting setBotToken(String botToken) {
+            Objects.requireNonNull(botToken);
+            this.botToken = botToken;
+            return this;
+        }
     }
 
-    public TelegramSender(Vertx vertx) {
-        this(vertx, new HttpClientOptions().setKeepAlive(false).setSsl(true));
+    private final WebClient httpClient;
+    private final VertxWebClientWrapper transport;
+
+    public TelegramSender(Vertx vertx, TelegramSenderSetting options) {
+        this.httpClient = WebClient.create(vertx, options.webClientOptions);
+        this.transport = new VertxWebClientWrapper(httpClient, options.botToken);
     }
 
     public void send(PartialBotApiMethod<?> message) {
@@ -31,14 +47,15 @@ public final class TelegramSender {
             action = new SendVideoAction((SendVideo) message);
         } else if (message instanceof SendDocument) {
             action = new SendDocumentAction((SendDocument) message);
+        } else if (message instanceof SendPhoto) {
+            action = new SendPhotoAction((SendPhoto) message);
         } else if (message instanceof BotApiMethod<?>){
             action = new DefaultBotAction((BotApiMethod<?>) message);
         } else {
-            //todo throw exceptions
-            action = null;
+            throw new UnsupportedOperationException("Unsupported type of message: " + message.getClass());
         }
 
-        action.execute(httpClient);
+        action.execute(transport);
     }
 
     // лайфхак для собственных экшенов, которые не маппятся на классы из либы (PartialBotApiMethod)

@@ -1,7 +1,6 @@
 package page.devnet.vertxtgbot.tgapi;
 
 import io.vertx.core.json.Json;
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.multipart.MultipartForm;
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiValidationException;
@@ -21,7 +20,7 @@ final class SendVideoAction implements TelegramAction {
     }
 
     @Override
-    public void execute(WebClient transport) {
+    public void execute(Transport transport) {
         try {
             sendVideo.validate();
         } catch (TelegramApiValidationException e) {
@@ -68,10 +67,6 @@ final class SendVideoAction implements TelegramAction {
             InputFileHelper.addBinaryFileToForm(form, sendVideo.getThumb(), SendVideo.THUMB_FIELD, false);
         }
 
-        transport.post(url).sendMultipartForm(form, resp -> {
-            if (resp.failed()) {
-                throw new TelegramActionException("Failed to send video", resp.cause());
-            }
-        });
+        transport.send(url, form);
     }
 }

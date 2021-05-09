@@ -1,7 +1,6 @@
 package page.devnet.vertxtgbot.tgapi;
 
 import io.vertx.core.json.Json;
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.multipart.MultipartForm;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendVoice;
@@ -22,7 +21,7 @@ final class SendVoiceAction implements TelegramAction {
     }
 
     @Override
-    public void execute(WebClient transport) {
+    public void execute(Transport transport) {
         try {
             sendVoice.validate();
         } catch (TelegramApiValidationException e) {
@@ -57,10 +56,6 @@ final class SendVoiceAction implements TelegramAction {
             }
         }
 
-        transport.post(url).sendMultipartForm(form, resp -> {
-            if (resp.failed()) {
-                throw new TelegramActionException("Failed to send SendVoice", resp.cause());
-            }
-        });
+        transport.send(url, form);
     }
 }

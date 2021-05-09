@@ -1,7 +1,6 @@
 package page.devnet.vertxtgbot.tgapi;
 
 import io.vertx.core.json.Json;
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.multipart.MultipartForm;
 import org.telegram.telegrambots.meta.api.methods.stickers.AddStickerToSet;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiValidationException;
@@ -21,7 +20,7 @@ final class AddStickerToSetAction implements TelegramAction {
     }
 
     @Override
-    public void execute(WebClient transport) {
+    public void execute(Transport transport) {
         try {
             addStickerToSet.validate();
         } catch (TelegramApiValidationException e) {
@@ -40,10 +39,6 @@ final class AddStickerToSetAction implements TelegramAction {
             form.attribute(AddStickerToSet.MASKPOSITION_FIELD, Json.encode(addStickerToSet.getMaskPosition()));
         }
 
-        transport.post(url).sendMultipartForm(form, resp -> {
-            if (resp.failed()) {
-                throw new TelegramActionException("Failed to send AddStickerToSet", resp.cause());
-            }
-        });
+        transport.send(url, form);
     }
 }

@@ -1,7 +1,6 @@
 package page.devnet.vertxtgbot.tgapi;
 
 import io.vertx.core.json.Json;
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.multipart.MultipartForm;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendVideoNote;
@@ -22,7 +21,7 @@ final class SendVideoNoteAction implements TelegramAction {
     }
 
     @Override
-    public void execute(WebClient transport) {
+    public void execute(Transport transport) {
         try {
             sendVideoNote.validate();
         } catch (TelegramApiValidationException e) {
@@ -58,10 +57,6 @@ final class SendVideoNoteAction implements TelegramAction {
             form.attribute(SendVideoNote.THUMB_FIELD, sendVideoNote.getThumb().getAttachName());
         }
 
-        transport.post(url).sendMultipartForm(form, resp -> {
-            if (resp.failed()) {
-                throw new TelegramActionException("Failed to send SendVideoNote", resp.cause());
-            }
-        });
+        transport.send(url, form);
     }
 }

@@ -5,7 +5,6 @@ import io.vertx.core.http.HttpClientOptions;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.telegrambots.meta.ApiConstants;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -20,6 +19,7 @@ import page.devnet.vertxtgbot.tgapi.SetupWebhookAction;
 import page.devnet.vertxtgbot.tgapi.TelegramSender;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.List;
 
@@ -50,8 +50,12 @@ class TelegramBot {
         this.token = setting.token;
         this.path = setting.path;
         this.eventSubscriber = subscriber;
-        this.telegramSender = new TelegramSender(vertx, new HttpClientOptions()
-            .setDefaultHost(ApiConstants.BASE_URL + token + "/"));
+        this.telegramSender = new TelegramSender(vertx, new TelegramSender.TelegramSenderSetting(new HttpClientOptions()
+                .setDefaultHost("api.telegram.org")
+                .setDefaultPort(443)
+                .setSsl(true)
+                .setKeepAlive(false))
+                .setBotToken(token));
         startTime = Instant.now();
     }
 
@@ -68,7 +72,7 @@ class TelegramBot {
         @Override
         public BotApiMethod onWebhookUpdateReceived(Update update) {
             if (update.hasMessage() && isBeforeStart(update.getMessage())) {
-                log.warn("skip message: [{}], that got before starting: [start: {}, got: {}]", update.getMessage().getText(), startTime, update.getMessage().getDate());
+                log.warn("skip message: [{}], that got before starting: [start: {}, got: {}]", update.getMessage().getText(), startTime, Instant.ofEpochMilli(update.getMessage().getDate()).atZone(ZoneOffset.UTC));
                 return null;
             }
 
@@ -100,7 +104,7 @@ class TelegramBot {
 
         @Override
         public void setWebhook(String url, String publicCertificatePath) {
-            telegramSender.send(new SetupWebhookAction(url, publicCertificatePath));
+            telegramSender.send(new SetupWebhookAction(token, url, publicCertificatePath));
         }
 
         @Override
@@ -149,7 +153,7 @@ class TelegramBot {
 
         @Override
         public void clearWebhook() throws TelegramApiRequestException {
-
+            //todo wtf?
         }
     }
 }

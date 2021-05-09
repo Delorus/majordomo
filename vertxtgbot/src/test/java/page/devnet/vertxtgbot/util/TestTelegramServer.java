@@ -1,13 +1,17 @@
 package page.devnet.vertxtgbot.util;
 
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.junit5.VertxTestContext;
 import org.telegram.telegrambots.meta.api.objects.ApiResponse;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +46,7 @@ public class TestTelegramServer {
     public void startAndServe() throws InterruptedException {
         VertxTestContext context = new VertxTestContext();
         server.requestHandler(event -> event.bodyHandler(req -> {
+            System.out.println(reqToString(event, req.toString()));
             singleRequestQueue.add(req.toString());
             event.response().end(okResponse());
             context.completeNow();
@@ -81,5 +86,36 @@ public class TestTelegramServer {
     private static String okResponse() {
         ApiResponse<Message> response = new ApiResponse<>();
         return "{ \"ok\": \"true\" }";
+    }
+
+    private static String reqToString(HttpServerRequest req, String body) {
+        StringBuilder result = new StringBuilder(req.version() + " " + req.method() + " " + req.absoluteURI());
+
+        MultiMap params = req.params();
+        if (!params.isEmpty()) {
+            result.append("?");
+            List<Map.Entry<String, String>> entries = params.entries();
+            entries.sort(Map.Entry.comparingByKey());
+            for (Map.Entry<String, String> param : entries) {
+                result.append(param.getKey()).append("=").append(param.getValue()).append("&");
+            }
+            result.deleteCharAt(result.length() - 1);
+        }
+
+        result.append('\n');
+        MultiMap headers = req.headers();
+        if (!headers.isEmpty()) {
+            List<Map.Entry<String, String>> entries = headers.entries();
+            entries.sort(Map.Entry.comparingByKey());
+            for (Map.Entry<String, String> header : entries) {
+                result.append(header.getKey().toLowerCase()).append(": ").append(header.getValue()).append('\n');
+            }
+        }
+
+        if (!body.isEmpty()) {
+            result.append('\n').append(body);
+        }
+
+        return result.toString();
     }
 }

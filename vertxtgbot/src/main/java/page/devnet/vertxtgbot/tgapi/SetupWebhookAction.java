@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
 import io.vertx.ext.web.multipart.MultipartForm;
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.ApiConstants;
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 
@@ -14,18 +15,19 @@ import java.io.File;
  * @author maksim
  * @since 04.06.2020
  */
-public final class SetupWebhookAction implements TelegramAction {
+@Slf4j
+public final class SetupWebhookAction {
 
+    private final String token;
     private final String url;
     private final String publicCertificatePath;
 
-    public SetupWebhookAction(String url, String publicCertificatePath) {
-
+    public SetupWebhookAction(String token, String url, String publicCertificatePath) {
+        this.token = token;
         this.url = url;
         this.publicCertificatePath = publicCertificatePath;
     }
 
-    @Override
     public void execute(WebClient transport) {
         String requestUrl = SetWebhook.PATH;
 
@@ -39,12 +41,14 @@ public final class SetupWebhookAction implements TelegramAction {
             }
         }
 
-        transport.post(requestUrl)
-                .as(BodyCodec.jsonObject())
+        transport.post("/bot"+token+"/"+requestUrl)
+                .as(BodyCodec.string())
                 .sendMultipartForm(form, resp -> {
                     if (resp.succeeded()) {
-                        JsonObject result = resp.result().body();
-                        if (!result.getBoolean(ApiConstants.RESPONSE_FIELD_OK)) {
+                        JsonObject result = (JsonObject) Json.decodeValue(resp.result().body());
+                        if (result.getBoolean(ApiConstants.RESPONSE_FIELD_OK)) {
+                            log.info("Webhook successfully registered on address: {}", url);
+                        } else {
                             throw new TelegramActionException("Error setting webhook:\n" + Json.encodePrettily(result));
                         }
                     } else {

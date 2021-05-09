@@ -56,15 +56,19 @@ public final class TelegramBotExecutor {
     }
 
     private void initTelegramConnection(TelegramBot bot, boolean isProdEnv) throws TelegramApiRequestException {
-        ApiContextInitializer.init();
+        ApiContextInitializer.init(isProdEnv);
 
-        TelegramBotsApi api = new TelegramBotsApi(System.getenv("EXTERNAL_URI"), "http://0.0.0.0:" + System.getenv("PORT") + "/");
+        TelegramBotsApi api;
+        if (isProdEnv) {
+            api = new TelegramBotsApi(System.getenv("EXTERNAL_URI"), "http://0.0.0.0:" + System.getenv("PORT") + "/");
+        } else {
+            api = new TelegramBotsApi();
+        }
 
         if (isProdEnv) {
             api.registerBot(bot.atProductionBotManager());
         } else {
-            //todo not supported
-            //            api.registerBot(bot.atDevBotManager());
+            api.registerBot(bot.atDevBotManager());
         }
     }
 }

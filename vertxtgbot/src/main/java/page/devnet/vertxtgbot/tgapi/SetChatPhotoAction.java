@@ -1,6 +1,5 @@
 package page.devnet.vertxtgbot.tgapi;
 
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.multipart.MultipartForm;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.SetChatPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
@@ -25,7 +24,7 @@ final class SetChatPhotoAction implements TelegramAction {
     }
 
     @Override
-    public void execute(WebClient transport) {
+    public void execute(Transport transport) {
         try {
             setChatPhoto.validate();
         } catch (TelegramApiValidationException e) {
@@ -46,10 +45,6 @@ final class SetChatPhotoAction implements TelegramAction {
             throw new UnsupportedOperationException("Upload file via InputStream is not supported to ensure non-blocking operations");
         }
 
-        transport.post(url).sendMultipartForm(form, resp -> {
-            if (resp.failed()) {
-                throw new TelegramActionException("Failed to send SetChatPhoto", resp.cause());
-            }
-        });
+        transport.send(url, form);
     }
 }

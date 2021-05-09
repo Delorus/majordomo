@@ -1,6 +1,5 @@
 package page.devnet.vertxtgbot.tgapi;
 
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.multipart.MultipartForm;
 import org.telegram.telegrambots.meta.api.methods.stickers.UploadStickerFile;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiValidationException;
@@ -20,7 +19,7 @@ final class UploadStickerFileAction implements TelegramAction {
     }
 
     @Override
-    public void execute(WebClient transport) {
+    public void execute(Transport transport) {
         try {
             uploadStickerFile.validate();
         } catch (TelegramApiValidationException e) {
@@ -34,10 +33,6 @@ final class UploadStickerFileAction implements TelegramAction {
 
         InputFileHelper.addBinaryFileToForm(form, uploadStickerFile.getPngSticker(), UploadStickerFile.PNGSTICKER_FIELD, true);
 
-        transport.post(url).sendMultipartForm(form, resp -> {
-            if (resp.failed()) {
-                throw new TelegramActionException("Failed to send UploadStickerFile", resp.cause());
-            }
-        });
+        transport.send(url, form);
     }
 }

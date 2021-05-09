@@ -47,7 +47,7 @@ class DefaultBotActionTest {
 
         // Expect
         tgServer.recordNewAndCompareWithPrevious(() -> {
-            new DefaultBotAction(msg).execute(tgClient);
+            new DefaultBotAction(msg).execute(new VertxWebClientWrapper(tgClient, "test"));
         });
     }
 

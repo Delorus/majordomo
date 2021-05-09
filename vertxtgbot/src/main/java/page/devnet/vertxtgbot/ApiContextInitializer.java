@@ -10,8 +10,11 @@ public final class ApiContextInitializer {
         throw new IllegalAccessException();
     }
 
-    public static void init() {
-        ApiContext.registerSingleton(Webhook.class, VertxWebhook.class);
-        ApiContext.registerSingleton(BotSession.class, VertxBotSession.class);
+    public static void init(boolean isProdEnv) {
+        if (isProdEnv) {
+            ApiContext.registerSingleton(Webhook.class, VertxWebhook.class);
+        } else {
+            ApiContext.registerSingleton(BotSession.class, VertxBotSession.class);
+        }
     }
 }
