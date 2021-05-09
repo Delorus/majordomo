@@ -72,12 +72,6 @@ public class WordStatisticPlugin implements Plugin<Event, String>, Commandable {
                 }
 
                 return "file://" + file.toPath().toAbsolutePath().toString();
-            case ":flush":
-                List<String> all = statistics.flushAll();
-                Path allStat = Files.createTempFile("allStat", ".csv", PosixFilePermissions.asFileAttribute(Set.of(OWNER_WRITE, OWNER_READ)));
-                Files.writeString(allStat, String.join("\n", all), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
-
-                return "file://" + allStat.toString();
             default:
                 return "";
         }

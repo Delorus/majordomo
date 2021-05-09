@@ -5,14 +5,13 @@ import page.devnet.database.RepositoryManager;
 import page.devnet.pluginmanager.PluginManager;
 import page.devnet.vertxtgbot.GlobalVertxHolder;
 import page.devnet.wordstat.api.Statistics;
-import page.devnet.wordstat.store.InMemoryWordStorage;
 
 public class App {
 
     public static void main(String[] args) {
 //        TranslateBotPlugin translatePlugin = TranslateBotPlugin.newYandexTranslatePlugin();
         var repositoryManager = new RepositoryManager();
-        var statisticPlugin = new WordStatisticPlugin(new Statistics(new InMemoryWordStorage()), repositoryManager.getUserRepository());
+        var statisticPlugin = new WordStatisticPlugin(new Statistics(repositoryManager.getWordStorageRepository()), repositoryManager.getUserRepository());
 
         var manager = new PluginManager<>(/*translatePlugin, */statisticPlugin, new WordLimiterPlugin(repositoryManager.getUnsubscribeRepository()));
 
