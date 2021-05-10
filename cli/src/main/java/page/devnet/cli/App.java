@@ -9,7 +9,7 @@ import page.devnet.wordstat.api.Statistics;
 public class App {
 
     public static void main(String[] args) {
-        var repositoryManager = new RepositoryFactory(new DataSource());
+        var repositoryManager = RepositoryFactory.simple(new DataSource());
 
         TranslateCliPlugin translatePlugin = TranslateCliPlugin.newYandexTranslatePlugin();
         WordStatisticPlugin statisticPlugin = new WordStatisticPlugin(new Statistics(repositoryManager.buildWordStorageRepository()));

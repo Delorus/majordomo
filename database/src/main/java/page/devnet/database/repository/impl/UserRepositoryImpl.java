@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public class UserRepositoryImpl implements UserRepository {
 
-    private static final String TABLE_NAME = "user";
+    public static final String TABLE_NAME = "user";
 
     private final DataSource dataSource;
 
@@ -19,8 +19,12 @@ public class UserRepositoryImpl implements UserRepository {
     private final Map<Integer, User> table;
 
     public UserRepositoryImpl(DataSource dataSource) {
+        this(dataSource, TABLE_NAME);
+    }
+
+    UserRepositoryImpl(DataSource dataSource, String tableName) {
         this.dataSource = dataSource;
-        this.table = dataSource.getDatabase().hashMap(TABLE_NAME).keySerializer(Serializer.INTEGER)
+        this.table = dataSource.getDatabase().hashMap(tableName).keySerializer(Serializer.INTEGER)
                 .valueSerializer(new SerializerUser()).createOrOpen();
     }
 

@@ -9,15 +9,19 @@ import java.util.Set;
 
 public class UnsubscribeRepositoryImpl implements UnsubscribeRepository {
 
-    private static final String TABLE_NAME = "unsubscribe";
+    public static final String TABLE_NAME = "unsubscribe";
 
     private final DataSource dataSource;
 
     private final Set<Integer> table;
 
     public UnsubscribeRepositoryImpl(DataSource dataSource) {
+        this(dataSource, TABLE_NAME);
+    }
+
+    UnsubscribeRepositoryImpl(DataSource dataSource, String tableName) {
         this.dataSource = dataSource;
-        this.table = dataSource.getDatabase().hashSet(TABLE_NAME).serializer(Serializer.INTEGER).createOrOpen();
+        this.table = dataSource.getDatabase().hashSet(tableName).serializer(Serializer.INTEGER).createOrOpen();
     }
 
     @Override

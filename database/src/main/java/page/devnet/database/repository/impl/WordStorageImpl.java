@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 
 public class WordStorageImpl implements WordStorageRepository {
 
-    private static final String TABLE_NAME_DATE_TO_WORDS = "dateToWords";
-    private static final String TABLE_NAME_USER_TO_DATE = "userToDate";
+    public static final String TABLE_NAME_DATE_TO_WORDS = "dateToWords";
+    public static final String TABLE_NAME_USER_TO_DATE = "userToDate";
 
     private final Map<Instant, List<String>> dateToWordsTable;
 
@@ -22,12 +22,16 @@ public class WordStorageImpl implements WordStorageRepository {
     private final DataSource dataSource;
 
     public WordStorageImpl(DataSource dataSource) {
+        this(dataSource, TABLE_NAME_DATE_TO_WORDS, TABLE_NAME_USER_TO_DATE);
+    }
+
+    WordStorageImpl(DataSource dataSource, String dateToWordsTable, String userToDateTable) {
         this.dataSource = dataSource;
-        this.dateToWordsTable = dataSource.getDatabase().hashMap(TABLE_NAME_DATE_TO_WORDS)
+        this.dateToWordsTable = dataSource.getDatabase().hashMap(dateToWordsTable)
                 .keySerializer(Serializer.JAVA)
                 .valueSerializer(Serializer.JAVA)
                 .createOrOpen();
-        this.userToDateTable = dataSource.getDatabase().hashMap(TABLE_NAME_USER_TO_DATE)
+        this.userToDateTable = dataSource.getDatabase().hashMap(userToDateTable)
                 .keySerializer(Serializer.STRING)
                 .valueSerializer(Serializer.JAVA)
                 .createOrOpen();

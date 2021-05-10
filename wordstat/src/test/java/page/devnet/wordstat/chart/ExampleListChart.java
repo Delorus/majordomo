@@ -29,7 +29,7 @@ public class ExampleListChart {
     ArrayList<String> list;
     Statistics statistics;
     DataSource dataSource = DataSource.inMemory();
-    RepositoryFactory repositoryFactory = new RepositoryFactory(dataSource);
+    RepositoryFactory repositoryFactory = RepositoryFactory.simple(dataSource);
     String checkStr;
     List<String> checkWords;
 
