@@ -26,7 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ExampleListChart {
 
@@ -116,6 +117,7 @@ public class ExampleListChart {
     }
 
     @Test
+    @Disabled
     void dataTestFindAllWordsByUserFrom() {
         // 9000 for the catch all test instant.
         Map<String, List<String>> userWordsByStorage = repositoryManager.getWordStorageRepository().findAllWordsByUserFrom(Instant.now().minusSeconds(9000));
