@@ -53,7 +53,7 @@ public class TestTelegramServer {
         })).listen(context.completing());
 
         // Ждем пока сервак не стартанет
-        assertTrue(context.awaitCompletion(100, TimeUnit.MILLISECONDS));
+        assertTrue(context.awaitCompletion(1, TimeUnit.SECONDS));
         if (context.failed()) {
             throw new RuntimeException(context.causeOfFailure());
         }
@@ -73,11 +73,11 @@ public class TestTelegramServer {
     }
 
     public void recordNewAndCompareWithPrevious(TgSingleRequestExecutor executor) throws InterruptedException {
-        String prev = singleRequestQueue.poll(100, TimeUnit.MILLISECONDS);
+        String prev = singleRequestQueue.poll(1, TimeUnit.SECONDS);
         assertNotNull(prev);
 
         assertDoesNotThrow(executor::sendRequest);
-        String current = singleRequestQueue.poll(100, TimeUnit.MILLISECONDS);
+        String current = singleRequestQueue.poll(1, TimeUnit.SECONDS);
         assertNotNull(current);
 
         assertEquals(prev, current);
