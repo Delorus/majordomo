@@ -54,8 +54,8 @@ class TelegramBot {
                 .setDefaultHost("api.telegram.org")
                 .setDefaultPort(443)
                 .setSsl(true)
-                .setKeepAlive(false))
-                .setBotToken(token));
+                .setKeepAlive(false),
+                token));
         startTime = Instant.now();
     }
 

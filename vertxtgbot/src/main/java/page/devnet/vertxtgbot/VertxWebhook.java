@@ -4,6 +4,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
@@ -65,12 +66,15 @@ public class VertxWebhook implements Webhook {
             BotApiMethod<?> response = callback.onWebhookUpdateReceived(update);
 
             try {
+                HttpServerResponse resp = ctx.response()
+                        .putHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+
                 if (response != null) {
                     response.validate();
+                    resp.end(Json.encodeToBuffer(response));
+                } else {
+                    resp.end();
                 }
-                ctx.response()
-                        .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                        .end(Json.encodeToBuffer(response));
             } catch (TelegramApiValidationException e) {
                 log.error(e.getMessage(), e);
                 ctx.response().setStatusCode(500).end();
@@ -98,9 +102,6 @@ public class VertxWebhook implements Webhook {
 
         vertx.createHttpServer(options)
                 .requestHandler(router)
-                .connectionHandler(event -> {
-                    log.info("Connect to the telegram: {}", event.remoteAddress() != null ? event.remoteAddress().host() : "[local]");
-                })
                 .listen();
     }
 

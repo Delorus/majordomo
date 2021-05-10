@@ -10,8 +10,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
 
-import java.util.Objects;
-
 /**
  * @author maksim
  * @since 31.05.2020
@@ -20,16 +18,11 @@ public final class TelegramSender {
 
     public static class TelegramSenderSetting {
         private final WebClientOptions webClientOptions;
-        private String botToken = "";
+        private final String botToken;
 
-        public TelegramSenderSetting(HttpClientOptions other) {
+        public TelegramSenderSetting(HttpClientOptions other, String botToken) {
             this.webClientOptions = new WebClientOptions(other);
-        }
-
-        public TelegramSenderSetting setBotToken(String botToken) {
-            Objects.requireNonNull(botToken);
             this.botToken = botToken;
-            return this;
         }
     }
 

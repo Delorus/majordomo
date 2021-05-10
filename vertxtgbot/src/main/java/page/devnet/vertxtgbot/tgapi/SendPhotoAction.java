@@ -32,7 +32,7 @@ final class SendPhotoAction implements TelegramAction {
         MultipartForm form = MultipartForm.create()
                 .attribute(SendPhoto.CHATID_FIELD, sendPhoto.getChatId());
 
-        InputFileHelper.addTextFileToForm(form, sendPhoto.getPhoto(), SendPhoto.PHOTO_FIELD, true);
+        InputFileHelper.addBinaryFileToForm(form, sendPhoto.getPhoto(), SendPhoto.PHOTO_FIELD, true);
 
         if (sendPhoto.getReplyMarkup() != null) {
                 form.attribute(SendPhoto.REPLYMARKUP_FIELD, Json.encode(sendPhoto.getReplyMarkup()));
