@@ -2,6 +2,7 @@ package page.devnet.wordstat.chart;
 
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import page.devnet.database.DataSource;
 import page.devnet.database.RepositoryManager;
@@ -91,6 +92,7 @@ public class ExampleListChart {
     }
 
     @Test
+    @Disabled
     void createChart() {
 
         var fromLastDay = ZonedDateTime.now().minusDays(1);

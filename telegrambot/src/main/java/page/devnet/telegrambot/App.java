@@ -1,7 +1,9 @@
 package page.devnet.telegrambot;
 
+import io.vertx.core.Vertx;
 import page.devnet.database.RepositoryManager;
 import page.devnet.pluginmanager.PluginManager;
+import page.devnet.vertxtgbot.GlobalVertxHolder;
 import page.devnet.wordstat.api.Statistics;
 
 public class App {
@@ -13,10 +15,12 @@ public class App {
 
         var manager = new PluginManager<>(/*translatePlugin, */statisticPlugin, new WordLimiterPlugin(repositoryManager.getUnsubscribeRepository()));
 
+        Vertx vertx = GlobalVertxHolder.getVertx();
+
         if (isProd(args)) {
-            TelegramBotExecutor.newInProdMode().runBotWith(manager);
+            TelegramBotExecutor.newInProdMode(vertx).runBotWith(manager);
         } else {
-            TelegramBotExecutor.newInDevMode().runBotWith(manager);
+            TelegramBotExecutor.newInDevMode(vertx).runBotWith(manager);
         }
     }
 
