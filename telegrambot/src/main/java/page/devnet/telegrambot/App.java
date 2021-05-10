@@ -12,10 +12,11 @@ import page.devnet.wordstat.api.Statistics;
 public class App {
 
     public static void main(String[] args) {
+        DataSource ds = new DataSource();
         var manager = new MultiTenantPluginManager<>(
                 id -> {
 //                    TranslateBotPlugin translatePlugin = TranslateBotPlugin.newYandexTranslatePlugin();
-                    var repositoryManager = RepositoryFactory.multitenancy(new DataSource(), id);
+                    var repositoryManager = RepositoryFactory.multitenancy(ds, id);
                     var statisticPlugin = new WordStatisticPlugin(new Statistics(repositoryManager.buildWordStorageRepository()), repositoryManager.buildUserRepository());
                     return new PluginManager<>(/*translatePlugin, */statisticPlugin, new WordLimiterPlugin(repositoryManager.buildUnsubscribeRepository()));
                 },
