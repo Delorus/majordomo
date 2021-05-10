@@ -3,27 +3,22 @@ package page.devnet.database;
 import page.devnet.database.repository.UnsubscribeRepository;
 import page.devnet.database.repository.UserRepository;
 import page.devnet.database.repository.WordStorageRepository;
-import page.devnet.database.repository.impl.UnsubscribeRepositoryImpl;
-import page.devnet.database.repository.impl.UserRepositoryImpl;
-import page.devnet.database.repository.impl.WordStorageImpl;
+import page.devnet.database.repository.impl.DefaultRepositoryFactory;
+import page.devnet.database.repository.impl.MultitenancyRepositoryFactory;
 
-public class RepositoryFactory {
+public interface RepositoryFactory {
 
-    private final DataSource dataSource;
-
-    public RepositoryFactory(DataSource dataSource) {
-        this.dataSource = dataSource;
+    static RepositoryFactory multitenancy(DataSource dataSource, String tenantId) {
+        return new MultitenancyRepositoryFactory(dataSource, tenantId);
     }
 
-    public UnsubscribeRepository buildUnsubscribeRepository() {
-        return new UnsubscribeRepositoryImpl(dataSource);
+    static RepositoryFactory simple(DataSource dataSource) {
+        return new DefaultRepositoryFactory(dataSource);
     }
 
-    public UserRepository buildUserRepository() {
-        return new UserRepositoryImpl(dataSource);
-    }
+    UnsubscribeRepository buildUnsubscribeRepository();
 
-    public WordStorageRepository buildWordStorageRepository() {
-        return new WordStorageImpl(dataSource);
-    }
+    UserRepository buildUserRepository();
+
+    WordStorageRepository buildWordStorageRepository();
 }
