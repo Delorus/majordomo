@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiValidationException;
 import org.telegram.telegrambots.meta.generics.Webhook;
 import org.telegram.telegrambots.meta.generics.WebhookBot;
 
@@ -61,11 +60,10 @@ public class VertxWebhook implements Webhook {
 
     private Handler<RoutingContext> createHandler(WebhookBot callback) {
         return ctx -> {
-            log.debug("Got new update: {}", ctx.getBodyAsString());
-            Update update = ctx.getBodyAsJson().mapTo(Update.class);
-            BotApiMethod<?> response = callback.onWebhookUpdateReceived(update);
-
             try {
+                log.debug("Got new update: {}", ctx.getBodyAsString());
+                Update update = ctx.getBodyAsJson().mapTo(Update.class);
+                BotApiMethod<?> response = callback.onWebhookUpdateReceived(update);
                 HttpServerResponse resp = ctx.response()
                         .putHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 
@@ -75,7 +73,7 @@ public class VertxWebhook implements Webhook {
                 } else {
                     resp.end();
                 }
-            } catch (TelegramApiValidationException e) {
+            } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 ctx.response().setStatusCode(500).end();
             }
