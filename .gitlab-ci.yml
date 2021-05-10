@@ -29,7 +29,7 @@ build:
     expire_in: 1 hour
   only:
     - master
-    - 14-vertx
+    - develop
 
 test:
   stage: test
@@ -70,7 +70,7 @@ build_image-dev:
     - docker build -t $CI_REGISTRY/$CI_DEV_DOCKER_IMG .
     - docker push $CI_REGISTRY/$CI_DEV_DOCKER_IMG
   only:
-    - 14-vertx
+    - develop
 
 
 deploy:
@@ -124,4 +124,4 @@ deploy-dev:
       -p 5005:5005
       $CI_REGISTRY/$CI_DEV_DOCKER_IMG
   only:
-    - 14-vertx
+    - develop
