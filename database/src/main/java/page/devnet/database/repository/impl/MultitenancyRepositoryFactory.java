@@ -32,7 +32,7 @@ public class MultitenancyRepositoryFactory implements RepositoryFactory {
 
     @Override
     public WordStorageRepository buildWordStorageRepository() {
-        return new WordStorageImpl(dataSource, tenantName(WordStorageImpl.TABLE_NAME_DATE_TO_WORDS), tenantName(WordStorageImpl.TABLE_NAME_DATE_TO_WORDS));
+        return new WordStorageImpl(dataSource, tenantName(WordStorageImpl.TABLE_DATE_TO_WORDS), tenantName(WordStorageImpl.TABLE_USER_TO_DATE));
     }
 
     private String tenantName(String tableName) {

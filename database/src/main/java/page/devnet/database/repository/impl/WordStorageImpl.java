@@ -13,16 +13,16 @@ import java.util.stream.Collectors;
 
 public class WordStorageImpl implements WordStorageRepository {
 
-    public static final String TABLE_NAME_DATE_TO_WORDS = "dateToWords";
-    public static final String TABLE_NAME_USER_TO_DATE = "userToDate";
+    public static final String TABLE_DATE_TO_WORDS = "dateToWords";
+    public static final String TABLE_USER_TO_DATE = "userToDate";
 
-    private final Map<Instant, List<String>> dateToWordsTable;
-
-    private final Map<String, List<Instant>> userToDateTable;
     private final DataSource dataSource;
 
+    private final Map<Instant, List<String>> dateToWordsTable;
+    private final Map<String, List<Instant>> userToDateTable;
+
     public WordStorageImpl(DataSource dataSource) {
-        this(dataSource, TABLE_NAME_DATE_TO_WORDS, TABLE_NAME_USER_TO_DATE);
+        this(dataSource, TABLE_DATE_TO_WORDS, TABLE_USER_TO_DATE);
     }
 
     WordStorageImpl(DataSource dataSource, String dateToWordsTable, String userToDateTable) {
@@ -43,15 +43,15 @@ public class WordStorageImpl implements WordStorageRepository {
         List<Instant> list = new ArrayList<>();
         List<Instant> listToUpdateUser = userToDateTable.computeIfAbsent(userId, __ -> list);
         listToUpdateUser.add(date);
-        userToDateTable.put(userId,listToUpdateUser);
+        userToDateTable.put(userId, listToUpdateUser);
         dataSource.getDatabase().commit();
     }
 
     @Override
     public List<String> findAllWordsFrom(Instant fromDate) {
         var result = new ArrayList<String>();
-        dateToWordsTable.keySet().forEach(date ->{
-            if (date.isAfter(fromDate)){
+        dateToWordsTable.keySet().forEach(date -> {
+            if (date.isAfter(fromDate)) {
                 result.addAll(dateToWordsTable.get(date));
             }
         });
@@ -62,12 +62,10 @@ public class WordStorageImpl implements WordStorageRepository {
     public Map<String, List<String>> findAllWordsByUserFrom(Instant fromDate) {
         var result = new HashMap<String, List<String>>();
         userToDateTable.forEach((user, dates) -> {
-            List<String> words;
-            words = dates.stream()
+            result.put(user, dates.stream()
                     .filter(fromDate::isBefore)
                     .flatMap(date -> dateToWordsTable.get(date).stream())
-                    .collect(Collectors.toList());
-            result.put(user, words);
+                    .collect(Collectors.toList()));
         });
         return result;
     }
