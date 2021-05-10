@@ -6,12 +6,20 @@ import org.mapdb.DBMaker;
 
 public class DataSource {
 
+    public static DataSource inMemory() {
+        return new DataSource(true);
+    }
+
     @Getter
     private final DB database;
 
     public DataSource() {
+        this(false);
+    }
 
-        //for the memoryDb need DBMaker.memoryDB().transactionEnable().make();
-        this.database = DBMaker.fileDB("/storage/devnetdb").transactionEnable().make();
+    private DataSource(boolean inMemory) {
+        this.database = inMemory
+                ? DBMaker.memoryDB().transactionEnable().make()
+                : DBMaker.fileDB("/storage/devnetdb").transactionEnable().make();
     }
 }
