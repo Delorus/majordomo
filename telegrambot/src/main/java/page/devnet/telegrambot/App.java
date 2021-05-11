@@ -25,7 +25,7 @@ public class App {
 
         Vertx vertx = GlobalVertxHolder.getVertx();
 
-        manager.addPlugin(new AdministrationPlugin(manager));
+        manager.enableAdminPlugin(administartionPlugin);
         if (isProd(args)) {
             TelegramBotExecutor.newInProdMode(vertx).runBotWith(manager);
         } else {

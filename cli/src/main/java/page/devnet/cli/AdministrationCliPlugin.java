@@ -33,7 +33,7 @@ public class AdministrationCliPlugin implements Plugin<Event, String>, Commandab
                 return executeCommand(event);
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
-                return "Sorry, something wrong with send chart: " + e.getMessage();
+                return "";
             }
         }
         return "";
@@ -53,25 +53,23 @@ public class AdministrationCliPlugin implements Plugin<Event, String>, Commandab
         switch (command) {
             case ":enable":
 
-                Plugin pluginToEnable = plugManager.getPluginById(namePlugin);
-                if (pluginToEnable == null) return "please input pluginId";
-                if (!plugManager.getWorkPlugins().contains(pluginToEnable)) {
-                    plugManager.enablePlugin(pluginToEnable);
+                if (namePlugin.isEmpty()) return "please input pluginId";
+                if (!plugManager.getWorkPluginsName().contains(namePlugin)) {
+                    plugManager.enablePlugin(namePlugin);
                     return "enable " + namePlugin;
                 }
                 return "plugin " + namePlugin + " now work";
             case ":disable":
-                Plugin pluginToDisable = plugManager.getPluginById(namePlugin);
-                if (pluginToDisable == null & namePlugin.equals("adminPlug"))
+                if (namePlugin.equals("adminPlug"))
                     return "please input pluginId, adminPlug - prohibited  ";
-                if (plugManager.getWorkPlugins().contains(pluginToDisable)) {
+                if (plugManager.getWorkPluginsName().contains(namePlugin)) {
                     plugManager.disablePlugin(namePlugin);
                     return "disable " + namePlugin;
                 }
                 return "plugin " + namePlugin + " now isn't work";
 
             case ":workPlug":
-                return plugManager.getWorkPlugins().toString();
+                return plugManager.getWorkPluginsName().toString();
             case ":allPlug":
                 return plugManager.getAllPlugins().keySet().toString();
             default:
