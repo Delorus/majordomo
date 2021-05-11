@@ -18,7 +18,11 @@ public class App {
 //                    TranslateBotPlugin translatePlugin = TranslateBotPlugin.newYandexTranslatePlugin();
                     var repositoryManager = RepositoryFactory.multitenancy(ds, id);
                     var statisticPlugin = new WordStatisticPlugin(new Statistics(repositoryManager.buildWordStorageRepository()), repositoryManager.buildUserRepository());
-                    return new PluginManager<>(/*translatePlugin, */statisticPlugin, new WordLimiterPlugin(repositoryManager.buildUnsubscribeRepository()));
+                    var pluginManager = new PluginManager<>(/*translatePlugin, */statisticPlugin, new WordLimiterPlugin(repositoryManager.buildUnsubscribeRepository()));
+                    AdministrationPlugin administartionPlugin = new AdministrationPlugin(pluginManager);
+                    pluginManager.enableAdminPlugin(administartionPlugin);
+                    return pluginManager;
+
                 },
                 new TenantIdExtractor()
         );

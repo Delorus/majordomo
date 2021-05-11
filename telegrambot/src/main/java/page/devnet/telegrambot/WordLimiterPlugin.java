@@ -8,6 +8,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
+import page.devnet.database.repository.CRUDRepository;
 import page.devnet.database.repository.UnsubscribeRepository;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.telegrambot.util.CommandUtils;
@@ -28,6 +29,13 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMethod>> {
+
+    private final String nameWordLimiterPlugin = "limitPlug";
+
+    @Override
+    public String getPluginId() {
+        return nameWordLimiterPlugin;
+    }
 
     private static final Pattern WORD_PATTERN = Pattern.compile("\\w+", Pattern.UNICODE_CHARACTER_CLASS);
 

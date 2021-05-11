@@ -12,12 +12,13 @@ public class App {
         var repositoryManager = RepositoryFactory.simple(new DataSource());
 
         TranslateCliPlugin translatePlugin = TranslateCliPlugin.newYandexTranslatePlugin();
-        WordStatisticPlugin statisticPlugin = new WordStatisticPlugin(new Statistics(repositoryManager.buildWordStorageRepository()));
-
+        WordStatisticCliPlugin statisticPlugin = new WordStatisticCliPlugin(new Statistics(repositoryManager.buildWordStorageRepository()));
         var manager = new PluginManager<>(translatePlugin, statisticPlugin);
+        AdministrationCliPlugin administrationCliPlugin = new AdministrationCliPlugin(manager);
+        manager.enableAdminPlugin(administrationCliPlugin);
 
         Interpreter interpreter = new Interpreter(manager);
-        interpreter.setCommands(translatePlugin, statisticPlugin);
+        interpreter.setCommands(translatePlugin, statisticPlugin, administrationCliPlugin);
         interpreter.run(System.in, System.out);
     }
 }

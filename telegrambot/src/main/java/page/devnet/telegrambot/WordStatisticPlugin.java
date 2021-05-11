@@ -3,7 +3,6 @@ package page.devnet.telegrambot;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -20,7 +19,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -35,6 +33,11 @@ import java.util.Optional;
 @Slf4j
 public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMethod>> {
 
+    @Override
+    public String getPluginId() {
+        return "statPlug";
+    }
+
     private final Statistics statistics;
 
     private final UserRepository userRepository;
@@ -47,7 +50,6 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         this.userRepository = userRepository;
         log.info("Start Word Statistic plugin");
     }
-
     @Override
     public List<PartialBotApiMethod> onEvent(Update event) {
         if (!event.hasMessage()) {
