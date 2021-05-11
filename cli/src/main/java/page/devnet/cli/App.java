@@ -12,8 +12,7 @@ public class App {
         var repositoryManager = RepositoryFactory.simple(new DataSource());
 
         TranslateCliPlugin translatePlugin = TranslateCliPlugin.newYandexTranslatePlugin();
-        WordStatisticPlugin statisticPlugin = new WordStatisticPlugin(new Statistics(repositoryManager.buildWordStorageRepository()));
-
+        WordStatisticCliPlugin statisticPlugin = new WordStatisticCliPlugin(new Statistics(repositoryManager.buildWordStorageRepository()));
         var manager = new PluginManager<>(translatePlugin, statisticPlugin);
         AdministrationCliPlugin administrationCliPlugin = new AdministrationCliPlugin(manager, repositoryManager);
         manager.enableAdminPlugin(administrationCliPlugin);

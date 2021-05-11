@@ -22,6 +22,7 @@ public class App {
                 },
                 new TenantIdExtractor()
         );
+        var wordLimiterPlugin = new WordLimiterPlugin(repositoryManager.getUnsubscribeRepository());
 
         Vertx vertx = GlobalVertxHolder.getVertx();
 
