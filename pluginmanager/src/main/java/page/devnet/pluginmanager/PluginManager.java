@@ -1,5 +1,8 @@
 package page.devnet.pluginmanager;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -7,8 +10,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -21,15 +22,25 @@ public final class PluginManager<T, R> implements MessageSubscriber<T, R> {
     private final List<Plugin<T, R>> plugins = new ArrayList<>();
     private final List<Plugin<T, R>> pluginToDisable = new ArrayList<>();
     private final List<Plugin<T, R>> pluginToEnable = new ArrayList<>();
-    private final Map<String, Plugin<T, R>> pluginsWithName = new HashMap<>();
+    private final Map<String, PluginsWithName> pluginsWithName = new HashMap<>();
+
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    private class PluginsWithName {
+        Plugin<T, R> plugin;
+        boolean isActive;
+
+    }
 
     @SafeVarargs
     public PluginManager(Plugin<T, R> plugin, Plugin<T, R>... plugins) {
         this.plugins.add(plugin);
         this.plugins.addAll(Arrays.asList(plugins));
-        this.pluginsWithName.put(plugin.getPluginId(), plugin);
+        this.pluginsWithName.put(plugin.getPluginId(), new PluginsWithName(plugin, true));
         this.pluginsWithName.putAll(Arrays.stream(plugins)
-                .collect(Collectors.toMap(Plugin::getPluginId, Function.identity())));
+                .collect(Collectors.toMap(Plugin::getPluginId, p -> new PluginsWithName(p, true))));
     }
 
     @Override
@@ -38,10 +49,12 @@ public final class PluginManager<T, R> implements MessageSubscriber<T, R> {
 
         if (pluginToDisable.size() > 0) {
             plugins.removeAll(pluginToDisable);
+            pluginToDisable.forEach(disabled -> pluginsWithName.get(disabled.getPluginId()).setActive(false));
         }
 
         if (pluginToEnable.size() > 0) {
             plugins.addAll(pluginToEnable);
+            pluginToEnable.forEach(enabled -> pluginsWithName.get(enabled.getPluginId()).setActive(true));
         }
 
         pluginToDisable.clear();
@@ -56,44 +69,30 @@ public final class PluginManager<T, R> implements MessageSubscriber<T, R> {
 
     // delete plugin by name. to safe delete use pluginToDelete list.
     public void disablePlugin(String namePluginToDisable) {
-
-        plugins.forEach(q -> {
-            if (q.getPluginId().equals(namePluginToDisable)) {
-                pluginToDisable.add(q);
-            }
-        });
+        if (pluginsWithName.get(namePluginToDisable).isActive) {
+            pluginToDisable.add(pluginsWithName.get(namePluginToDisable).getPlugin());
+        }
     }
 
     //Find plugin by id to add plug.
     public void enablePlugin(String namePluginToEnable) {
-        AtomicBoolean flag = new AtomicBoolean(false);
-
-        plugins.forEach(w -> {
-            if (w.getPluginId().equals(namePluginToEnable)) {
-                flag.set(false);
-                return;
-            } else {
-                flag.set(true);
-            }
-        });
-        if (flag.get()) plugins.forEach(p -> {
-            if (p.getPluginId().equals(namePluginToEnable)) {
-                pluginToEnable.add(p);
-            }
-        });
+        if (!pluginsWithName.get(namePluginToEnable).isActive) {
+            pluginToEnable.add(pluginsWithName.get(namePluginToEnable).getPlugin());
+            pluginsWithName.get(namePluginToEnable).setActive(true);
+        }
     }
 
-    public void enableAdminPlugin(Plugin<T, R> AdminPlugin) {
-        if (AdminPlugin.getPluginId().equals("adminPlug")) {
-            plugins.add(AdminPlugin);
-            pluginsWithName.put(AdminPlugin.getPluginId(), AdminPlugin);
+    public void enableAdminPlugin(Plugin<T, R> adminPlugin) {
+        if (adminPlugin.getPluginId().equals("adminPlug")) {
+            plugins.add(adminPlugin);
+            pluginsWithName.put(adminPlugin.getPluginId(), new PluginsWithName(adminPlugin, true));
         }
     }
 
     public List<String> getWorkPluginsName() {
         List<String> workPlugins = new ArrayList<>();
-        pluginsWithName.forEach((namePlug,plugin) -> {
-            if (plugins.contains(plugin)){
+        pluginsWithName.forEach((namePlug, pluginsWithName) -> {
+            if (pluginsWithName.isActive) {
                 workPlugins.add(namePlug);
             }
         });
@@ -101,10 +100,10 @@ public final class PluginManager<T, R> implements MessageSubscriber<T, R> {
     }
 
     public Plugin<T, R> getPluginById(String pluginId) {
-        return pluginsWithName.get(pluginId);
+        return pluginsWithName.get(pluginId).getPlugin();
     }
-
-    public Map<String, Plugin<T, R>> getAllPlugins() {
-        return pluginsWithName;
+    //TODO toString realization to String join
+    public String getAllPlugins() {
+        return pluginsWithName.keySet().toString();
     }
 }

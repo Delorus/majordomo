@@ -68,7 +68,7 @@ public class AdministrationPlugin implements Plugin<Update, List<PartialBotApiMe
             case WORKPLUG:
                 return List.of(new SendMessage(message.getChatId(),pluginManager.getWorkPluginsName().toString()).enableMarkdown(true));
             case ALLPLUG:
-                return List.of(new SendMessage(message.getChatId(),pluginManager.getAllPlugins().keySet().toString()).enableMarkdown(true));
+                return List.of(new SendMessage(message.getChatId(),pluginManager.getAllPlugins()).enableMarkdown(true));
             default:
                 return Collections.emptyList();
         }
