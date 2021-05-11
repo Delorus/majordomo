@@ -6,8 +6,8 @@ public class ParserMessage {
 
     public Command getCommandFromMessage(String message) {
         String messageToUpperCase = commandUtils.normalizeCmdMsg(message).toUpperCase().trim();
-        if (message.contains(" ")) {
-            messageToUpperCase = message.substring(0, messageToUpperCase.indexOf(" "));
+        if (messageToUpperCase.contains(" ")) {
+            messageToUpperCase = messageToUpperCase.substring(0, messageToUpperCase.indexOf(" "));
         }
         Command command = Command.NONE;
         try {
