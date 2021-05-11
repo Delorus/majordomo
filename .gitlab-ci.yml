@@ -57,7 +57,7 @@ build_image:
   only:
     - master
   retry:
-    max: 3
+    max: 2
 
 build_image-dev:
   stage: build_image
@@ -74,7 +74,7 @@ build_image-dev:
   only:
     - develop
   retry:
-    max: 3
+    max: 2
 
 deploy:
   stage: deploy
@@ -102,7 +102,7 @@ deploy:
   only:
     - master
   retry:
-    max: 3
+    max: 2
 
 deploy-dev:
   stage: deploy
@@ -131,4 +131,4 @@ deploy-dev:
   only:
     - develop
   retry:
-    max: 3
+    max: 2
