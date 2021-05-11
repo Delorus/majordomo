@@ -14,7 +14,7 @@ public class App {
         TranslateCliPlugin translatePlugin = TranslateCliPlugin.newYandexTranslatePlugin();
         WordStatisticCliPlugin statisticPlugin = new WordStatisticCliPlugin(new Statistics(repositoryManager.buildWordStorageRepository()));
         var manager = new PluginManager<>(translatePlugin, statisticPlugin);
-        AdministrationCliPlugin administrationCliPlugin = new AdministrationCliPlugin(manager, repositoryManager);
+        AdministrationCliPlugin administrationCliPlugin = new AdministrationCliPlugin(manager);
         manager.enableAdminPlugin(administrationCliPlugin);
 
         Interpreter interpreter = new Interpreter(manager);

@@ -102,6 +102,7 @@ public final class PluginManager<T, R> implements MessageSubscriber<T, R> {
     public Plugin<T, R> getPluginById(String pluginId) {
         return pluginsWithName.get(pluginId).getPlugin();
     }
+
     //TODO toString realization to String join
     public String getAllPlugins() {
         return pluginsWithName.keySet().toString();

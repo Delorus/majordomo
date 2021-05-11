@@ -1,7 +1,6 @@
 package page.devnet.cli;
 
 import lombok.extern.slf4j.Slf4j;
-import page.devnet.database.RepositoryManager;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.pluginmanager.PluginManager;
 
@@ -13,7 +12,7 @@ public class AdministrationCliPlugin implements Plugin<Event, String>, Commandab
 
     private final PluginManager plugManager;
 
-    public AdministrationCliPlugin(PluginManager plugManager, RepositoryManager repositoryManager) {
+    public AdministrationCliPlugin(PluginManager plugManager) {
         this.plugManager = plugManager;
     }
 
