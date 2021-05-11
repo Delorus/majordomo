@@ -1,5 +1,6 @@
 package page.devnet.pluginmanager;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -27,7 +28,7 @@ public final class MultiTenantPluginManager<T, R> implements MessageSubscriber<T
     }
 
     public MultiTenantPluginManager(Function<String, MessageSubscriber<T, R>> generator, Function<T, String> tenantIdExtractor) {
-        this(generator, tenantIdExtractor, event -> null);
+        this(generator, tenantIdExtractor, event -> Collections.emptyList());
     }
 
     @Override
