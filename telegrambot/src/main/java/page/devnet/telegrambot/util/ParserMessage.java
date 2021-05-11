@@ -2,14 +2,15 @@ package page.devnet.telegrambot.util;
 
 public class ParserMessage {
 
+    private CommandUtils commandUtils = new CommandUtils();
 
     public Command getCommandFromMessage(String message) {
-        String messageToUpperCase = message.toUpperCase().trim();
+        String messageToUpperCase = commandUtils.normalizeCmdMsg(message).toUpperCase().trim();
         Command command = Command.NONE;
         try {
             command = Command.valueOf(messageToUpperCase);
         } catch (IllegalArgumentException e) {
-
+            e.printStackTrace();
         }
         return command;
     }
