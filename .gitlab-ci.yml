@@ -56,6 +56,8 @@ build_image:
     - docker push $CI_REGISTRY/$CI_PROD_DOCKER_IMG
   only:
     - master
+  retry:
+    max: 3
 
 build_image-dev:
   stage: build_image
@@ -71,7 +73,8 @@ build_image-dev:
     - docker push $CI_REGISTRY/$CI_DEV_DOCKER_IMG
   only:
     - develop
-
+  retry:
+    max: 3
 
 deploy:
   stage: deploy
@@ -98,6 +101,8 @@ deploy:
       $CI_REGISTRY/$CI_PROD_DOCKER_IMG
   only:
     - master
+  retry:
+    max: 3
 
 deploy-dev:
   stage: deploy
@@ -125,3 +130,5 @@ deploy-dev:
       $CI_REGISTRY/$CI_DEV_DOCKER_IMG
   only:
     - develop
+  retry:
+    max: 3
