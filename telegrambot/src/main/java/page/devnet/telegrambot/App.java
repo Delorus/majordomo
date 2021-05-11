@@ -15,7 +15,7 @@ public class App {
         var manager = new PluginManager<>(/*translatePlugin,*/ statisticPlugin, wordLimiterPlugin);
         var administartionPlugin = new AdministrationPlugin(manager);
 
-        manager.enablePlugin(administartionPlugin);
+        manager.enableAdminPlugin(administartionPlugin);
         if (isProd(args)) {
             TelegramBotExecutor.newInProdMode().runBotWith(manager);
         } else {

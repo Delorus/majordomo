@@ -2,7 +2,11 @@ package page.devnet.pluginmanager;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -18,7 +22,6 @@ public final class PluginManager<T, R> implements MessageSubscriber<T, R> {
     private final List<Plugin<T, R>> pluginToDisable = new ArrayList<>();
     private final List<Plugin<T, R>> pluginToEnable = new ArrayList<>();
     private final Map<String, Plugin<T, R>> pluginsWithName = new HashMap<>();
-
 
     @SafeVarargs
     public PluginManager(Plugin<T, R> plugin, Plugin<T, R>... plugins) {
@@ -52,36 +55,49 @@ public final class PluginManager<T, R> implements MessageSubscriber<T, R> {
     }
 
     // delete plugin by name. to safe delete use pluginToDelete list.
-    public void disablePlugin(String namePlugin) {
+    public void disablePlugin(String namePluginToDisable) {
+
         plugins.forEach(q -> {
-            if (q.getPluginId().equals(namePlugin)) {
+            if (q.getPluginId().equals(namePluginToDisable)) {
                 pluginToDisable.add(q);
             }
         });
     }
 
     //Find plugin by id to add plug.
-    public void enablePlugin(Plugin<T, R> plugin) {
+    public void enablePlugin(String namePluginToEnable) {
         AtomicBoolean flag = new AtomicBoolean(false);
 
-        if (plugin.getPluginId().equals("adminPlug")) {
-            plugins.add(plugin);
-            pluginsWithName.put(plugin.getPluginId(), plugin);
-            return;
-        }
         plugins.forEach(w -> {
-            if (w.getPluginId().equals(plugin.getPluginId())) {
+            if (w.getPluginId().equals(namePluginToEnable)) {
                 flag.set(false);
                 return;
             } else {
                 flag.set(true);
             }
         });
-        if (flag.get()) pluginToEnable.add(plugin);
+        if (flag.get()) plugins.forEach(p -> {
+            if (p.getPluginId().equals(namePluginToEnable)) {
+                pluginToEnable.add(p);
+            }
+        });
     }
 
-    public List<Plugin<T, R>> getWorkPlugins() {
-        return plugins;
+    public void enableAdminPlugin(Plugin<T, R> AdminPlugin) {
+        if (AdminPlugin.getPluginId().equals("adminPlug")) {
+            plugins.add(AdminPlugin);
+            pluginsWithName.put(AdminPlugin.getPluginId(), AdminPlugin);
+        }
+    }
+
+    public List<String> getWorkPluginsName() {
+        List<String> workPlugins = new ArrayList<>();
+        pluginsWithName.forEach((namePlug,plugin) -> {
+            if (plugins.contains(plugin)){
+                workPlugins.add(namePlug);
+            }
+        });
+        return workPlugins;
     }
 
     public Plugin<T, R> getPluginById(String pluginId) {
