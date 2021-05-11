@@ -71,7 +71,7 @@ public class AdministrationCliPlugin implements Plugin<Event, String>, Commandab
             case ":workPlug":
                 return plugManager.getWorkPluginsName().toString();
             case ":allPlug":
-                return plugManager.getAllPlugins().keySet().toString();
+                return plugManager.getAllPlugins();
             default:
                 return "";
         }
