@@ -55,18 +55,22 @@ public class WordStorageImpl implements WordStorageRepository {
                 result.addAll(dateToWordsTable.get(date));
             }
         });
+        if (result.isEmpty()) {
+            throw new IllegalArgumentException("Empty words in base");
+        }
         return result;
     }
 
     @Override
     public Map<String, List<String>> findAllWordsByUserFrom(Instant fromDate) {
         var result = new HashMap<String, List<String>>();
-        userToDateTable.forEach((user, dates) -> {
-            result.put(user, dates.stream()
-                    .filter(fromDate::isBefore)
-                    .flatMap(date -> dateToWordsTable.get(date).stream())
-                    .collect(Collectors.toList()));
-        });
+        userToDateTable.forEach((user, dates) -> result.put(user, dates.stream()
+                .filter(fromDate::isBefore)
+                .flatMap(date -> dateToWordsTable.get(date).stream())
+                .collect(Collectors.toList())));
+        if (result.values().isEmpty()) {
+            throw new IllegalArgumentException("Empty words in base");
+        }
         return result;
     }
 }
