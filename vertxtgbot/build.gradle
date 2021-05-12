@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+    id 'java-library'
+}
+
+group 'page.devnet'
+version '0.1.0'
+
+ext {
+    vertxVersion = '3.9.1'
+    telegrambotsVersion = '4.8.1'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api "io.vertx:vertx-core:$vertxVersion"
+    api "org.telegram:telegrambots-meta:$telegrambotsVersion"
+
+    implementation "io.vertx:vertx-web:$vertxVersion"
+    implementation "io.vertx:vertx-web-client:$vertxVersion"
+    implementation "io.vertx:vertx-junit5:$vertxVersion"
+
+    testImplementation "org.telegram:telegrambots:$telegrambotsVersion"
+}

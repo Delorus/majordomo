@@ -1,0 +1,7 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    implementation "org.mapdb:mapdb:3.0.8"
+}

@@ -3,21 +3,24 @@ package page.devnet.telegrambot;
 import lombok.Setter;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
+import page.devnet.database.repository.CRUDRepository;
+import page.devnet.database.repository.UnsubscribeRepository;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.telegrambot.util.CommandUtils;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 /**
@@ -27,13 +30,22 @@ import java.util.regex.Pattern;
 @Slf4j
 public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMethod>> {
 
+    private final String nameWordLimiterPlugin = "limitPlug";
+
+    @Override
+    public String getPluginId() {
+        return nameWordLimiterPlugin;
+    }
+
     private static final Pattern WORD_PATTERN = Pattern.compile("\\w+", Pattern.UNICODE_CHARACTER_CLASS);
 
     private final ConcurrentMap<String, WordCount> countWordsByUser = new ConcurrentHashMap<>();
 
-    private volatile Set<String> unsubscribeUser = new HashSet<>();
+    private final UnsubscribeRepository unsubscribeRepository;
 
-    private AtomicBoolean copyOnWriteCasLock = new AtomicBoolean(false);
+    public WordLimiterPlugin(UnsubscribeRepository unsubscribeRepository) {
+        this.unsubscribeRepository = unsubscribeRepository;
+    }
 
     @Setter
     private CommandUtils commandUtils = new CommandUtils();
@@ -50,14 +62,15 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
         }
 
         Message message = event.getMessage();
-        var userId = formatUserName(message.getFrom());
-        if (unsubscribeUser.contains(userId)) {
+        if (unsubscribeRepository.find(message.getFrom().getId()).isPresent()) {
             return Collections.emptyList();
         }
 
+        var formattedUserName = formatUserName(message.getFrom());
+
         int wordsCount = parseWords(message.getText()).size();
 
-        var wc = countWordsByUser.merge(userId, WordCount.ofCount(wordsCount), (old, next) -> {
+        var wc = countWordsByUser.merge(formattedUserName, WordCount.ofCount(wordsCount), (old, next) -> {
             if (Duration.between(old.timestamp, next.timestamp).compareTo(Duration.ofDays(1)) >= 0) {
                 return next;
             } else {
@@ -83,7 +96,7 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
             return Collections.emptyList();
         }
 
-        msg = String.join(", ", userId, new String(Base64.decodeBase64(msg)));
+        msg = String.join(", ", formattedUserName, new String(Base64.getDecoder().decode(msg)));
         return List.of(new SendMessage(message.getChatId(), msg).enableMarkdown(true));
     }
 
@@ -91,35 +104,13 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
         var command = commandUtils.normalizeCmdMsg(message.getText());
         switch (command) {
             case "unsubscribe": {
-                unsubscribe(formatUserName(message.getFrom()));
+                unsubscribeRepository.createOrUpdate(message.getFrom().getId(), message.getFrom().getId());
                 break;
             }
             case "subscribe": {
-                subscribe(formatUserName(message.getFrom()));
+                unsubscribeRepository.delete(message.getFrom().getId());
                 break;
             }
-        }
-    }
-
-    private void unsubscribe(final String userId) {
-        try {
-            while (!copyOnWriteCasLock.compareAndSet(false, true));
-            Set<String> copySet = new HashSet<>(unsubscribeUser);
-            copySet.add(userId);
-            unsubscribeUser = copySet;
-        } finally {
-            copyOnWriteCasLock.set(false);
-        }
-    }
-
-    private void subscribe(final String userId) {
-        try {
-            while (!copyOnWriteCasLock.compareAndSet(false, true));
-            Set<String> copySet = new HashSet<>(unsubscribeUser);
-            copySet.remove(userId);
-            unsubscribeUser = copySet;
-        } finally {
-            copyOnWriteCasLock.set(false);
         }
     }
 

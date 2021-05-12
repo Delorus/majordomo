@@ -3,12 +3,12 @@ package page.devnet.telegrambot;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
+import page.devnet.database.repository.UserRepository;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.telegrambot.util.CommandUtils;
 import page.devnet.wordstat.api.Statistics;
@@ -19,12 +19,12 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author maksim
@@ -33,16 +33,23 @@ import java.util.List;
 @Slf4j
 public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMethod>> {
 
+    @Override
+    public String getPluginId() {
+        return "statPlug";
+    }
+
     private final Statistics statistics;
+
+    private final UserRepository userRepository;
 
     @Setter
     private CommandUtils commandUtils = new CommandUtils();
 
-    public WordStatisticPlugin(Statistics statistics) {
+    public WordStatisticPlugin(Statistics statistics, UserRepository userRepository) {
         this.statistics = statistics;
+        this.userRepository = userRepository;
         log.info("Start Word Statistic plugin");
     }
-
     @Override
     public List<PartialBotApiMethod> onEvent(Update event) {
         if (!event.hasMessage()) {
@@ -64,9 +71,13 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         }
 
         var message = event.getMessage();
-        var userId = formatUserName(message.getFrom()); //todo сохранять id и по нему уже потом восстанавливать нормальное имя
+        var user = userRepository.find(message.getFrom().getId());
+        if (user.isEmpty()) {
+            user = createUser(message.getFrom());
+        }
+        var formattedUserName = user.get().getFormattedUsername();
         var date = Instant.ofEpochSecond(message.getDate());
-        statistics.processText(String.valueOf(userId), date, message.getText());
+        statistics.processText(String.valueOf(formattedUserName), date, message.getText());
 
         return Collections.emptyList();
     }
@@ -93,18 +104,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                 Chart top10WordsFromLastDayByUser = statistics.getWordsCountByUserFrom(fromLastDay.toInstant());
                 sendPhoto = wrapToSendPhoto(top10WordsFromLastDayByUser, message.getChatId());
                 return List.of(sendPhoto);
-            case "flush":
-                List<String> all = statistics.flushAll();
-                if (all.isEmpty()) {
-                    return Collections.emptyList();
-                }
 
-                Path allStat = Files.createTempFile("allStat", ".csv");
-                Files.writeString(allStat, String.join("\n", all), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
-                SendDocument sendDocument = new SendDocument();
-                sendDocument.setChatId(message.getChatId());
-                sendDocument.setDocument(allStat.toFile());
-                return List.of(sendDocument);
             default:
                 return Collections.emptyList();
         }
@@ -123,16 +123,21 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         return sendPhoto;
     }
 
+    private Optional<page.devnet.database.entity.User> createUser(User tgUser) {
+        var user = new page.devnet.database.entity.User();
 
-    private String formatUserName(User user) {
-        String name = user.getUserName();
-        if (user.getFirstName() != null && !user.getFirstName().isEmpty()) {
-            name = user.getFirstName();
-
-            if (user.getLastName() != null && !user.getLastName().isEmpty()) {
-                name += " " + user.getLastName();
-            }
+        if (tgUser.getUserName() != null && !tgUser.getUserName().isEmpty()) {
+            user.setUserName(tgUser.getUserName());
         }
-        return name;
+
+        if (tgUser.getFirstName() != null && !tgUser.getFirstName().isEmpty()) {
+            user.setFirstName(tgUser.getFirstName());
+        }
+
+        if (tgUser.getLastName() != null && !tgUser.getLastName().isEmpty()) {
+            user.setLastName(tgUser.getLastName());
+        }
+
+        return Optional.of(userRepository.createOrUpdate(tgUser.getId(), user));
     }
 }

@@ -36,7 +36,9 @@ public final class FrequentlyUsedWordsChart implements Renderable {
     public void setLimit(int limit) {
         this.limit = limit;
     }
-
+    /**
+     * send empty /statf picture
+     **/
     @Override
     public Chart renderBy(XChartRenderer renderer, String titlePostfix) {
         var sortedStream = wordCounts.stream()

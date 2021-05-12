@@ -4,10 +4,12 @@ plugins {
 }
 
 dependencies {
-    // https://github.com/rubenlagus/TelegramBots
-    implementation "org.telegram:telegrambots:4.4.0.1"
-
+    // core
     implementation project(":pluginmanager")
+    implementation project(":database")
+    implementation project(":vertxtgbot")
+
+    // core plugins
     implementation project(":translate")
     implementation project(":wordstat")
 }

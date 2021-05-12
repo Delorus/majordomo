@@ -6,5 +6,8 @@ package page.devnet.pluginmanager;
  */
 public interface Plugin<T, R> {
 
+    String getPluginId();
+
     R onEvent(T event);
+
 }
