@@ -50,6 +50,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         this.userRepository = userRepository;
         log.info("Start Word Statistic plugin");
     }
+
     @Override
     public List<PartialBotApiMethod> onEvent(Update event) {
         if (!event.hasMessage()) {
@@ -87,23 +88,35 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         switch (text) {
             case "statf":
                 var fromLastDay = ZonedDateTime.now().minusDays(1);
-                Chart top10UsedWordsFromLastDay = statistics.getTop10UsedWordsFrom(fromLastDay.toInstant());
-                SendPhoto sendPhoto = wrapToSendPhoto(top10UsedWordsFromLastDay, message.getChatId());
-                return List.of(sendPhoto);
+                try {
+                    Chart top10UsedWordsFromLastDay = statistics.getTop10UsedWordsFrom(fromLastDay.toInstant());
+                    SendPhoto sendPhoto = wrapToSendPhoto(top10UsedWordsFromLastDay, message.getChatId());
+                    return List.of(sendPhoto);
+                } catch (IllegalArgumentException e) {
+                    return List.of(new SendMessage(message.getChatId(), e.getMessage()).enableMarkdown(true));
+                }
             case "state":
                 fromLastDay = ZonedDateTime.now().minusDays(1);
-                List<Chart> top10WordsFromEachUserFromLastDay = statistics.getTop10UsedWordsFromEachUser(fromLastDay.toInstant());
-                List<PartialBotApiMethod> result = new ArrayList<>();
-                for (Chart chart : top10WordsFromEachUserFromLastDay) {
-                    sendPhoto = wrapToSendPhoto(chart, message.getChatId());
-                    result.add(sendPhoto);
+                try {
+                    List<Chart> top10WordsFromEachUserFromLastDay = statistics.getTop10UsedWordsFromEachUser(fromLastDay.toInstant());
+                    List<PartialBotApiMethod> result = new ArrayList<>();
+                    for (Chart chart : top10WordsFromEachUserFromLastDay) {
+                        SendPhoto sendPhoto = wrapToSendPhoto(chart, message.getChatId());
+                        result.add(sendPhoto);
+                    }
+                    return result;
+                } catch (IllegalArgumentException e) {
+                    return List.of(new SendMessage(message.getChatId(), e.getMessage()).enableMarkdown(true));
                 }
-                return result;
             case "statu":
                 fromLastDay = ZonedDateTime.now().minusDays(1);
-                Chart top10WordsFromLastDayByUser = statistics.getWordsCountByUserFrom(fromLastDay.toInstant());
-                sendPhoto = wrapToSendPhoto(top10WordsFromLastDayByUser, message.getChatId());
-                return List.of(sendPhoto);
+                try {
+                    Chart top10WordsFromLastDayByUser = statistics.getWordsCountByUserFrom(fromLastDay.toInstant());
+                    SendPhoto sendPhoto = wrapToSendPhoto(top10WordsFromLastDayByUser, message.getChatId());
+                    return List.of(sendPhoto);
+                } catch (IllegalArgumentException e) {
+                    return List.of(new SendMessage(message.getChatId(), e.getMessage()).enableMarkdown(true));
+                }
 
             default:
                 return Collections.emptyList();
