@@ -72,7 +72,7 @@ public class IgnoreMeFilter implements MessageSubscriber<Update, List<PartialBot
             case "dontignoreme":
                 var removed = ignoreMeRepository.remove(cmd.getFrom().getId());
                 if (!removed) {
-                    return List.of(new SendMessage(cmd.getChatId(), i18n("SSBuZXZlciBpZ25vcmVkIHlvdSwgaGVyZSBtdXN0IGJlIHNvbWUgbWlzdGFrZQ==")));
+                    return List.of(new SendMessage(cmd.getChatId(), i18n("SSBuZXZlciBpZ25vcmVkIHlvdSwgdGhlcmUgbXVzdCBiZSBzb21lIG1pc3Rha2U=")));
                 }
                 return List.of(new SendMessage(cmd.getChatId(), i18n("SSB3aWxsIG5vdCBpZ25vcmUgeW91IGFueW1vcmU=")));
             default:
