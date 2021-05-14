@@ -20,10 +20,7 @@ public class App {
                     var repositoryManager = RepositoryFactory.multitenancy(ds, id);
                     var statisticPlugin = new WordStatisticPlugin(new Statistics(repositoryManager.buildWordStorageRepository()), repositoryManager.buildUserRepository());
                     var pluginManager = new PluginManager<>(statisticPlugin, new WordLimiterPlugin(repositoryManager.buildUnsubscribeRepository()));
-                    AdministrationPlugin administartionPlugin = new AdministrationPlugin(pluginManager);
-                    pluginManager.enableAdminPlugin(administartionPlugin);
                     return pluginManager;
-
                 },
                 new TenantIdExtractor()
             ),
