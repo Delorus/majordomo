@@ -4,7 +4,7 @@ import io.vertx.core.Vertx;
 
 /**
  * Из-за того что приходится использовать DI для регистрации вебхука
- * (см. {@link page.devnet.vertxtgbot.ApiContextInitializer})
+ * (см. {@link page.devnet.vertxtgbot.VertxBotSession})
  * мы не можем просто так заинжектить Vertx в нужные нам классы.
  * <p/>
  * Этот класс решает эту проблему, просто хранив глобальный синглтон Vertx.

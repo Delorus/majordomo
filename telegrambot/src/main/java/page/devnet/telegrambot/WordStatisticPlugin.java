@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -31,7 +32,7 @@ import java.util.Optional;
  * @since 19.11.2019
  */
 @Slf4j
-public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMethod>> {
+public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>> {
 
     @Override
     public String getPluginId() {
@@ -52,7 +53,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
     }
 
     @Override
-    public List<PartialBotApiMethod> onEvent(Update event) {
+    public List<PartialBotApiMethod<?>> onEvent(Update event) {
         if (!event.hasMessage()) {
             return Collections.emptyList();
         }
@@ -62,8 +63,8 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                 return executeCommand(event.getMessage());
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
-                return List.of(new SendMessage(event.getMessage()
-                        .getChatId(), "Sorry, something wrong with send chart: " + e.getMessage()));
+                var chatId = String.valueOf(event.getMessage().getChatId());
+                return List.of(new SendMessage(chatId, "Sorry, something wrong with send chart: " + e.getMessage()));
             }
         }
 
@@ -72,7 +73,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         }
 
         var message = event.getMessage();
-        var user = userRepository.find(message.getFrom().getId());
+        var user = userRepository.find(message.getFrom().getId().intValue());
         if (user.isEmpty()) {
             user = createUser(message.getFrom());
         }
@@ -83,39 +84,40 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         return Collections.emptyList();
     }
 
-    private List<PartialBotApiMethod> executeCommand(Message message) throws IOException {
+    private List<PartialBotApiMethod<?>> executeCommand(Message message) throws IOException {
         var text = commandUtils.normalizeCmdMsg(message.getText());
+        var chatId = String.valueOf(message.getChatId());
         switch (text) {
             case "statf":
                 var fromLastDay = ZonedDateTime.now().minusDays(1);
                 try {
                     Chart top10UsedWordsFromLastDay = statistics.getTop10UsedWordsFrom(fromLastDay.toInstant());
-                    SendPhoto sendPhoto = wrapToSendPhoto(top10UsedWordsFromLastDay, message.getChatId());
+                    SendPhoto sendPhoto = wrapToSendPhoto(top10UsedWordsFromLastDay, chatId);
                     return List.of(sendPhoto);
                 } catch (IllegalArgumentException e) {
-                    return List.of(new SendMessage(message.getChatId(), e.getMessage()).enableMarkdown(true));
+                    return List.of(new SendMessage(chatId, e.getMessage()));
                 }
             case "state":
                 fromLastDay = ZonedDateTime.now().minusDays(1);
                 try {
                     List<Chart> top10WordsFromEachUserFromLastDay = statistics.getTop10UsedWordsFromEachUser(fromLastDay.toInstant());
-                    List<PartialBotApiMethod> result = new ArrayList<>();
+                    List<PartialBotApiMethod<?>> result = new ArrayList<>();
                     for (Chart chart : top10WordsFromEachUserFromLastDay) {
-                        SendPhoto sendPhoto = wrapToSendPhoto(chart, message.getChatId());
+                        SendPhoto sendPhoto = wrapToSendPhoto(chart, chatId);
                         result.add(sendPhoto);
                     }
                     return result;
                 } catch (IllegalArgumentException e) {
-                    return List.of(new SendMessage(message.getChatId(), e.getMessage()).enableMarkdown(true));
+                    return List.of(new SendMessage(chatId, e.getMessage()));
                 }
             case "statu":
                 fromLastDay = ZonedDateTime.now().minusDays(1);
                 try {
                     Chart top10WordsFromLastDayByUser = statistics.getWordsCountByUserFrom(fromLastDay.toInstant());
-                    SendPhoto sendPhoto = wrapToSendPhoto(top10WordsFromLastDayByUser, message.getChatId());
+                    SendPhoto sendPhoto = wrapToSendPhoto(top10WordsFromLastDayByUser, chatId);
                     return List.of(sendPhoto);
                 } catch (IllegalArgumentException e) {
-                    return List.of(new SendMessage(message.getChatId(), e.getMessage()).enableMarkdown(true));
+                    return List.of(new SendMessage(chatId, e.getMessage()));
                 }
 
             default:
@@ -123,7 +125,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         }
     }
 
-    private SendPhoto wrapToSendPhoto(Chart chart, Long chatId) throws IOException {
+    private SendPhoto wrapToSendPhoto(Chart chart, String chatId) throws IOException {
         SendPhoto sendPhoto = new SendPhoto();
         sendPhoto.setChatId(chatId);
 
@@ -131,7 +133,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         try (InputStream in = chart.toInputStream()) {
             Files.copy(in, file, StandardCopyOption.REPLACE_EXISTING);
         }
-        sendPhoto.setPhoto(file.toFile());
+        sendPhoto.setPhoto(new InputFile(file.toFile()));
         log.info("Send new chart {} with size: {}bytes", file.toFile().getName(), file.toFile().length());
         return sendPhoto;
     }
@@ -143,7 +145,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
             user.setUserName(tgUser.getUserName());
         }
 
-        if (tgUser.getFirstName() != null && !tgUser.getFirstName().isEmpty()) {
+        if (!tgUser.getFirstName().isEmpty()) {
             user.setFirstName(tgUser.getFirstName());
         }
 
@@ -151,6 +153,6 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
             user.setLastName(tgUser.getLastName());
         }
 
-        return Optional.of(userRepository.createOrUpdate(tgUser.getId(), user));
+        return Optional.of(userRepository.createOrUpdate(tgUser.getId().intValue(), user));
     }
 }

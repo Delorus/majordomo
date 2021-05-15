@@ -32,7 +32,7 @@ final class SendMediaGroupAction implements TelegramAction {
         MultipartForm form = MultipartForm.create()
                 .attribute(SendPhoto.CHATID_FIELD, sendMediaGroup.getChatId());
 
-        InputFileHelper.addInputMediaToForm(form, sendMediaGroup.getMedia(), SendMediaGroup.MEDIA_FIELD);
+        InputFileHelper.addInputMediaToForm(form, sendMediaGroup.getMedias(), SendMediaGroup.MEDIA_FIELD);
 
         if (sendMediaGroup.getDisableNotification() != null) {
             form.attribute(SendMediaGroup.DISABLENOTIFICATION_FIELD, sendMediaGroup.getDisableNotification()

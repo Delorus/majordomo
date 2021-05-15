@@ -4,5 +4,5 @@ plugins {
 
 dependencies {
     // https://github.com/rubenlagus/TelegramBots
-    implementation "org.telegram:telegrambots-meta:4.8.1"
+    implementation "org.telegram:telegrambots-meta:5.2.0"
 }

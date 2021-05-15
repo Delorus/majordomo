@@ -4,10 +4,12 @@ import io.vertx.core.Vertx;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import page.devnet.pluginmanager.MessageSubscriber;
-import page.devnet.vertxtgbot.ApiContextInitializer;
+import page.devnet.vertxtgbot.VertxBotSession;
+import page.devnet.vertxtgbot.VertxWebhook;
 
 import java.util.List;
 
@@ -34,18 +36,18 @@ public final class TelegramBotExecutor {
         this.vertx = vertx;
     }
 
-    public void runBotWith(MessageSubscriber<Update, List<PartialBotApiMethod>> subscriber) {
+    public void runBotWith(MessageSubscriber<Update, List<PartialBotApiMethod<?>>> subscriber) {
         var telegramBot = createTelegramBot(subscriber);
 
         try {
             initTelegramConnection(telegramBot, isProd);
-        } catch (TelegramApiRequestException e) {
+        } catch (TelegramApiException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
 
-    private TelegramBot createTelegramBot(MessageSubscriber<Update, List<PartialBotApiMethod>> subscriber) {
+    private TelegramBot createTelegramBot(MessageSubscriber<Update, List<PartialBotApiMethod<?>>> subscriber) {
         TelegramBot.Setting setting = TelegramBot.Setting.builder()
                 .name(System.getenv("TG_BOT_NAME"))
                 .token(System.getenv("TG_BOT_TOKEN"))
@@ -55,18 +57,20 @@ public final class TelegramBotExecutor {
         return new TelegramBot(vertx, setting, subscriber);
     }
 
-    private void initTelegramConnection(TelegramBot bot, boolean isProdEnv) throws TelegramApiRequestException {
-        ApiContextInitializer.init(isProdEnv);
+    private void initTelegramConnection(TelegramBot bot, boolean isProdEnv) throws TelegramApiException {
 
         TelegramBotsApi api;
         if (isProdEnv) {
-            api = new TelegramBotsApi(System.getenv("EXTERNAL_URI"), "http://0.0.0.0:" + System.getenv("PORT") + "/");
+            var webhook = new VertxWebhook(vertx);
+            webhook.setInternalUrl("http://0.0.0.0:" + System.getenv("PORT") + "/");
+            api = new TelegramBotsApi(VertxBotSession.class, webhook);
         } else {
-            api = new TelegramBotsApi();
+            api = new TelegramBotsApi(VertxBotSession.class);
         }
 
         if (isProdEnv) {
-            api.registerBot(bot.atProductionBotManager());
+            var setWebhook = new SetWebhook(System.getenv("EXTERNAL_URI"));
+            api.registerBot(bot.atProductionBotManager(), setWebhook);
         } else {
             api.registerBot(bot.atDevBotManager());
         }
