@@ -38,7 +38,7 @@ class DefaultBotActionTest {
     public void sendText() throws Throwable {
         // Setup
         SendMessage msg = new SendMessage();
-        msg.setChatId(123L);
+        msg.setChatId("123");
         msg.setText("hello world!");
 
         tgServer.recordRequest(() -> {

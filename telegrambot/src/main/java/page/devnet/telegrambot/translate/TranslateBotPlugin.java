@@ -2,6 +2,7 @@ package page.devnet.telegrambot.translate;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -22,7 +23,7 @@ import java.util.List;
  * @since 23.03.19
  */
 @Slf4j
-public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotApiMethod>> {
+public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>> {
 
     //todo it's not thread safe
     private boolean stop = false;
@@ -47,7 +48,7 @@ public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotA
     }
 
     @Override
-    public List<PartialBotApiMethod> onEvent(Update update) {
+    public List<PartialBotApiMethod<?>> onEvent(Update update) {
         if (!update.hasMessage() || !update.getMessage().hasText()) {
             return Collections.emptyList();
         }
@@ -55,7 +56,7 @@ public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotA
         return dispatch(update);
     }
 
-    private List<PartialBotApiMethod> dispatch(Update update) {
+    private List<PartialBotApiMethod<?>> dispatch(Update update) {
         if (update.getMessage().isCommand()) {
             return executeCommand(update.getMessage());
         }
@@ -67,7 +68,7 @@ public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotA
         return translate(update);
     }
 
-    private List<PartialBotApiMethod> executeCommand(Message message) {
+    private List<PartialBotApiMethod<?>> executeCommand(Message message) {
         String command = commandUtils.normalizeCmdMsg(message.getText());
         switch (command) {
             case "stoptrans":
@@ -80,31 +81,30 @@ public final class TranslateBotPlugin implements Plugin<Update, List<PartialBotA
         return Collections.emptyList();
     }
 
-    private List<PartialBotApiMethod> translate(Update update) {
+    private List<PartialBotApiMethod<?>> translate(Update update) {
         Message inMsg = update.getMessage();
+        String chatID = String.valueOf(inMsg.getChatId());
         try {
             String en = service.transRuToEn(inMsg.getText());
             if (en.isEmpty()) {
                 return Collections.emptyList();
             }
 
-            Long chatID = inMsg.getChatId();
-
             String response = "*" + formatUserName(update.getMessage().getFrom()) + " wrote:*\n" + en;
 
-            List<PartialBotApiMethod> result = new ArrayList<>();
+            List<PartialBotApiMethod<?>> result = new ArrayList<>();
             result.add(new DeleteMessage(chatID, inMsg.getMessageId()));
-            result.add(new SendMessage(chatID, response).enableMarkdown(true));
+            result.add(SendMessage.builder().chatId(chatID).text(response).parseMode(ParseMode.MARKDOWN).build());
             return result;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return Collections.singletonList(new SendMessage(inMsg.getChatId(), "Извините, произошла ошибка."));
+            return Collections.singletonList(new SendMessage(chatID, "Извините, произошла ошибка."));
         }
     }
 
     private String formatUserName(User user) {
         String name = user.getUserName();
-        if (user.getFirstName() != null && !user.getFirstName().isEmpty()) {
+        if (!user.getFirstName().isEmpty()) {
             name = user.getFirstName();
 
             if (user.getLastName() != null && !user.getLastName().isEmpty()) {

@@ -1,8 +1,13 @@
 package page.devnet.vertxtgbot.tgapi;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.codec.BodyCodec;
 import io.vertx.ext.web.multipart.MultipartForm;
 import lombok.extern.slf4j.Slf4j;
+
 
 /**
  * @author sherb
@@ -26,6 +31,13 @@ class VertxWebClientWrapper implements Transport {
                 log.error("Failed to send command to {}: {}", url, resp.cause());
             }
         });
+    }
+
+    @Override
+    public void sendWithResponse(String url, MultipartForm multipartForm, Handler<AsyncResult<HttpResponse<String>>> responseHandler) {
+        client.post("/bot"+botToken+"/"+url)
+                .as(BodyCodec.string())
+                .sendMultipartForm(multipartForm, responseHandler);
     }
 
     @Override

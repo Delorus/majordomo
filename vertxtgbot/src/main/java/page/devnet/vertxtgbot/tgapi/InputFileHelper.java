@@ -52,7 +52,6 @@ final class InputFileHelper {
         }
     }
 
-    @SuppressWarnings("rawtypes") // сырые типы из внешнего апи, ничего с ними не поделать
     public static void addInputMediaToForm(MultipartForm form, List<InputMedia> media, String field) {
         for (InputMedia inputMedia : media) {
             addInputMediaToForm(form, inputMedia, "");
@@ -61,11 +60,10 @@ final class InputFileHelper {
         form.attribute(field, Json.encode(media));
     }
 
-    @SuppressWarnings("rawtypes") // сырые типы из внешнего апи, ничего с ними не поделать
     public static void addInputMediaToForm(MultipartForm form, InputMedia media, String field) {
         if (media.isNewMedia()) {
-            if (media.getMediaFile() != null) {
-                File file = media.getMediaFile();
+            if (media.getNewMediaFile() != null) {
+                File file = media.getNewMediaFile();
                 form.binaryFileUpload(media.getMediaName(), media.getMediaName(), file.getAbsolutePath(), APPLICATION_OCTET_STREAM);
             } else if (media.getNewMediaStream() != null) {
                 throw new UnsupportedOperationException("Upload media via InputStream is not supported to ensure non-blocking operations");

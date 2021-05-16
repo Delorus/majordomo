@@ -3,12 +3,12 @@ package page.devnet.telegrambot;
 import lombok.Setter;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
-import page.devnet.database.repository.CRUDRepository;
 import page.devnet.database.repository.UnsubscribeRepository;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.telegrambot.util.CommandUtils;
@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
  * @since 14.05.2020
  */
 @Slf4j
-public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMethod>> {
+public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>> {
 
     private final String nameWordLimiterPlugin = "limitPlug";
 
@@ -51,7 +51,7 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
     private CommandUtils commandUtils = new CommandUtils();
 
     @Override
-    public List<PartialBotApiMethod> onEvent(Update event) {
+    public List<PartialBotApiMethod<?>> onEvent(Update event) {
         if (!event.hasMessage() || !event.getMessage().hasText()) {
             return Collections.emptyList();
         }
@@ -62,7 +62,7 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
         }
 
         Message message = event.getMessage();
-        if (unsubscribeRepository.find(message.getFrom().getId()).isPresent()) {
+        if (unsubscribeRepository.find(message.getFrom().getId().intValue()).isPresent()) {
             return Collections.emptyList();
         }
 
@@ -97,18 +97,23 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
         }
 
         msg = String.join(", ", formattedUserName, new String(Base64.getDecoder().decode(msg)));
-        return List.of(new SendMessage(message.getChatId(), msg).enableMarkdown(true));
+        var chatId = message.getChatId();
+        return List.of(SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text(msg)
+                .parseMode(ParseMode.MARKDOWN)
+                .build());
     }
 
     private void executeCommand(Message message) {
         var command = commandUtils.normalizeCmdMsg(message.getText());
         switch (command) {
             case "unsubscribe": {
-                unsubscribeRepository.createOrUpdate(message.getFrom().getId(), message.getFrom().getId());
+                unsubscribeRepository.createOrUpdate(message.getFrom().getId().intValue(), message.getFrom().getId().intValue());
                 break;
             }
             case "subscribe": {
-                unsubscribeRepository.delete(message.getFrom().getId());
+                unsubscribeRepository.delete(message.getFrom().getId().intValue());
                 break;
             }
         }
@@ -117,7 +122,7 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
     // copy-paste
     private String formatUserName(User user) {
         String name = user.getUserName();
-        if (user.getFirstName() != null && !user.getFirstName().isEmpty()) {
+        if (!user.getFirstName().isEmpty()) {
             name = user.getFirstName();
 
             if (user.getLastName() != null && !user.getLastName().isEmpty()) {

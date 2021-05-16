@@ -16,19 +16,19 @@ import java.util.List;
  * @author sherb
  * @since 14.05.2021
  */
-public class IgnoreMeFilter implements MessageSubscriber<Update, List<PartialBotApiMethod>> {
+public class IgnoreMeFilter implements MessageSubscriber<Update, List<PartialBotApiMethod<?>>> {
 
-    private final MessageSubscriber<Update, List<PartialBotApiMethod>> subscriber;
+    private final MessageSubscriber<Update, List<PartialBotApiMethod<?>>> subscriber;
     private final IgnoreMeRepository ignoreMeRepository;
     private final CommandUtils commandUtils = new CommandUtils();
 
-    public IgnoreMeFilter(MessageSubscriber<Update, List<PartialBotApiMethod>> subscriber, IgnoreMeRepository ignoreMeRepository) {
+    public IgnoreMeFilter(MessageSubscriber<Update, List<PartialBotApiMethod<?>>> subscriber, IgnoreMeRepository ignoreMeRepository) {
         this.subscriber = subscriber;
         this.ignoreMeRepository = ignoreMeRepository;
     }
 
     @Override
-    public List<List<PartialBotApiMethod>> consume(Update event) {
+    public List<List<PartialBotApiMethod<?>>> consume(Update event) {
         if (!event.hasMessage()) {
             return subscriber.consume(event);
         }
@@ -42,7 +42,7 @@ public class IgnoreMeFilter implements MessageSubscriber<Update, List<PartialBot
             }
         }
 
-        Integer id = msg.getFrom().getId();
+        Integer id = msg.getFrom().getId().intValue();
         if (ignoreMeRepository.contains(id)) {
             return Collections.emptyList();
         }
@@ -61,20 +61,22 @@ public class IgnoreMeFilter implements MessageSubscriber<Update, List<PartialBot
         }
     }
 
-    private List<PartialBotApiMethod> execCmd(Message cmd) {
+    private List<PartialBotApiMethod<?>> execCmd(Message cmd) {
+        var id = cmd.getFrom().getId().intValue();
+        var chatId = String.valueOf(cmd.getChatId());
         switch (commandUtils.normalizeCmdMsg(cmd.getText())) {
             case "ignoremeplease":
-                var added = ignoreMeRepository.add(cmd.getFrom().getId());
+                var added = ignoreMeRepository.add(id);
                 if (!added) {
-                    return List.of(new SendMessage(cmd.getChatId(), i18n("TGEtbGEtbGEsIGkgZG9uJ3QgbGlzdGVuIHRvIHlvdSwgeW91J3JlIGlnbm9yZWQ=")));
+                    return List.of(new SendMessage(chatId, i18n("TGEtbGEtbGEsIGkgZG9uJ3QgbGlzdGVuIHRvIHlvdSwgeW91J3JlIGlnbm9yZWQ=")));
                 }
-                return List.of(new SendMessage(cmd.getChatId(), i18n("QXMgeW91ciB3aXNo")));
+                return List.of(new SendMessage(chatId, i18n("QXMgeW91ciB3aXNo")));
             case "dontignoreme":
-                var removed = ignoreMeRepository.remove(cmd.getFrom().getId());
+                var removed = ignoreMeRepository.remove(id);
                 if (!removed) {
-                    return List.of(new SendMessage(cmd.getChatId(), i18n("SSBuZXZlciBpZ25vcmVkIHlvdSwgdGhlcmUgbXVzdCBiZSBzb21lIG1pc3Rha2U=")));
+                    return List.of(new SendMessage(chatId, i18n("SSBuZXZlciBpZ25vcmVkIHlvdSwgdGhlcmUgbXVzdCBiZSBzb21lIG1pc3Rha2U=")));
                 }
-                return List.of(new SendMessage(cmd.getChatId(), i18n("SSB3aWxsIG5vdCBpZ25vcmUgeW91IGFueW1vcmU=")));
+                return List.of(new SendMessage(chatId, i18n("SSB3aWxsIG5vdCBpZ25vcmUgeW91IGFueW1vcmU=")));
             default:
                 throw new IllegalStateException("it can't happen");
         }

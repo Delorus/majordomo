@@ -33,8 +33,8 @@ public class VertxWebhook implements Webhook {
     private String keystoreServerPwd;
     private String internalUrl;
 
-    public VertxWebhook() {
-        this.vertx = GlobalVertxHolder.getVertx();
+    public VertxWebhook(Vertx vertx) {
+        this.vertx = vertx;
 
         router = Router.router(vertx);
     }
