@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import page.devnet.vertxtgbot.util.ReferenceBot;
 import page.devnet.vertxtgbot.util.TestTelegramServer;
 
@@ -42,11 +43,11 @@ public class SendDocumentActionTest {
     public void sendDocument() throws Throwable {
         // Setup
         SendDocument document = new SendDocument();
-        document.setChatId(123L);
+        document.setChatId("123");
         document.enableNotification();
         document.setCaption("test file");
 
-        document.setDocument(new File("src/test/resources/test_files/document.txt"));
+        document.setDocument(new InputFile(new File("src/test/resources/test_files/document.txt")));
 
         tgServer.recordRequest(() -> {
             referenceClient.execute(document);
