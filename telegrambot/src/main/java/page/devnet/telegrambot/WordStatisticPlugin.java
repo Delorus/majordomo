@@ -16,10 +16,6 @@ import page.devnet.wordstat.api.Statistics;
 import page.devnet.wordstat.chart.Chart;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -92,7 +88,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                 var fromLastDay = ZonedDateTime.now().minusDays(1);
                 try {
                     Chart top10UsedWordsFromLastDay = statistics.getTop10UsedWordsFrom(fromLastDay.toInstant());
-                    SendPhoto sendPhoto = wrapToSendPhoto(top10UsedWordsFromLastDay, chatId);
+                    SendPhoto sendPhoto = wrapToSendPhoto(top10UsedWordsFromLastDay, "top 10 used words from last day", chatId);
                     return List.of(sendPhoto);
                 } catch (IllegalArgumentException e) {
                     return List.of(new SendMessage(chatId, e.getMessage()));
@@ -103,7 +99,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                     List<Chart> top10WordsFromEachUserFromLastDay = statistics.getTop10UsedWordsFromEachUser(fromLastDay.toInstant());
                     List<PartialBotApiMethod<?>> result = new ArrayList<>();
                     for (Chart chart : top10WordsFromEachUserFromLastDay) {
-                        SendPhoto sendPhoto = wrapToSendPhoto(chart, chatId);
+                        SendPhoto sendPhoto = wrapToSendPhoto(chart, "top 10 words by each user from last day", chatId);
                         result.add(sendPhoto);
                     }
                     return result;
@@ -114,7 +110,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                 fromLastDay = ZonedDateTime.now().minusDays(1);
                 try {
                     Chart top10WordsFromLastDayByUser = statistics.getWordsCountByUserFrom(fromLastDay.toInstant());
-                    SendPhoto sendPhoto = wrapToSendPhoto(top10WordsFromLastDayByUser, chatId);
+                    SendPhoto sendPhoto = wrapToSendPhoto(top10WordsFromLastDayByUser, "top 10 words from last day by user", chatId);
                     return List.of(sendPhoto);
                 } catch (IllegalArgumentException e) {
                     return List.of(new SendMessage(chatId, e.getMessage()));
@@ -125,16 +121,12 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
         }
     }
 
-    private SendPhoto wrapToSendPhoto(Chart chart, String chatId) throws IOException {
+    private SendPhoto wrapToSendPhoto(Chart chart, String title, String chatId) throws IOException {
         SendPhoto sendPhoto = new SendPhoto();
         sendPhoto.setChatId(chatId);
 
-        Path file = Files.createTempFile("chart", ".png");
-        try (InputStream in = chart.toInputStream()) {
-            Files.copy(in, file, StandardCopyOption.REPLACE_EXISTING);
-        }
-        sendPhoto.setPhoto(new InputFile(file.toFile()));
-        log.info("Send new chart {} with size: {}bytes", file.toFile().getName(), file.toFile().length());
+        sendPhoto.setPhoto(new InputFile(chart.toInputStream(), title));
+        log.info("Send new chart {} to group: {}", title, chatId);
         return sendPhoto;
     }
 
