@@ -112,7 +112,7 @@ deploy-dev:
   before_script:
     - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
   script:
-    - docker pull $CI_REGISTRY/$CI_DEV_DOCKER_IMG
+    - docker pull $CI_REGISTRY/$CI_DEV_DOCKER_IMG:$CI_JOB_ID
     - docker stop $CI_DEV_TG_BOT_NAME || true
     - docker rm $CI_DEV_TG_BOT_NAME || true
     - docker volume create majordomo_volume_dev
@@ -127,7 +127,7 @@ deploy-dev:
       -d
       -p $CI_DEV_DOCKER_PORT:$CI_DEV_TG_BOT_API_INT_PORT
       -p 5005:5005
-      $CI_REGISTRY/$CI_DEV_DOCKER_IMG
+      $CI_REGISTRY/$CI_DEV_DOCKER_IMG:$CI_JOB_ID
   only:
     - develop
   retry:
