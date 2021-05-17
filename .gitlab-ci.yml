@@ -1,9 +1,7 @@
 image: gradle:jdk11
 
 variables:
-  DOCKER_HOST: tcp://docker:2375/
   DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: ""
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
