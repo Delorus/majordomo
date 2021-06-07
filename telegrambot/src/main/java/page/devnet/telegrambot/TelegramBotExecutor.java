@@ -69,7 +69,7 @@ public final class TelegramBotExecutor {
         }
 
         if (isProdEnv) {
-            var setWebhook = new SetWebhook(System.getenv("EXTERNAL_URI") + System.getenv("PORT") +"/" + bot.atProductionBotManager().getBotToken());
+            var setWebhook = new SetWebhook(System.getenv("EXTERNAL_URI") +"/" + bot.atProductionBotManager().getBotToken());
             api.registerBot(bot.atProductionBotManager(), setWebhook);
         } else {
             api.registerBot(bot.atDevBotManager());
