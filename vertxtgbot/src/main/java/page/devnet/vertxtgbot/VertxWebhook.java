@@ -55,7 +55,7 @@ public class VertxWebhook implements Webhook {
     public void registerWebhook(WebhookBot callback) {
         log.info("Register route on path: /{}", callback.getBotToken());
         router.route("/" + callback.getBotToken()).handler(BodyHandler.create());
-        router.route("/" +callback.getBotToken()).handler(createHandler(callback));
+        router.route("/" + callback.getBotToken()).handler(createHandler(callback));
     }
 
     private Handler<RoutingContext> createHandler(WebhookBot callback) {
