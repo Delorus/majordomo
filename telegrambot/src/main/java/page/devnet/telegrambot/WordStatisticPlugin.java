@@ -17,6 +17,7 @@ import page.devnet.wordstat.chart.Chart;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,9 +84,10 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
     private List<PartialBotApiMethod<?>> executeCommand(Message message) throws IOException {
         var text = commandUtils.normalizeCmdMsg(message.getText());
         var chatId = String.valueOf(message.getChatId());
+        ZoneId timeZoneYekaterinburg = ZoneId.of("Asia/Yekaterinburg");
         switch (text) {
             case "statf":
-                var fromLastDay = ZonedDateTime.now().minusDays(1);
+                var fromLastDay = ZonedDateTime.now(timeZoneYekaterinburg).minusDays(1);
                 try {
                     Chart top10UsedWordsFromLastDay = statistics.getTop10UsedWordsFrom(fromLastDay.toInstant());
                     SendPhoto sendPhoto = wrapToSendPhoto(top10UsedWordsFromLastDay, "top 10 used words from last day", chatId);
@@ -94,7 +96,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                     return List.of(new SendMessage(chatId, e.getMessage()));
                 }
             case "state":
-                fromLastDay = ZonedDateTime.now().minusDays(1);
+                fromLastDay = ZonedDateTime.now(timeZoneYekaterinburg).minusDays(1);
                 try {
                     List<Chart> top10WordsFromEachUserFromLastDay = statistics.getTop10UsedWordsFromEachUser(fromLastDay.toInstant());
                     List<PartialBotApiMethod<?>> result = new ArrayList<>();
@@ -107,7 +109,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                     return List.of(new SendMessage(chatId, e.getMessage()));
                 }
             case "statu":
-                fromLastDay = ZonedDateTime.now().minusDays(1);
+                fromLastDay = ZonedDateTime.now(timeZoneYekaterinburg).minusDays(1);
                 try {
                     Chart top10WordsFromLastDayByUser = statistics.getWordsCountByUserFrom(fromLastDay.toInstant());
                     SendPhoto sendPhoto = wrapToSendPhoto(top10WordsFromLastDayByUser, "top 10 words from last day by user", chatId);
