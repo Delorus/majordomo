@@ -15,6 +15,7 @@ import page.devnet.telegrambot.util.CommandUtils;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -30,11 +31,9 @@ import java.util.regex.Pattern;
 @Slf4j
 public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>> {
 
-    private final String nameWordLimiterPlugin = "limitPlug";
-
     @Override
     public String getPluginId() {
-        return nameWordLimiterPlugin;
+        return "limitPlug";
     }
 
     private static final Pattern WORD_PATTERN = Pattern.compile("\\w+", Pattern.UNICODE_CHARACTER_CLASS);
@@ -42,9 +41,12 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
     private final ConcurrentMap<String, WordCount> countWordsByUser = new ConcurrentHashMap<>();
 
     private final UnsubscribeRepository unsubscribeRepository;
+    private final ZoneId timeZoneYekaterinburg;
 
     public WordLimiterPlugin(UnsubscribeRepository unsubscribeRepository) {
         this.unsubscribeRepository = unsubscribeRepository;
+        timeZoneYekaterinburg = ZoneId.of("Asia/Yekaterinburg");
+
     }
 
     @Setter

@@ -11,8 +11,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import page.devnet.database.repository.UserRepository;
 import page.devnet.pluginmanager.Plugin;
+import page.devnet.telegrambot.util.ChatDateTime;
 import page.devnet.telegrambot.util.CommandUtils;
-import page.devnet.telegrambot.util.DataUtils;
 import page.devnet.wordstat.api.Statistics;
 import page.devnet.wordstat.chart.Chart;
 
@@ -41,12 +41,16 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
 
     private final UserRepository userRepository;
 
+    private final ZoneId timeZoneYekaterinburg;
+
+
     @Setter
     private CommandUtils commandUtils = new CommandUtils();
 
     public WordStatisticPlugin(Statistics statistics, UserRepository userRepository) {
         this.statistics = statistics;
         this.userRepository = userRepository;
+        timeZoneYekaterinburg = ZoneId.of("Asia/Yekaterinburg");
         log.info("Start Word Statistic plugin");
     }
 
@@ -85,10 +89,9 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
     private List<PartialBotApiMethod<?>> executeCommand(Message message) throws IOException {
         var text = commandUtils.normalizeCmdMsg(message.getText());
         var chatId = String.valueOf(message.getChatId());
-        ZoneId timeZoneYekaterinburg = ZoneId.of("Asia/Yekaterinburg");
         switch (text) {
             case "statf":
-                var fromLastDay = new DataUtils(ZonedDateTime.now(timeZoneYekaterinburg),3).getMessageFromFixHoursTime();
+                var fromLastDay = new ChatDateTime(ZonedDateTime.now(timeZoneYekaterinburg)).fromFixHoursTime(3);
                 try {
                     Chart top10UsedWordsFromLastDay = statistics.getTop10UsedWordsFrom(fromLastDay.toInstant());
                     SendPhoto sendPhoto = wrapToSendPhoto(top10UsedWordsFromLastDay, "top 10 used words from last day", chatId);
@@ -97,7 +100,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                     return List.of(new SendMessage(chatId, e.getMessage()));
                 }
             case "state":
-                fromLastDay =  new DataUtils(ZonedDateTime.now(timeZoneYekaterinburg),3).getMessageFromFixHoursTime();
+                fromLastDay = new ChatDateTime(ZonedDateTime.now(timeZoneYekaterinburg)).fromFixHoursTime(3);
                 try {
                     List<Chart> top10WordsFromEachUserFromLastDay = statistics.getTop10UsedWordsFromEachUser(fromLastDay.toInstant());
                     List<PartialBotApiMethod<?>> result = new ArrayList<>();
@@ -110,7 +113,7 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
                     return List.of(new SendMessage(chatId, e.getMessage()));
                 }
             case "statu":
-                fromLastDay = new DataUtils(ZonedDateTime.now(timeZoneYekaterinburg),3).getMessageFromFixHoursTime();
+                fromLastDay = new ChatDateTime(ZonedDateTime.now(timeZoneYekaterinburg)).fromFixHoursTime(3);
                 try {
                     Chart top10WordsFromLastDayByUser = statistics.getWordsCountByUserFrom(fromLastDay.toInstant());
                     SendPhoto sendPhoto = wrapToSendPhoto(top10WordsFromLastDayByUser, "top 10 words from last day by user", chatId);
