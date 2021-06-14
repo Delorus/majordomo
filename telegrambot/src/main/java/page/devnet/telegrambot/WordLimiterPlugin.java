@@ -11,11 +11,12 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import page.devnet.database.repository.UnsubscribeRepository;
 import page.devnet.pluginmanager.Plugin;
+import page.devnet.telegrambot.util.ChatDateTime;
 import page.devnet.telegrambot.util.CommandUtils;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -41,11 +42,9 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
     private final ConcurrentMap<String, WordCount> countWordsByUser = new ConcurrentHashMap<>();
 
     private final UnsubscribeRepository unsubscribeRepository;
-    private final ZoneId timeZoneYekaterinburg;
 
     public WordLimiterPlugin(UnsubscribeRepository unsubscribeRepository) {
         this.unsubscribeRepository = unsubscribeRepository;
-        timeZoneYekaterinburg = ZoneId.of("Asia/Yekaterinburg");
 
     }
 
@@ -73,7 +72,8 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
         int wordsCount = parseWords(message.getText()).size();
 
         var wc = countWordsByUser.merge(formattedUserName, WordCount.ofCount(wordsCount), (old, next) -> {
-            if (Duration.between(old.timestamp, next.timestamp).compareTo(Duration.ofDays(1)) >= 0) {
+            var fromStartDayToNow = Duration.between(new ChatDateTime(next.timestamp).fromFixHoursTime(3), next.timestamp);
+            if (Duration.between(old.timestamp, next.timestamp).compareTo(fromStartDayToNow) >= 0) {
                 return next;
             } else {
                 return old.add(next);
@@ -149,12 +149,12 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
     @Value
     private static class WordCount {
         public static WordCount ofCount(int count) {
-            return new WordCount(count, 0, Instant.now());
+            return new WordCount(count, 0, ZonedDateTime.now(ZoneId.of("Asia/Yekaterinburg")));
         }
 
         int count;
         int prevCount;
-        Instant timestamp;
+        ZonedDateTime timestamp;
 
         public WordCount add(WordCount wc) {
             return new WordCount(count + wc.count, count, timestamp);
