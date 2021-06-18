@@ -6,6 +6,7 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
@@ -42,6 +43,10 @@ public final class TelegramSender {
             action = new SendDocumentAction((SendDocument) message);
         } else if (message instanceof SendPhoto) {
             action = new SendPhotoAction((SendPhoto) message);
+        } else if (message instanceof SendAnimation) {
+            action = new SendAnimationAction((SendAnimation) message);
+        } else if (message instanceof SendVideo) {
+            action = new SendVideoAction((SendVideo) message);
         } else if (message instanceof SetWebhook) {
             action = new SetupWebhookAction((SetWebhook) message);
         } else if (message instanceof BotApiMethod<?>){

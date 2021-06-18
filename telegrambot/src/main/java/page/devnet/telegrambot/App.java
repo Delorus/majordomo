@@ -13,13 +13,14 @@ import page.devnet.wordstat.api.Statistics;
 public class App {
 
     public static void main(String[] args) {
-        DataSource ds = new DataSource();
+        DataSource ds = isProd(args) ? new DataSource() : DataSource.inMemory();
         var manager = new IgnoreMeFilter(
             new MultiTenantPluginManager<>(
                 id -> {
                     var repositoryManager = RepositoryFactory.multitenancy(ds, id);
                     var statisticPlugin = new WordStatisticPlugin(new Statistics(repositoryManager.buildWordStorageRepository()), repositoryManager.buildUserRepository());
-                    var pluginManager = new PluginManager<>(statisticPlugin, new WordLimiterPlugin(repositoryManager.buildUnsubscribeRepository()));
+                    var yesnoplug = new YesNoPlugin();
+                    var pluginManager = new PluginManager<>(statisticPlugin, new WordLimiterPlugin(repositoryManager.buildUnsubscribeRepository()), yesnoplug);
                     return pluginManager;
                 },
                 new TenantIdExtractor()

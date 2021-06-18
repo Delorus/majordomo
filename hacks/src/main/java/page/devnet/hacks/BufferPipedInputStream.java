@@ -24,6 +24,12 @@ public class BufferPipedInputStream {
         return ByteBuffer.allocate(0);
     }
 
+    public static InputStream fromBytes(byte[] data) {
+        BufferPipedInputStream stream = new BufferPipedInputStream();
+        stream.outputStream.writeBytes(data);
+        return stream.asInputStream();
+    }
+
     private final BufferByteArrayOutputStream outputStream = new BufferByteArrayOutputStream();
 
     public OutputStream asOutputStream() {
