@@ -10,17 +10,13 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import page.devnet.hacks.BufferPipedInputStream;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.telegrambot.util.CommandUtils;
+import page.devnet.vertxtgbot.tgapi.SendExternalAnimation;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -78,21 +74,21 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                 var image = tryExecute("yes");
 
                 return List.of(
-                        new SendVideo(String.valueOf(message.getChatId()), new InputFile(image, "yes"))
+                        new SendExternalAnimation(String.valueOf(message.getChatId()), image)
                 );
             }
             case "no": {
                 var image = tryExecute("no");
 
                 return List.of(
-                        new SendVideo(String.valueOf(message.getChatId()), new InputFile(image, "yes"))
+                        new SendExternalAnimation(String.valueOf(message.getChatId()), image)
                 );
             }
             case "maybe": {
                 var image = tryExecute("maybe");
 
                 return List.of(
-                        new SendVideo(String.valueOf(message.getChatId()), new InputFile(image, "yes"))
+                        new SendExternalAnimation(String.valueOf(message.getChatId()), image)
                 );
             }
         }
@@ -100,18 +96,17 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
         return Collections.emptyList();
     }
 
-    private InputStream tryExecute(String type) {
+    private String tryExecute(String type) {
         try {
             HttpResponse response = client.execute(HttpHost.create(API_URL), new HttpGet("/api?force=" + type));
             try (InputStreamReader reader = new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)) {
                 ApiResponse resp = mapper.readValue(reader, ApiResponse.class);
 
-                byte[] image = client.execute(new HttpGet(resp.image)).getEntity().getContent().readAllBytes();
-                return BufferPipedInputStream.fromBytes(image);
+                return resp.image;
             }
         } catch (IOException e) {
             log.warn(e.getMessage(), e);
-            return new ByteArrayInputStream(new byte[0]);
+            return "";
         }
     }
 }
