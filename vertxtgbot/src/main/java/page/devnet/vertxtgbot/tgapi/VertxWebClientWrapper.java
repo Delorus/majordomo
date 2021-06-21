@@ -46,6 +46,9 @@ class VertxWebClientWrapper implements Transport {
             if (resp.failed()) {
                 log.error("Failed to send command to {}: {}", url, resp.cause());
             }
+            if (resp.result().statusCode() >= 300) {
+                log.error("Failed to send command to {}: {}", url, resp.result().bodyAsJsonObject());
+            }
         });
     }
 }
