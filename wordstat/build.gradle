@@ -5,6 +5,7 @@ plugins {
 dependencies {
     // https://github.com/knowm/XChart
     implementation "org.knowm.xchart:xchart:3.6.0"
-    implementation project(":database")
 
+    implementation project(":database")
+    implementation project(":hacks")
 }

@@ -89,10 +89,11 @@ public class VertxBotSession implements BotSession {
             return;
         }
 
-        GetUpdates action = new GetUpdates()
-                .setLimit(100)
-                .setTimeout(ApiConstants.GETUPDATES_TIMEOUT)
-                .setOffset(lastReceivedUpdate + 1);
+        GetUpdates action = GetUpdates.builder()
+                .limit(100)
+                .timeout(ApiConstants.GETUPDATES_TIMEOUT)
+                .offset(lastReceivedUpdate + 1)
+                .build();
 
         client.post("/bot" + token + "/" + GetUpdates.PATH)
                 .timeout(-1)

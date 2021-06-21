@@ -1,59 +1,53 @@
 package page.devnet.vertxtgbot.tgapi;
 
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.codec.BodyCodec;
 import io.vertx.ext.web.multipart.MultipartForm;
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.telegrambots.meta.ApiConstants;
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
-
-import java.io.File;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiValidationException;
 
 /**
  * @author maksim
  * @since 04.06.2020
  */
 @Slf4j
-public final class SetupWebhookAction {
+public final class SetupWebhookAction implements TelegramAction {
 
-    private final String token;
-    private final String url;
-    private final String publicCertificatePath;
+    private final SetWebhook setWebhook;
 
-    public SetupWebhookAction(String token, String url, String publicCertificatePath) {
-        this.token = token;
-        this.url = url;
-        this.publicCertificatePath = publicCertificatePath;
+    public SetupWebhookAction(SetWebhook setWebhook) {
+        this.setWebhook = setWebhook;
     }
 
-    public void execute(WebClient transport) {
+    public void execute(Transport transport) {
+        try {
+            setWebhook.validate();
+        } catch (TelegramApiValidationException e) {
+            throw new TelegramActionException(e);
+        }
+
         String requestUrl = SetWebhook.PATH;
 
         MultipartForm form = MultipartForm.create()
-                .attribute(SetWebhook.URL_FIELD, url);
+                .attribute(SetWebhook.URL_FIELD, setWebhook.getUrl());
 
-        if (publicCertificatePath != null) {
-            File certificate = new File(publicCertificatePath);
-            if (certificate.exists()) {
-                form.binaryFileUpload(SetWebhook.CERTIFICATE_FIELD, certificate.getName(), certificate.getAbsolutePath(), InputFileHelper.APPLICATION_OCTET_STREAM);
-            }
+        if (setWebhook.getCertificate() != null) {
+            throw new TelegramActionException("self signed certificates not supported");
         }
 
-        transport.post("/bot"+token+"/"+requestUrl)
-                .as(BodyCodec.string())
-                .sendMultipartForm(form, resp -> {
-                    if (resp.succeeded()) {
-                        JsonObject result = (JsonObject) Json.decodeValue(resp.result().body());
-                        if (result.getBoolean(ApiConstants.RESPONSE_FIELD_OK)) {
-                            log.info("Webhook successfully registered on address: {}", url);
-                        } else {
-                            throw new TelegramActionException("Error setting webhook:\n" + Json.encodePrettily(result));
-                        }
-                    } else {
-                        throw new TelegramActionException("Error setting webhook", resp.cause());
+        transport.sendWithResponse(requestUrl, form, resp -> {
+            if (resp.succeeded()) {
+                try {
+                    var ok = setWebhook.deserializeResponse(resp.result().body());
+                    if (ok) {
+                        log.info("Webhook successfully registered on address: {}", setWebhook.getUrl());
                     }
-                });
+                } catch (TelegramApiRequestException e) {
+                    throw new TelegramActionException("Error setting webhook", e);
+                }
+            } else {
+                throw new TelegramActionException("Error setting webhook", resp.cause());
+            }
+        });
     }
 }

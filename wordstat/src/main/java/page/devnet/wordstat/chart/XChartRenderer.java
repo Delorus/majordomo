@@ -1,11 +1,15 @@
 package page.devnet.wordstat.chart;
 
 import lombok.Value;
-import org.knowm.xchart.*;
+import org.knowm.xchart.BitmapEncoder;
+import org.knowm.xchart.CategoryChart;
+import org.knowm.xchart.CategoryChartBuilder;
+import org.knowm.xchart.PieChart;
+import org.knowm.xchart.PieChartBuilder;
 import org.knowm.xchart.style.CategoryStyler;
 import org.knowm.xchart.style.Styler;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -49,7 +53,7 @@ public final class XChartRenderer {
     Chart createBarChart(String title, BarChartData... data) {
         CategoryChart chart = new CategoryChartBuilder()
                 .title(title)
-                .xAxisTitle("user") //todo
+                .xAxisTitle("user")
                 .yAxisTitle("count")
                 .theme(Styler.ChartTheme.GGPlot2)
                 .build();

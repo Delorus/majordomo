@@ -6,9 +6,11 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
+import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 
 /**
  * @author maksim
@@ -26,11 +28,10 @@ public final class TelegramSender {
         }
     }
 
-    private final WebClient httpClient;
     private final VertxWebClientWrapper transport;
 
     public TelegramSender(Vertx vertx, TelegramSenderSetting options) {
-        this.httpClient = WebClient.create(vertx, options.webClientOptions);
+        WebClient httpClient = WebClient.create(vertx, options.webClientOptions);
         this.transport = new VertxWebClientWrapper(httpClient, options.botToken);
     }
 
@@ -42,6 +43,12 @@ public final class TelegramSender {
             action = new SendDocumentAction((SendDocument) message);
         } else if (message instanceof SendPhoto) {
             action = new SendPhotoAction((SendPhoto) message);
+        } else if (message instanceof SendAnimation) {
+            action = new SendAnimationAction((SendAnimation) message);
+        } else if (message instanceof SendVideo) {
+            action = new SendVideoAction((SendVideo) message);
+        } else if (message instanceof SetWebhook) {
+            action = new SetupWebhookAction((SetWebhook) message);
         } else if (message instanceof BotApiMethod<?>){
             action = new DefaultBotAction((BotApiMethod<?>) message);
         } else {
@@ -49,10 +56,5 @@ public final class TelegramSender {
         }
 
         action.execute(transport);
-    }
-
-    // лайфхак для собственных экшенов, которые не маппятся на классы из либы (PartialBotApiMethod)
-    public void send(SetupWebhookAction setupWebhookAction) {
-        setupWebhookAction.execute(httpClient);
     }
 }
