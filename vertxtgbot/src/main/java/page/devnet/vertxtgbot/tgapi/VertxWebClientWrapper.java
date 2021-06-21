@@ -46,12 +46,9 @@ class VertxWebClientWrapper implements Transport {
             if (resp.failed()) {
                 log.error("Failed to send command to {}: {}", url, resp.cause());
             }
-            //todo обработка ошибок от телеги:
-            // {
-            //  "ok": false,
-            //  "error_code": 400,
-            //  "description": "Bad Request: chat_id is empty"
-            // }
+            if (resp.result().statusCode() >= 300) {
+                log.error("Failed to send command to {}: {}", url, resp.result().bodyAsJsonObject());
+            }
         });
     }
 }
