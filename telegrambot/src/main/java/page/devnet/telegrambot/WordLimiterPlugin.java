@@ -1,7 +1,10 @@
 package page.devnet.telegrambot;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.Value;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
@@ -12,7 +15,7 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import page.devnet.database.repository.UnsubscribeRepository;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.telegrambot.util.ChatDateTime;
-import page.devnet.telegrambot.util.CommandUtils;
+import page.devnet.telegrambot.util.ParserMessage;
 
 import java.time.Duration;
 import java.time.ZoneId;
@@ -48,9 +51,6 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
 
     }
 
-    @Setter
-    private CommandUtils commandUtils = new CommandUtils();
-
     @Override
     public List<PartialBotApiMethod<?>> onEvent(Update event) {
         if (!event.hasMessage() || !event.getMessage().hasText()) {
@@ -58,8 +58,7 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
         }
 
         if (event.getMessage().isCommand()) {
-            executeCommand(event.getMessage());
-            return Collections.emptyList();
+            return executeCommand(event.getMessage());
         }
 
         Message message = event.getMessage();
@@ -81,18 +80,7 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
         });
 
         String msg = "";
-        if (wc.inRange(400)) {
-            msg = "0YHQtdCz0L7QtNC90Y8g0JLRiyDQtNC+0YHRgtCw0YLQvtGH0L3QviDQvdCw0L/QuNGB0LDQu9C4LCDQvtGC0LTQvtGF0L3QuNGC0LUu";
-        } else if (wc.inRange(600)) {
-            msg = "0JLRiyDRg9C20LUg0LTQvtCy0L7Qu9GM0L3QviDQvNC90L7Qs9C+INC90LDQv9C40YHQsNC70LgsINC80L7QttC10YIg0L/QvtGA0LAg0L7RgdGC0LDQvdC+0LLQuNGC0YzRgdGPPw==";
-        } else if (wc.inRange(1000)) {
-            msg = "0L/QvtGB0LvQtdC00L3QtdC1INC/0YDQtdC00YPQv9GA0LXQttC00LXQvdC40LUsINCS0Ysg0YPQttC1INC/0L7Rh9GC0Lgg0LTQvtGB0YLQuNCz0LvQuCDQv9C10YDQstC+0LPQviDQvNC10YHRgtCwINCyINC90LjQutGH0LXQvNC90L7RgdGC0LgsINGF0LLQsNGC0LjRgi4=";
-        } else {
-            int limit = 1300;
-            if (wc.inRange(limit) || wc.count > limit && (wc.count - wc.prevCount >= 10)) {
-                msg = "KirQntCh0KLQkNCd0J7QktCY0KHQrCEhISoq";
-            }
-        }
+        msg = checkWCRange(wc);
 
         if (msg.isEmpty()) {
             return Collections.emptyList();
@@ -107,17 +95,53 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
                 .build());
     }
 
-    private void executeCommand(Message message) {
-        var command = commandUtils.normalizeCmdMsg(message.getText());
+    private void setLimitRange(String formatedUserName, String commandParameter) {
+        var wc = countWordsByUser.get(formatedUserName);
+        String[] mass = commandParameter.split(" ");
+        wc.setFirstWarning(Integer.parseInt(mass[0]));
+        wc.setSecondWarning(Integer.parseInt(mass[1]));
+        wc.setThirdWarning(Integer.parseInt(mass[2]));
+        wc.setFinalWarning(Integer.parseInt(mass[3]));
+    }
+
+    private String checkWCRange(WordCount wc) {
+        if (wc.inRange(wc.firstWarning)) {
+            return "0YHQtdCz0L7QtNC90Y8g0JLRiyDQtNC+0YHRgtCw0YLQvtGH0L3QviDQvdCw0L/QuNGB0LDQu9C4LCDQvtGC0LTQvtGF0L3QuNGC0LUu";
+        } else if (wc.inRange(wc.secondWarning)) {
+            return "0JLRiyDRg9C20LUg0LTQvtCy0L7Qu9GM0L3QviDQvNC90L7Qs9C+INC90LDQv9C40YHQsNC70LgsINC80L7QttC10YIg0L/QvtGA0LAg0L7RgdGC0LDQvdC+0LLQuNGC0YzRgdGPPw==";
+        } else if (wc.inRange(wc.thirdWarning)) {
+            return "0L/QvtGB0LvQtdC00L3QtdC1INC/0YDQtdC00YPQv9GA0LXQttC00LXQvdC40LUsINCS0Ysg0YPQttC1INC/0L7Rh9GC0Lgg0LTQvtGB0YLQuNCz0LvQuCDQv9C10YDQstC+0LPQviDQvNC10YHRgtCwINCyINC90LjQutGH0LXQvNC90L7RgdGC0LgsINGF0LLQsNGC0LjRgi4=";
+        } else {
+            if (wc.inRange(wc.finalWarning) || wc.count > wc.finalWarning && (wc.count - wc.prevCount >= 10)) {
+                return "KirQntCh0KLQkNCd0J7QktCY0KHQrCEhISoq";
+            }
+        }
+        return "";
+    }
+
+    private List<PartialBotApiMethod<?>> executeCommand(Message message) {
+        ParserMessage parserMessage = new ParserMessage();
+        var command = parserMessage.getCommandFromMessage(message.getText());
+        var commandParameter = parserMessage.getCommandParameterFromMessage(message.getText());
         switch (command) {
-            case "unsubscribe": {
+            case UNSUBSCRIBE: {
                 unsubscribeRepository.createOrUpdate(message.getFrom().getId().intValue(), message.getFrom().getId().intValue());
-                break;
+                return Collections.emptyList();
             }
-            case "subscribe": {
+            case SUBSCRIBE: {
                 unsubscribeRepository.delete(message.getFrom().getId().intValue());
-                break;
+                return Collections.emptyList();
             }
+            case LIMITTIME: {
+                if (commandParameter.matches("(\\d+)(\\s)(\\d+)(\\s)(\\d+)(\\s)(\\d+)")) {
+                    setLimitRange(formatUserName(message.getFrom()), commandParameter);
+                    return List.of(new SendMessage(String.valueOf(message.getChatId()), "It's set"));
+                } else {
+                    return List.of(new SendMessage(String.valueOf(message.getChatId()), "Sorry, message must be in format: 'number number number number'"));
+                }
+            }
+            default:
+                return Collections.emptyList();
         }
     }
 
@@ -146,15 +170,24 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
         return result;
     }
 
-    @Value
-    private static class WordCount {
+    @RequiredArgsConstructor
+    @Getter
+    @EqualsAndHashCode
+    @ToString
+    @Setter
+    private static final class WordCount {
+
         public static WordCount ofCount(int count) {
             return new WordCount(count, 0, ZonedDateTime.now(ZoneId.of("Asia/Yekaterinburg")));
         }
 
-        int count;
-        int prevCount;
-        ZonedDateTime timestamp;
+        private final int count;
+        private final int prevCount;
+        private int firstWarning = 400;
+        private int secondWarning = 600;
+        private int thirdWarning = 1000;
+        private int finalWarning = 1300;
+        private final ZonedDateTime timestamp;
 
         public WordCount add(WordCount wc) {
             return new WordCount(count + wc.count, count, timestamp);
