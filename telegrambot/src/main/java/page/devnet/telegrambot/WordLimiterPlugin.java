@@ -1,10 +1,6 @@
 package page.devnet.telegrambot;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
@@ -97,11 +93,11 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
 
     private void setLimitRange(String formatedUserName, String commandParameter) {
         var wc = countWordsByUser.get(formatedUserName);
-        String[] mass = commandParameter.split(" ");
-        wc.setFirstWarning(Integer.parseInt(mass[0]));
-        wc.setSecondWarning(Integer.parseInt(mass[1]));
-        wc.setThirdWarning(Integer.parseInt(mass[2]));
-        wc.setFinalWarning(Integer.parseInt(mass[3]));
+        String[] warningsValue = commandParameter.split(" ");
+        wc.setFirstWarning(Integer.parseInt(warningsValue[0]));
+        wc.setSecondWarning(Integer.parseInt(warningsValue[1]));
+        wc.setThirdWarning(Integer.parseInt(warningsValue[2]));
+        wc.setFinalWarning(Integer.parseInt(warningsValue[3]));
     }
 
     private String checkWCRange(WordCount wc) {
@@ -133,7 +129,7 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
                 return Collections.emptyList();
             }
             case LIMITTIME: {
-                if (commandParameter.matches("(\\d+)(\\s)(\\d+)(\\s)(\\d+)(\\s)(\\d+)")) {
+                if (commandParameter.split(" ").length == 4) {
                     setLimitRange(formatUserName(message.getFrom()), commandParameter);
                     return List.of(new SendMessage(String.valueOf(message.getChatId()), "It's set"));
                 } else {
