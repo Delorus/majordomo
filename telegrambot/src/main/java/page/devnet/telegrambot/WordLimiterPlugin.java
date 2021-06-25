@@ -16,13 +16,11 @@ import page.devnet.telegrambot.util.ParserMessage;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author maksim
@@ -30,6 +28,7 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>> {
+
 
     @Override
     public String getPluginId() {
@@ -39,6 +38,7 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
     private static final Pattern WORD_PATTERN = Pattern.compile("\\w+", Pattern.UNICODE_CHARACTER_CLASS);
 
     private final ConcurrentMap<String, WordCount> countWordsByUser = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, List<Integer>> limitSettingByUser = new ConcurrentHashMap<>();
 
     private final UnsubscribeRepository unsubscribeRepository;
 
@@ -67,6 +67,7 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
         int wordsCount = parseWords(message.getText()).size();
 
         var wc = countWordsByUser.merge(formattedUserName, WordCount.ofCount(wordsCount), (old, next) -> {
+
             var fromStartDayToNow = Duration.between(new ChatDateTime(next.timestamp).fromFixHoursTime(3), next.timestamp);
             if (Duration.between(old.timestamp, next.timestamp).compareTo(fromStartDayToNow) >= 0) {
                 return next;
@@ -75,8 +76,12 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
             }
         });
 
+        if (!limitSettingByUser.containsKey(formattedUserName)) {
+            limitSettingByUser.put(formattedUserName, Arrays.asList(600, 800, 1000, 1300));
+        }
+
         String msg = "";
-        msg = checkWCRange(wc);
+        msg = checkWCRange(formattedUserName, wc);
 
         if (msg.isEmpty()) {
             return Collections.emptyList();
@@ -92,23 +97,23 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
     }
 
     private void setLimitRange(String formatedUserName, String commandParameter) {
-        var wc = countWordsByUser.get(formatedUserName);
-        String[] warningsValue = commandParameter.split(" ");
-        wc.setFirstWarning(Integer.parseInt(warningsValue[0]));
-        wc.setSecondWarning(Integer.parseInt(warningsValue[1]));
-        wc.setThirdWarning(Integer.parseInt(warningsValue[2]));
-        wc.setFinalWarning(Integer.parseInt(warningsValue[3]));
+        List<Integer> warningsValue = Arrays.stream(commandParameter.split(" "))
+                .map(Integer::valueOf)
+                .collect(Collectors.toList());
+        limitSettingByUser.compute(formatedUserName, (u, w) -> warningsValue);
+
     }
 
-    private String checkWCRange(WordCount wc) {
-        if (wc.inRange(wc.firstWarning)) {
+    private String checkWCRange(String username, WordCount wc) {
+        List<Integer> rangeValue = limitSettingByUser.get(username);
+        if (wc.inRange(rangeValue.get(0))) {
             return "0YHQtdCz0L7QtNC90Y8g0JLRiyDQtNC+0YHRgtCw0YLQvtGH0L3QviDQvdCw0L/QuNGB0LDQu9C4LCDQvtGC0LTQvtGF0L3QuNGC0LUu";
-        } else if (wc.inRange(wc.secondWarning)) {
+        } else if (wc.inRange(rangeValue.get(1))) {
             return "0JLRiyDRg9C20LUg0LTQvtCy0L7Qu9GM0L3QviDQvNC90L7Qs9C+INC90LDQv9C40YHQsNC70LgsINC80L7QttC10YIg0L/QvtGA0LAg0L7RgdGC0LDQvdC+0LLQuNGC0YzRgdGPPw==";
-        } else if (wc.inRange(wc.thirdWarning)) {
+        } else if (wc.inRange(rangeValue.get(2))) {
             return "0L/QvtGB0LvQtdC00L3QtdC1INC/0YDQtdC00YPQv9GA0LXQttC00LXQvdC40LUsINCS0Ysg0YPQttC1INC/0L7Rh9GC0Lgg0LTQvtGB0YLQuNCz0LvQuCDQv9C10YDQstC+0LPQviDQvNC10YHRgtCwINCyINC90LjQutGH0LXQvNC90L7RgdGC0LgsINGF0LLQsNGC0LjRgi4=";
         } else {
-            if (wc.inRange(wc.finalWarning) || wc.count > wc.finalWarning && (wc.count - wc.prevCount >= 10)) {
+            if (wc.inRange(rangeValue.get(3)) || wc.count > rangeValue.get(4) && (wc.count - wc.prevCount >= 10)) {
                 return "KirQntCh0KLQkNCd0J7QktCY0KHQrCEhISoq";
             }
         }
@@ -179,10 +184,6 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
 
         private final int count;
         private final int prevCount;
-        private int firstWarning = 400;
-        private int secondWarning = 600;
-        private int thirdWarning = 1000;
-        private int finalWarning = 1300;
         private final ZonedDateTime timestamp;
 
         public WordCount add(WordCount wc) {
