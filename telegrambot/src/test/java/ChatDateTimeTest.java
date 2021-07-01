@@ -21,6 +21,15 @@ public class ChatDateTimeTest {
     }
 
     @Test
+    void checkDataUtilsIfTimeIsNewYear() {
+        ZonedDateTime dateTimeTestIsNewYear = ZonedDateTime.parse("2018-01-01T02:00:00+05:00[Asia/Yekaterinburg]");
+        ZonedDateTime dateTimeFinalTestIsNewYear = ZonedDateTime.of(LocalDate.of(2017, 12, 31),
+                LocalTime.of(3, 0, 0), timeZoneYekaterinburg);
+        ChatDateTime chatDateTime = new ChatDateTime(dateTimeTestIsNewYear);
+        Assertions.assertEquals(dateTimeFinalTestIsNewYear, chatDateTime.fromFixHoursTime(3));
+    }
+
+    @Test
     void checkDataUtilsIfHourIsAfterFixPoint() {
         ZonedDateTime dateTimeTestIsAfterFixPoint = ZonedDateTime.parse("2018-01-02T06:00:00+05:00[Asia/Yekaterinburg]");
         ZonedDateTime dateTimeFinalTestIsAfterFixPoint = ZonedDateTime.of(LocalDate.of(2018, 1, 2),
@@ -31,20 +40,23 @@ public class ChatDateTimeTest {
 
     @Test
     void checkDataUtilsIfHourIsBeforeFixPoint() {
-        ZonedDateTime dateTimeTestIsBeforeFixPoint = ZonedDateTime.parse("2018-01-02T04:00:00+05:00[Asia/Yekaterinburg]");
-        ZonedDateTime dateTimeFinalTestIsBeforeFixPoint = ZonedDateTime.of(LocalDate.of(2018, 1, 1),
+        ZonedDateTime dateTimeTestIsBeforeFixPoint = ZonedDateTime.parse("2018-01-06T04:00:00+05:00[Asia/Yekaterinburg]");
+        ZonedDateTime dateTimeFinalTestIsBeforeFixPoint = ZonedDateTime.of(LocalDate.of(2018, 1, 5),
                 LocalTime.of(5, 0, 0), timeZoneYekaterinburg);
         ChatDateTime chatDateTime = new ChatDateTime(dateTimeTestIsBeforeFixPoint);
         Assertions.assertEquals(dateTimeFinalTestIsBeforeFixPoint, chatDateTime.fromFixHoursTime(5));
     }
 
     @Test
-    void checkDataUtilsIfTimeIsNewYear() {
-        ZonedDateTime dateTimeTestIsNewYear = ZonedDateTime.parse("2018-01-01T04:00:00+05:00[Asia/Yekaterinburg]");
-        ZonedDateTime dateTimeFinalTestIsNewYear = ZonedDateTime.of(LocalDate.of(2017, 12, 31),
-                LocalTime.of(5, 0, 0), timeZoneYekaterinburg);
-        ChatDateTime chatDateTime = new ChatDateTime(dateTimeTestIsNewYear);
-        Assertions.assertEquals(dateTimeFinalTestIsNewYear, chatDateTime.fromFixHoursTime(5));
+    void checkDataUtilsIfTimeIsNextMonth() {
+        ZonedDateTime dateTimeTestIsNewMonth = ZonedDateTime.parse("2021-05-01T02:00:00+05:00[Asia/Yekaterinburg]");
+        ZonedDateTime dateTimeFinalTestIsNewMonth = ZonedDateTime.of(LocalDate.of(2021, 4, 30),
+                LocalTime.of(3, 0, 0), timeZoneYekaterinburg);
+        ChatDateTime chatDateTime = new ChatDateTime(dateTimeTestIsNewMonth);
+        System.out.println(dateTimeTestIsNewMonth);
+        System.out.println(dateTimeFinalTestIsNewMonth);
+        Assertions.assertEquals(dateTimeFinalTestIsNewMonth, chatDateTime.fromFixHoursTime(3));
+
     }
 
 }

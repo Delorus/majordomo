@@ -2,6 +2,7 @@ package page.devnet.telegrambot.util;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZonedDateTime;
 
 public class ChatDateTime {
@@ -24,23 +25,24 @@ public class ChatDateTime {
 
         Duration checkNextDay = Duration.between(fixPointTimeDayMessage, time);
 
+        System.out.println(checkNextDay.isNegative());
         if (checkNextDay.isNegative()) {
-            if (checkIsNewYear()) {
+            if (checkIsNewYear(fixPointTimeDayMessage)) {
+                System.out.println("NY");
                 return time.with(LocalDateTime.of(time.getYear() - 1,
-                        time.getMonth().minus(1),
+                        Month.DECEMBER,
                         time.getMonth().maxLength(),
-                        fixHour,
-                        0,
-                        0));
+                        fixHour, 0, 0));
 
+            } else {
+                //TODO checktest
+                System.out.println("else");
+                //if duration is negative we need minus 1 day and 1 minus 1 month;
+                return time.with(LocalDateTime.of(time.getYear(),
+                        time.getMonth().minus(1),
+                        time.getMonth().minus(1).maxLength(),
+                        fixHour, 0, 0));
             }
-            //if duration is negative we need minus 1 day;
-            return time.with(LocalDateTime.of(time.getYear(),
-                    time.getMonth(),
-                    time.getDayOfMonth() - 1,
-                    fixHour,
-                    0,
-                    0));
         } else {
             return time.with(LocalDateTime.of(time.getYear(),
                     time.getMonth(),
@@ -50,8 +52,13 @@ public class ChatDateTime {
         }
     }
 
-    private boolean checkIsNewYear() {
-        return time.getDayOfMonth() == 1;
+    private boolean checkIsNewYear(ZonedDateTime fixPointTimeMessage) {
+        System.out.println(fixPointTimeMessage);
+        System.out.println(Duration.ofHours(24).minus(Duration.between(fixPointTimeMessage, time)));
+        System.out.println(fixPointTimeMessage.minusHours(24));
+
+        System.out.println("NY2");
+        return fixPointTimeMessage.minusHours(24).getYear() < fixPointTimeMessage.getYear();
 
     }
 
