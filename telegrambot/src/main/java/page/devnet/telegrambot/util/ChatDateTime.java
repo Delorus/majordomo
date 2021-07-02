@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZonedDateTime;
 
+
 public class ChatDateTime {
 
     private final ZonedDateTime time;
@@ -13,6 +14,12 @@ public class ChatDateTime {
         this.time = time;
     }
 
+    /**
+     *
+     * @param fixHour - from what time in 24 hours format we want to see message.
+     * @return
+     *
+     */
     public ZonedDateTime fromFixHoursTime(int fixHour) {
         //is point of time we want in hour
         ZonedDateTime fixPointTimeDayMessage = time.with(LocalDateTime.of(
@@ -25,23 +32,25 @@ public class ChatDateTime {
 
         Duration checkNextDay = Duration.between(fixPointTimeDayMessage, time);
 
-        System.out.println(checkNextDay.isNegative());
         if (checkNextDay.isNegative()) {
             if (checkIsNewYear(fixPointTimeDayMessage)) {
-                System.out.println("NY");
                 return time.with(LocalDateTime.of(time.getYear() - 1,
                         Month.DECEMBER,
                         time.getMonth().maxLength(),
                         fixHour, 0, 0));
 
             } else {
-                //TODO checktest
-                System.out.println("else");
-                //if duration is negative we need minus 1 day and 1 minus 1 month;
-                return time.with(LocalDateTime.of(time.getYear(),
-                        time.getMonth().minus(1),
-                        time.getMonth().minus(1).maxLength(),
-                        fixHour, 0, 0));
+                if (checkNextMonth(fixPointTimeDayMessage)) {
+                    return time.with(LocalDateTime.of(time.getYear(),
+                            time.getMonth().minus(1),
+                            time.getMonth().minus(1).maxLength(),
+                            fixHour, 0, 0));
+                } else {
+                    return time.with(LocalDateTime.of(time.getYear(),
+                            time.getMonth(),
+                            time.getDayOfMonth() - 1,
+                            fixHour, 0, 0));
+                }
             }
         } else {
             return time.with(LocalDateTime.of(time.getYear(),
@@ -53,13 +62,12 @@ public class ChatDateTime {
     }
 
     private boolean checkIsNewYear(ZonedDateTime fixPointTimeMessage) {
-        System.out.println(fixPointTimeMessage);
-        System.out.println(Duration.ofHours(24).minus(Duration.between(fixPointTimeMessage, time)));
-        System.out.println(fixPointTimeMessage.minusHours(24));
-
-        System.out.println("NY2");
         return fixPointTimeMessage.minusHours(24).getYear() < fixPointTimeMessage.getYear();
 
+    }
+
+    private boolean checkNextMonth(ZonedDateTime fixPointTimeMessage) {
+        return fixPointTimeMessage.minusHours(24).getMonth().getValue() < fixPointTimeMessage.getMonth().getValue();
     }
 
     public ZonedDateTime minusYears(long years) {
