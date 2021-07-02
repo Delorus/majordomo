@@ -15,20 +15,16 @@ public class ChatDateTime {
     }
 
     /**
-     *
      * @param fixHour - from what time in 24 hours format we want to see message.
      * @return
-     *
      */
     public ZonedDateTime fromFixHoursTime(int fixHour) {
-        //is point of time we want in hour
+
         ZonedDateTime fixPointTimeDayMessage = time.with(LocalDateTime.of(
                 time.getYear(),
                 time.getMonth(),
                 time.getDayOfMonth(),
-                fixHour,
-                0,
-                0));
+                fixHour, 0, 0));
 
         Duration checkNextDay = Duration.between(fixPointTimeDayMessage, time);
 
@@ -41,10 +37,17 @@ public class ChatDateTime {
 
             } else {
                 if (checkNextMonth(fixPointTimeDayMessage)) {
-                    return time.with(LocalDateTime.of(time.getYear(),
-                            time.getMonth().minus(1),
-                            time.getMonth().minus(1).maxLength(),
-                            fixHour, 0, 0));
+                    if (time.toLocalDate().isLeapYear()) {
+                        return time.with(LocalDateTime.of(time.getYear(),
+                                time.getMonth().minus(1),
+                                time.getMonth().minus(1).maxLength(),
+                                fixHour, 0, 0));
+                    } else {
+                        return time.with(LocalDateTime.of(time.getYear(),
+                                time.getMonth().minus(1),
+                                time.getMonth().minus(1).length(false),
+                                fixHour, 0, 0));
+                    }
                 } else {
                     return time.with(LocalDateTime.of(time.getYear(),
                             time.getMonth(),

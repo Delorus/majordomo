@@ -57,4 +57,13 @@ public class ChatDateTimeTest {
 
     }
 
+    @Test
+    void checkDataUtilsIfTimeIsNextMonthFromLeapYearAndBeforeFixPoint(){
+        ZonedDateTime dateTimeTestIsNewMonth = ZonedDateTime.parse("2021-03-01T02:00:00+05:00[Asia/Yekaterinburg]");
+        ZonedDateTime dateTimeFinalTestIsNewMonth = ZonedDateTime.of(LocalDate.of(2021, 2, 28),
+                LocalTime.of(3, 0, 0), timeZoneYekaterinburg);
+        ChatDateTime chatDateTime = new ChatDateTime(dateTimeTestIsNewMonth);
+        Assertions.assertEquals(dateTimeFinalTestIsNewMonth, chatDateTime.fromFixHoursTime(3));
+    }
+
 }
