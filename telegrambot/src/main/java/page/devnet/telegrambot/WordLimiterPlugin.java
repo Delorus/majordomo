@@ -104,8 +104,8 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
 
     }
 
-    private String checkWCRange(String username, WordCount wc) {
-        List<Integer> rangeValue = limitSettingByUser.get(username);
+    private String checkWCRange(String formattedUsername, WordCount wc) {
+        List<Integer> rangeValue = limitSettingByUser.get(formattedUsername);
         if (wc.inRange(rangeValue.get(0))) {
             return "0YHQtdCz0L7QtNC90Y8g0JLRiyDQtNC+0YHRgtCw0YLQvtGH0L3QviDQvdCw0L/QuNGB0LDQu9C4LCDQvtGC0LTQvtGF0L3QuNGC0LUu";
         } else if (wc.inRange(rangeValue.get(1))) {
@@ -113,7 +113,7 @@ public class WordLimiterPlugin implements Plugin<Update, List<PartialBotApiMetho
         } else if (wc.inRange(rangeValue.get(2))) {
             return "0L/QvtGB0LvQtdC00L3QtdC1INC/0YDQtdC00YPQv9GA0LXQttC00LXQvdC40LUsINCS0Ysg0YPQttC1INC/0L7Rh9GC0Lgg0LTQvtGB0YLQuNCz0LvQuCDQv9C10YDQstC+0LPQviDQvNC10YHRgtCwINCyINC90LjQutGH0LXQvNC90L7RgdGC0LgsINGF0LLQsNGC0LjRgi4=";
         } else {
-            if (wc.inRange(rangeValue.get(3)) || wc.count > rangeValue.get(4) && (wc.count - wc.prevCount >= 10)) {
+            if (wc.inRange(rangeValue.get(3)) || wc.count > rangeValue.get(3) && (wc.count - wc.prevCount >= 10)) {
                 return "KirQntCh0KLQkNCd0J7QktCY0KHQrCEhISoq";
             }
         }
