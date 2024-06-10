@@ -65,7 +65,7 @@ jobs:
       - name: connect
         run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "ls -a"
       - name: stop service
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl is-active majordomo.service && systemctl stop majordomo.service"
+        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl stop majordomo.service"
       - name: copy
         run: "scp majordomo.jar ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/apps/majordomo"
       - name: start service
