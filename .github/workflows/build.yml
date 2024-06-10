@@ -24,13 +24,13 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Package
-          path: build/libs
-
+          name: majordomo-artifact
+          path: bin/*.jar
       - name: folders
         run: ls -la
 
   test:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,3 +45,30 @@ jobs:
       - name: Test with Gradle
         run: ./gradlew test
 
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download a single artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: majordomo-artifact
+      - name: folders
+        run: ls -la
+      - name: Configure SSH create key file
+        run: install -m 600 -D /dev/null ~/.ssh/id_rsa
+      - name: populate key
+        run: echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+      - name: add host public key to known_host
+        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+      - name: connect
+        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "ls -a"
+      - name: stop service
+        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl stop majordomo.service"
+      - name: copy
+        run: "scp majordomo.jar ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/apps/majordomo"
+      - name: start service
+        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl start majordomo.service"
+      - name: cleanup
+        run: rm -rf ~/.ssh
