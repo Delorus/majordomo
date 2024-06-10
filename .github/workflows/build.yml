@@ -24,7 +24,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Package
+          name: majordomo-artifact
           path: bin/*.jar
       - name: folders
         run: ls -la
@@ -56,12 +56,10 @@ jobs:
           java-version:  21
           distribution:  'temurin'
           cache:  'gradle'
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-      - name: Build with Gradle
-        run: ./gradlew bootJar
-      - name: Build with Gradle
-        run: ./gradlew bootJar
+      - name: Download a single artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: majordomo-artifact
       - name: folders
         run: ls -la
       - name: Configure SSH
@@ -74,7 +72,7 @@ jobs:
       - name: stop service
         run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl stop majordomo.service"
       - name: copy
-        run: "scp bin/majordomo.jar ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/apps/majordomo"
+        run: "scp majordomo.jar ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/apps/majordomo"
       - name: start service
         run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl start majordomo.service"
       - name: cleanup
