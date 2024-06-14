@@ -40,7 +40,6 @@ class TelegramBot {
 
     private final String name;
     private final String token;
-    private final String path;
     private final MessageSubscriber<Update, List<PartialBotApiMethod<?>>> eventSubscriber;
     private final TelegramSender telegramSender;
     private final Instant startTime;
@@ -48,7 +47,6 @@ class TelegramBot {
     public TelegramBot(Vertx vertx, Setting setting, MessageSubscriber<Update, List<PartialBotApiMethod<?>>> subscriber) {
         this.name = setting.name;
         this.token = setting.token;
-        this.path = setting.path;
         this.eventSubscriber = subscriber;
         this.telegramSender = new TelegramSender(vertx, new TelegramSender.TelegramSenderSetting(new HttpClientOptions()
                 .setDefaultHost("api.telegram.org")
@@ -59,59 +57,8 @@ class TelegramBot {
         startTime = Instant.now();
     }
 
-    public WebhookBot atProductionBotManager() {
-        return new ProdBotManager();
-    }
-
     public LongPollingBot atDevBotManager() {
         return new DevBotManager();
-    }
-
-    private class ProdBotManager implements WebhookBot {
-
-        @Override
-        public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
-            if (update.hasMessage() && isBeforeStart(update.getMessage())) {
-                log.warn("skip message: [{}], that got before starting: [start: {}, got: {}]", update.getMessage().getText(), startTime, Instant.ofEpochMilli(update.getMessage().getDate()).atZone(ZoneOffset.UTC));
-                return null;
-            }
-
-            try {
-                eventSubscriber.consume(update).stream()
-                        .flatMap(Collection::stream)
-                        .forEach(telegramSender::send);
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-                var chatId = update.getMessage().getChatId();
-                telegramSender.send(new SendMessage(String.valueOf(chatId), e.toString()));
-            }
-
-            return null;
-        }
-
-        @Override
-        public void setWebhook(SetWebhook setWebhook) {
-            telegramSender.send(setWebhook);
-        }
-
-        private boolean isBeforeStart(Message message) {
-            return Instant.ofEpochSecond(message.getDate()).isBefore(startTime);
-        }
-
-        @Override
-        public String getBotUsername() {
-            return name;
-        }
-
-        @Override
-        public String getBotToken() {
-            return token;
-        }
-
-        @Override
-        public String getBotPath() {
-            return path;
-        }
     }
 
     private class DevBotManager implements LongPollingBot {
