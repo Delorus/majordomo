@@ -1,8 +1,11 @@
 package page.devnet.telegrambot.util;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ParserMessage {
 
-    private CommandUtils commandUtils = new CommandUtils();
+    private final CommandUtils commandUtils = new CommandUtils();
 
     public Command getCommandFromMessage(String message) {
         String messageToUpperCase = commandUtils.normalizeCmdMsg(message).toUpperCase().trim();
@@ -13,7 +16,8 @@ public class ParserMessage {
         try {
             command = Command.valueOf(messageToUpperCase);
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
+            log.error("Command is not found {}", e.getMessage());
+            return command;
         }
         return command;
     }

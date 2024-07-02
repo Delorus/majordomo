@@ -20,8 +20,8 @@ public class App {
                     var repositoryManager = RepositoryFactory.multitenancy(ds, id);
                     var statisticPlugin = new WordStatisticPlugin(new Statistics(repositoryManager.buildWordStorageRepository()), repositoryManager.buildUserRepository());
                     var yesnoplug = new YesNoPlugin();
-                    var pluginManager = new PluginManager<>(statisticPlugin, new WordLimiterPlugin(repositoryManager.buildUnsubscribeRepository()), yesnoplug);
-                    return pluginManager;
+                    var wolframAlphaPlugin = new WolframAlphaBotPlugin();
+                    return new PluginManager<>(statisticPlugin, new WordLimiterPlugin(repositoryManager.buildUnsubscribeRepository()), yesnoplug, wolframAlphaPlugin);
                 },
                 new TenantIdExtractor()
             ),

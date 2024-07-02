@@ -9,7 +9,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import page.devnet.pluginmanager.MessageSubscriber;
 import page.devnet.vertxtgbot.VertxBotSession;
-import page.devnet.vertxtgbot.VertxWebhook;
 
 import java.util.List;
 
@@ -61,16 +60,13 @@ public final class TelegramBotExecutor {
 
         TelegramBotsApi api;
         if (isProdEnv) {
-            var webhook = new VertxWebhook(vertx);
-            webhook.setInternalUrl("http://0.0.0.0:" + System.getenv("PORT") + "/");
-            api = new TelegramBotsApi(VertxBotSession.class, webhook);
+            api = new TelegramBotsApi(VertxBotSession.class);
         } else {
             api = new TelegramBotsApi(VertxBotSession.class);
         }
 
         if (isProdEnv) {
-            var setWebhook = new SetWebhook(System.getenv("EXTERNAL_URI") +"/" + bot.atProductionBotManager().getBotToken());
-            api.registerBot(bot.atProductionBotManager(), setWebhook);
+            api.registerBot(bot.atDevBotManager());
         } else {
             api.registerBot(bot.atDevBotManager());
         }

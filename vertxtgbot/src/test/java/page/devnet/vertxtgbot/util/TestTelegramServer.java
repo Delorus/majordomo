@@ -50,7 +50,7 @@ public class TestTelegramServer {
             singleRequestQueue.add(req.toString());
             event.response().end(okResponse());
             context.completeNow();
-        })).listen(context.completing());
+        })).listen(context.succeedingThenComplete());
 
         // Ждем пока сервак не стартанет
         assertTrue(context.awaitCompletion(1, TimeUnit.SECONDS));
