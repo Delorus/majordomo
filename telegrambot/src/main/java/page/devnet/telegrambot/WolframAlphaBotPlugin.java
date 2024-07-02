@@ -42,14 +42,11 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
     @Override
     public List<PartialBotApiMethod<?>> onEvent(Update update) {
         if (!update.hasMessage() || !update.getMessage().hasText()) {
-            log.info("Not a message");
             return Collections.emptyList();
         }
         if (update.getMessage().isCommand()) {
-            log.info("Command message");
             return executeCommand(update.getMessage());
         }
-        log.info("Empty update");
         return List.of();
     }
 
@@ -58,8 +55,6 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
         ParserMessage parserMessage = new ParserMessage();
         String command = commandUtils.normalizeCmdMsgWithParameter(message.getText());
         var commandParameter = parserMessage.getCommandParameterFromMessage(message.getText());
-
-        log.info("Command  {}", command);
         var chatId = String.valueOf(message.getChatId());
         if (command.equals("wolfram")) {
             try {
@@ -110,7 +105,6 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
         }
     }
     private HttpResponse tryExecute(HttpGet get, String text) throws IOException {
-
         try {
             return client.execute(get);
         } catch (IOException e) {
