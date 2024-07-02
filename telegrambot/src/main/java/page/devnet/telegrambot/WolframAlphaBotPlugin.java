@@ -30,6 +30,7 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
 
     public WolframAlphaBotPlugin() {
         client = HttpClients.createMinimal();
+        log.info("Start Wolfram Alpha plugin");
     }
 
     @Override
@@ -43,13 +44,16 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
             return Collections.emptyList();
         }
         if (update.getMessage().isCommand()) {
-            return executeCommand(update);
+
+            return executeCommand(update.getMessage());
+
         }
         return List.of();
     }
 
-    private List<PartialBotApiMethod<?>> executeCommand(Update update) {
-        Message message = update.getMessage();
+
+    private List<PartialBotApiMethod<?>> executeCommand(Message message) {
+
         String command = commandUtils.normalizeCmdMsg(message.getText());
         var chatId = String.valueOf(message.getChatId());
         if (command.equals("wolfram")) {
