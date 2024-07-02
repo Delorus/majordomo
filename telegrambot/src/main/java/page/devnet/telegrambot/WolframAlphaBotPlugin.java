@@ -44,9 +44,7 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
             return Collections.emptyList();
         }
         if (update.getMessage().isCommand()) {
-
             return executeCommand(update.getMessage());
-
         }
         return List.of();
     }
@@ -61,7 +59,7 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
                 String result = requestToWolfram(message.getText());
                 return List.of(new SendMessage(chatId, result));
             } catch (IOException | URISyntaxException e) {
-                log.error(e.getMessage(), e);
+                log.error("Error in execute command message {}, error {}", e.getMessage(), e);
                 return List.of(new SendMessage(chatId, e.getMessage()));
             }
         }
@@ -78,7 +76,7 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
                     .addParameter("i", request)
                     .build();
         } catch (URISyntaxException e) {
-            log.error(e.getMessage(), e);
+            log.error("Error uri syntax in requestToWolfram, message: {}, error {}", e.getMessage(), e);
             throw e;
         }
 
@@ -88,6 +86,7 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
         HttpResponse response = tryExecute(get, request);
         StringBuilder result = new StringBuilder();
         if (response.getStatusLine().getStatusCode() ==  200) {
+            log.info("Response code 200");
             try (InputStreamReader reader = new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)) {
                 int b;
                 while ((b = reader.read()) != -1) {
@@ -99,6 +98,7 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
             }
             return result.toString();
         }else {
+            log.error("Error while requesting WolframAlpha: code {}, message: {} ",response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
             return "";
         }
     }
