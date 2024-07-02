@@ -16,4 +16,19 @@ public class CommandUtils {
 
         return text.substring(begin, end);
     }
+
+    public String normalizeCmdMsgWithParameter(String text)  {
+        int begin = 0;
+        int end = text.length();
+
+        if (text.startsWith("/")) {
+            begin = 1;
+        }
+
+        if (text.contains(" ")) {
+            end = text.indexOf(' ');
+        }
+
+        return text.substring(begin, end);
+    }
 }

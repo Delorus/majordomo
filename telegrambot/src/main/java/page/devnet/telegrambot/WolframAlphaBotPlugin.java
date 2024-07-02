@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.telegrambot.util.CommandUtils;
+import page.devnet.telegrambot.util.ParserMessage;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -54,13 +55,15 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
 
 
     private List<PartialBotApiMethod<?>> executeCommand(Message message) {
+        ParserMessage parserMessage = new ParserMessage();
+        String command = commandUtils.normalizeCmdMsgWithParameter(message.getText());
+        var commandParameter = parserMessage.getCommandParameterFromMessage(message.getText());
 
-        String command = commandUtils.normalizeCmdMsg(message.getText());
         log.info("Command  {}", command);
         var chatId = String.valueOf(message.getChatId());
         if (command.equals("wolfram")) {
             try {
-                String result = requestToWolfram(message.getText());
+                String result = requestToWolfram(commandParameter);
                 return List.of(new SendMessage(chatId, result));
             } catch (IOException | URISyntaxException e) {
                 log.error("Error in execute command message {}, error {}", e.getMessage(), e);
@@ -107,6 +110,7 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
         }
     }
     private HttpResponse tryExecute(HttpGet get, String text) throws IOException {
+
         try {
             return client.execute(get);
         } catch (IOException e) {
