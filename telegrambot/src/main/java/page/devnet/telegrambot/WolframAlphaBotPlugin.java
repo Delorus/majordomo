@@ -87,23 +87,39 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
 
         HttpResponse response = tryExecute(get, request);
         StringBuilder result = new StringBuilder();
-        if (response.getStatusLine().getStatusCode() ==  200) {
-            log.info("Response code 200");
-            try (InputStreamReader reader = new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)) {
-                int b;
-                while ((b = reader.read()) != -1) {
-                    result.append((char) b);
+        int responseCode = response.getStatusLine().getStatusCode();
+        switch (responseCode) {
+            case 200 -> {
+                log.info("Response code 200");
+                try (InputStreamReader reader = new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)) {
+                    int b;
+                    while ((b = reader.read()) != -1) {
+                        result.append((char) b);
+                    }
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                    throw e;
                 }
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
-                throw e;
+                return result.toString();
             }
-            return result.toString();
-        }else {
-            log.error("Error while requesting WolframAlpha: code {}, message: {} ",response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
-            return "";
+            case 400 -> {
+                log.error("Error while requesting WolframAlpha: code {}, message: {} ", 400, response.getStatusLine().getReasonPhrase());
+                result.append(response.getStatusLine().getReasonPhrase());
+                return result.toString();
+            }
+            case  501 ->  {
+                log.error("Error while requesting WolframAlpha: code {}, message: {} ", 501, response.getStatusLine().getReasonPhrase());
+                result.append(response.getStatusLine().getReasonPhrase());
+                return result.toString();
+            }
+            default -> {
+                log.error("Error while requesting WolframAlpha: code {}, message: {} ", responseCode, response.getStatusLine().getReasonPhrase());
+                result.append("Error code: ").append(responseCode).append(", reason: ").append(response.getStatusLine().getReasonPhrase());
+                return result.toString();
+            }
         }
     }
+
     private HttpResponse tryExecute(HttpGet get, String text) throws IOException {
         try {
             return client.execute(get);

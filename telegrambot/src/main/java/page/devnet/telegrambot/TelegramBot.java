@@ -22,6 +22,9 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author maksim
@@ -43,6 +46,7 @@ class TelegramBot {
     private final MessageSubscriber<Update, List<PartialBotApiMethod<?>>> eventSubscriber;
     private final TelegramSender telegramSender;
     private final Instant startTime;
+    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     public TelegramBot(Vertx vertx, Setting setting, MessageSubscriber<Update, List<PartialBotApiMethod<?>>> subscriber) {
         this.name = setting.name;
@@ -64,12 +68,35 @@ class TelegramBot {
     private class DevBotManager implements LongPollingBot {
 
         @Override
+        public void onUpdatesReceived(List<Update> updates) {
+            for (var update : updates) {
+                CompletableFuture.supplyAsync(() -> {
+                            try {
+                                return eventSubscriber.consume(update);
+                            } catch (Exception e) {
+                                log.error(e.getMessage(), e);
+                                throw e;
+                            }
+                        }, executor)
+                        .thenAccept(st -> st.stream()
+                                .flatMap(Collection::stream)
+                                .forEach(telegramSender::send))
+                        .exceptionally(e -> {
+                            log.error("Send error to bot {}", e.getMessage());
+                            var chatId = update.getMessage().getChatId();
+                            telegramSender.send(new SendMessage(String.valueOf(chatId), e.toString()));
+                            return null;
+                        });
+            }
+
+        }
+
+        @Override
         public void onUpdateReceived(Update update) {
             if (update.hasMessage() && isBeforeStart(update.getMessage())) {
                 log.warn("skip message: [{}], that got before starting: [start: {}, got: {}]", update.getMessage().getText(), startTime, update.getMessage().getDate());
                 return;
             }
-
             try {
                 eventSubscriber.consume(update).stream()
                         .flatMap(Collection::stream)

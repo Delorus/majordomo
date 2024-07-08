@@ -15,6 +15,8 @@ import org.telegram.telegrambots.meta.generics.BotSession;
 import org.telegram.telegrambots.meta.generics.LongPollingBot;
 
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,7 +29,6 @@ public class VertxBotSession implements BotSession {
 
     private final AtomicBoolean running = new AtomicBoolean(false);
 
-    private final Vertx vertx;
     private final WebClient client;
 
     private BotOptions options;
@@ -38,7 +39,7 @@ public class VertxBotSession implements BotSession {
 
     public VertxBotSession() {
 
-        vertx = GlobalVertxHolder.getVertx();
+        Vertx vertx = GlobalVertxHolder.getVertx();
         client = WebClient.create(vertx, new WebClientOptions()
                 .setSsl(true)
                 .setDefaultHost("api.telegram.org")
@@ -100,7 +101,7 @@ public class VertxBotSession implements BotSession {
                 .as(BodyCodec.jsonObject())
                 .sendJson(action, resp -> {
                     if (resp.failed()) {
-                        log.warn("Something wrong", resp.cause());
+                        log.warn("Something wrong, response failed {}", resp.cause());
                         //todo test to http code (>500)
                         //todo poll next updates after delay
                         //                pollUpdates(request);
@@ -112,22 +113,21 @@ public class VertxBotSession implements BotSession {
                         log.warn("Something wrong: {}", body);
                         //todo poll next updates after delay
                     }
-
+                    List<Update> updates  = new ArrayList<>();
                     for (Object rawUpdate : body.getJsonArray("result")) {
                         if (!(rawUpdate instanceof JsonObject)) {
                             throw new RuntimeException(String.format("Got incorrect [%s] response %s", rawUpdate.getClass(), body.getJsonArray("result")
                                     .encodePrettily()));
                         }
-
                         Update update = Json.decodeValue(((JsonObject) rawUpdate).encode(), Update.class);
                         log.debug("got new update [{}]: {}", update.getUpdateId(), update.getMessage() != null ? update.getMessage().toString() : "[no text]");
-                        callback.onUpdateReceived(update);
-
+                        //callback.onUpdateReceived(update);
+                        updates.add(update);
                         if (update.getUpdateId() > lastReceivedUpdate) {
                             lastReceivedUpdate = update.getUpdateId();
                         }
                     }
-
+                    callback.onUpdatesReceived(updates);
                     pollUpdates();
                 });
     }

@@ -47,12 +47,12 @@ public final class PluginManager<T, R> implements MessageSubscriber<T, R> {
     public List<R> consume(T update) {
         List<R> response = new ArrayList<>();
 
-        if (pluginToDisable.size() > 0) {
+        if (!pluginToDisable.isEmpty()) {
             plugins.removeAll(pluginToDisable);
             pluginToDisable.forEach(disabled -> pluginsWithName.get(disabled.getPluginId()).setActive(false));
         }
 
-        if (pluginToEnable.size() > 0) {
+        if (!pluginToEnable.isEmpty()) {
             plugins.addAll(pluginToEnable);
             pluginToEnable.forEach(enabled -> pluginsWithName.get(enabled.getPluginId()).setActive(true));
         }
