@@ -9,7 +9,6 @@ import page.devnet.pluginmanager.Plugin;
 import page.devnet.pluginmanager.PluginManager;
 import page.devnet.telegrambot.util.ParserMessage;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,18 +32,13 @@ public class AdministrationPlugin implements Plugin<Update, List<PartialBotApiMe
         }
 
         if (event.getMessage().isCommand()) {
-            try {
-                return executeCommand(event.getMessage());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return Collections.emptyList();
+            return executeCommand(event.getMessage());
         }
 
         return Collections.emptyList();
     }
 
-    private List<PartialBotApiMethod<?>> executeCommand(Message message) throws IOException {
+    private List<PartialBotApiMethod<?>> executeCommand(Message message) {
         ParserMessage parserMessage = new ParserMessage();
         var parsedCommand = parserMessage.getCommandFromMessage(message.getText());
         var commandParameter = parserMessage.getCommandParameterFromMessage(message.getText());
@@ -52,7 +46,7 @@ public class AdministrationPlugin implements Plugin<Update, List<PartialBotApiMe
         var chatId = String.valueOf(message.getChatId());
         switch (parsedCommand) {
             case ENABLE:
-                if (commandParameter.equals("")) {
+                if (commandParameter.isEmpty()) {
                     return List.of(SendMessage.builder()
                             .chatId(chatId)
                             .text("please input pluginId as second parameter, example: '/enable limitPlug' " + pluginManager.getAllPlugins())
@@ -67,7 +61,7 @@ public class AdministrationPlugin implements Plugin<Update, List<PartialBotApiMe
                             .parseMode(ParseMode.MARKDOWN)
                             .build());
             case DISABLE:
-                if (commandParameter.equals("")) {
+                if (commandParameter.isEmpty()) {
                     return List.of(SendMessage.builder()
                             .chatId(chatId)
                             .text("please input pluginId as second parameter, example: '/disable limitPlug' " + pluginManager.getAllPlugins())

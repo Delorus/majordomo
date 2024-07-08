@@ -1,11 +1,13 @@
-name: build-test-deploy
+name: build-test-deploy-stage-bot
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
-      - master
+      - develop
 jobs:
   build:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,10 +66,10 @@ jobs:
       - name: connect
         run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "ls -a"
       - name: stop service
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl stop majordomo.service"
+        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl stop majordomostage.service"
       - name: copy
-        run: "scp majordomo.jar ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/apps/majordomo"
+        run: "scp majordomo.jar ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/apps/majordomostage"
       - name: start service
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl start majordomo.service"
+        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo systemctl start majordomostage.service"
       - name: cleanup
         run: rm -rf ~/.ssh
