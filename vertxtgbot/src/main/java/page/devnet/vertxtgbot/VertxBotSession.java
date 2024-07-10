@@ -111,7 +111,14 @@ public class VertxBotSession implements BotSession {
                     JsonObject body = resp.result().body();
                     if (!body.getBoolean("ok")) {
                         log.warn("Something wrong: {}", body);
+                        try {
+                            TimeUnit.SECONDS.sleep(2);
+                        }catch (InterruptedException e) {
+                            log.warn("Something wrong, sleeping for 1 sec");
+                        }
+                        pollUpdates();
                         //todo poll next updates after delay
+
                     }
                     List<Update> updates  = new ArrayList<>();
                     for (Object rawUpdate : body.getJsonArray("result")) {
