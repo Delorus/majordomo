@@ -70,6 +70,10 @@ class TelegramBot {
         @Override
         public void onUpdatesReceived(List<Update> updates) {
             for (var update : updates) {
+                if (update.hasMessage() && isBeforeStart(update.getMessage())) {
+                    log.warn("skip message: [{}], that got before starting: [start: {}, got: {}]", update.getMessage().getText(), startTime, update.getMessage().getDate());
+                    continue;
+                }
                 CompletableFuture.supplyAsync(() -> {
                             try {
                                 return eventSubscriber.consume(update);
