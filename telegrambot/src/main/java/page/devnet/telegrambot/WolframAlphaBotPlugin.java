@@ -84,8 +84,9 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
 
         HttpGet get = new HttpGet(uri);
         get.setHeader("Content-Type", "text/plain;charset=utf-8");
-
+        log.info("Wolfram try execute request");
         HttpResponse response = tryExecute(get, request);
+        log.info("Wolfram end execute request");
         StringBuilder result = new StringBuilder();
         int responseCode = response.getStatusLine().getStatusCode();
         switch (responseCode) {
