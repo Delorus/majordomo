@@ -1,8 +1,11 @@
 package page.devnet.vertxtgbot;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.codec.BodyCodec;
@@ -95,48 +98,45 @@ public class VertxBotSession implements BotSession {
                 .timeout(ApiConstants.GETUPDATES_TIMEOUT)
                 .offset(lastReceivedUpdate + 1)
                 .build();
-
-        client.post("/bot" + token + "/" + GetUpdates.PATH)
+                
+        GlobalVertxHolder.getVertx().setPeriodic(ApiConstants.GETUPDATES_TIMEOUT*1000, id -> {
+            log.debug("Polling updates...");
+            client.post("/bot" + token + "/" + GetUpdates.PATH)
                 .timeout(-1)
                 .as(BodyCodec.jsonObject())
-                .sendJson(action, resp -> {
-                    if (resp.failed()) {
-                        log.warn("Something wrong, response failed {}", resp.cause());
-                        //todo test to http code (>500)
-                        //todo poll next updates after delay
-                        //                pollUpdates(request);
-                        return;
-                    }
+                .sendJson(action, this::processResponce);
+        });
+    }
 
-                    JsonObject body = resp.result().body();
-                    if (!body.getBoolean("ok")) {
-                        log.warn("Something wrong: {}", body);
-                        try {
-                            TimeUnit.SECONDS.sleep(2);
-                        }catch (InterruptedException e) {
-                            log.warn("Something wrong, sleeping for 1 sec");
-                        }
-                        pollUpdates();
-                        //todo poll next updates after delay
+    private void processResponce(AsyncResult<HttpResponse<JsonObject>> resp) {
+        if (resp.failed()) {
+            log.warn("Something wrong, response failed {}", resp.cause());
+            //todo test to http code (>500)
+            //todo poll next updates after delay
+            //                pollUpdates(request);
+            return;
+        }
 
-                    }
-                    List<Update> updates  = new ArrayList<>();
-                    for (Object rawUpdate : body.getJsonArray("result")) {
-                        if (!(rawUpdate instanceof JsonObject)) {
-                            throw new RuntimeException(String.format("Got incorrect [%s] response %s", rawUpdate.getClass(), body.getJsonArray("result")
-                                    .encodePrettily()));
-                        }
-                        Update update = Json.decodeValue(((JsonObject) rawUpdate).encode(), Update.class);
-                        log.debug("got new update [{}]: {}", update.getUpdateId(), update.getMessage() != null ? update.getMessage().toString() : "[no text]");
-                        //callback.onUpdateReceived(update);
-                        updates.add(update);
-                        if (update.getUpdateId() > lastReceivedUpdate) {
-                            lastReceivedUpdate = update.getUpdateId();
-                        }
-                    }
-                    callback.onUpdatesReceived(updates);
-                    pollUpdates();
-                });
+        JsonObject body = resp.result().body();
+        if (!body.getBoolean("ok")) {
+            log.warn("Something wrong: {}", body);
+            return;
+        }
+        List<Update> updates  = new ArrayList<>();
+        for (Object rawUpdate : body.getJsonArray("result")) {
+            if (!(rawUpdate instanceof JsonObject)) {
+                throw new RuntimeException(String.format("Got incorrect [%s] response %s", rawUpdate.getClass(), body.getJsonArray("result")
+                        .encodePrettily()));
+            }
+            Update update = Json.decodeValue(((JsonObject) rawUpdate).encode(), Update.class);
+            log.debug("got new update [{}]: {}", update.getUpdateId(), update.getMessage() != null ? update.getMessage().toString() : "[no text]");
+            //callback.onUpdateReceived(update);
+            updates.add(update);
+            if (update.getUpdateId() > lastReceivedUpdate) {
+                lastReceivedUpdate = update.getUpdateId();
+            }
+        }
+        callback.onUpdatesReceived(updates);
     }
 
     @Override
