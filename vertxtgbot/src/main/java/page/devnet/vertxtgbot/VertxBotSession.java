@@ -102,40 +102,41 @@ public class VertxBotSession implements BotSession {
                 .sendJson(action, resp -> {
                     if (resp.failed()) {
                         log.warn("Something wrong, response failed {}", resp.cause());
-                        //todo test to http code (>500)
-                        //todo poll next updates after delay
-                        //                pollUpdates(request);
+                        //todo bakoff
+                        GlobalVertxHolder.getVertx().setTimer(1000, id -> pollUpdates());
                         return;
                     }
 
                     JsonObject body = resp.result().body();
                     if (!body.getBoolean("ok")) {
                         log.warn("Something wrong: {}", body);
-                        try {
-                            TimeUnit.SECONDS.sleep(2);
-                        }catch (InterruptedException e) {
-                            log.warn("Something wrong, sleeping for 1 sec");
-                        }
-                        pollUpdates();
-                        //todo poll next updates after delay
-
+                        //todo bakoff
+                        GlobalVertxHolder.getVertx().setTimer(1000, id -> pollUpdates());
+                        return;
                     }
-                    List<Update> updates  = new ArrayList<>();
-                    for (Object rawUpdate : body.getJsonArray("result")) {
+
+                    var jsonArrayUpdates = body.getJsonArray("result");
+                    List<Update> updates  = new ArrayList<>(jsonArrayUpdates.size());
+                    for (Object rawUpdate : jsonArrayUpdates) {
                         if (!(rawUpdate instanceof JsonObject)) {
                             throw new RuntimeException(String.format("Got incorrect [%s] response %s", rawUpdate.getClass(), body.getJsonArray("result")
                                     .encodePrettily()));
                         }
                         Update update = Json.decodeValue(((JsonObject) rawUpdate).encode(), Update.class);
                         log.debug("got new update [{}]: {}", update.getUpdateId(), update.getMessage() != null ? update.getMessage().toString() : "[no text]");
-                        //callback.onUpdateReceived(update);
                         updates.add(update);
                         if (update.getUpdateId() > lastReceivedUpdate) {
                             lastReceivedUpdate = update.getUpdateId();
                         }
                     }
-                    callback.onUpdatesReceived(updates);
-                    pollUpdates();
+
+                    try {
+                        callback.onUpdatesReceived(updates);
+                    } catch (Exception e) {
+                        log.error("Error in bot callback: {}", e);
+                    } finally {
+                        GlobalVertxHolder.getVertx().setTimer(0, id -> pollUpdates());
+                    }
                 });
     }
 
