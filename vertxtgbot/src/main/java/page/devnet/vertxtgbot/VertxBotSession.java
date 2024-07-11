@@ -135,7 +135,7 @@ public class VertxBotSession implements BotSession {
                     } catch (Exception e) {
                         log.error("Error in bot callback: {}", e);
                     } finally {
-                        GlobalVertxHolder.getVertx().setTimer(0, id -> pollUpdates());
+                        GlobalVertxHolder.getVertx().setTimer(1, id -> pollUpdates());
                     }
                 });
     }
