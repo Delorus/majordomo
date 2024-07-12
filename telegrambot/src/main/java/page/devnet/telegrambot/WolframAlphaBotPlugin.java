@@ -4,9 +4,10 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -30,7 +31,13 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
     private final HttpClient client;
 
     public WolframAlphaBotPlugin() {
-        client = HttpClients.createMinimal();
+        RequestConfig config = RequestConfig.custom()
+                .setConnectTimeout(5000)
+                .setConnectionRequestTimeout(5000)
+                .setSocketTimeout(5000).build();
+        client = HttpClientBuilder.create()
+                .setDefaultRequestConfig(config)
+                .build();
         log.info("Start Wolfram Alpha plugin");
     }
 
@@ -41,6 +48,7 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
 
     @Override
     public List<PartialBotApiMethod<?>> onEvent(Update update) {
+        log.debug("wolfram plugin onEvent on Thread id: {}", Thread.currentThread().threadId());
         if (!update.hasMessage() || !update.getMessage().hasText()) {
             return Collections.emptyList();
         }
@@ -71,6 +79,7 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
 
     private String requestToWolfram(String request) throws URISyntaxException, IOException {
         URI uri;
+
         try {
             String wolframAlphaUri = "http://api.wolframalpha.com/v1/result";
             uri = new URIBuilder(wolframAlphaUri)
@@ -85,7 +94,7 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
         HttpGet get = new HttpGet(uri);
         get.setHeader("Content-Type", "text/plain;charset=utf-8");
         log.info("Wolfram try execute request");
-        HttpResponse response = tryExecute(get, request);
+        HttpResponse response = tryExecute(get);
         log.info("Wolfram end execute request");
         StringBuilder result = new StringBuilder();
         int responseCode = response.getStatusLine().getStatusCode();
@@ -121,11 +130,11 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
         }
     }
 
-    private HttpResponse tryExecute(HttpGet get, String text) throws IOException {
+    private HttpResponse tryExecute(HttpGet get) throws IOException {
         try {
             return client.execute(get);
         } catch (IOException e) {
-            log.error("Error while requesting execute WolframAlpha: {}", text);
+            log.error("Error while requesting execute WolframAlpha: {}", e.getMessage());
             throw e;
         }
     }
