@@ -1,11 +1,13 @@
 package page.devnet.telegrambot;
 
 import io.vertx.core.Vertx;
+import page.devnet.convertercurrency.fxratesapi.FxRatesApiService;
 import page.devnet.database.DataSource;
 import page.devnet.database.RepositoryFactory;
 import page.devnet.database.repository.impl.IgnoreMeRepositoryImpl;
 import page.devnet.pluginmanager.MultiTenantPluginManager;
 import page.devnet.pluginmanager.PluginManager;
+import page.devnet.telegrambot.convertercurrency.CurrencyRatePlugin;
 import page.devnet.telegrambot.util.TenantIdExtractor;
 import page.devnet.vertxtgbot.GlobalVertxHolder;
 import page.devnet.wordstat.api.Statistics;
@@ -21,7 +23,8 @@ public class App {
                     var statisticPlugin = new WordStatisticPlugin(new Statistics(repositoryManager.buildWordStorageRepository()), repositoryManager.buildUserRepository());
                     var yesnoplug = new YesNoPlugin();
                     var wolframAlphaPlugin = new WolframAlphaBotPlugin();
-                    return new PluginManager<>(statisticPlugin, new WordLimiterPlugin(repositoryManager.buildUnsubscribeRepository()), yesnoplug, wolframAlphaPlugin);
+                    var currencyPlugin = new CurrencyRatePlugin(new FxRatesApiService());
+                    return new PluginManager<>(statisticPlugin, new WordLimiterPlugin(repositoryManager.buildUnsubscribeRepository()), yesnoplug, wolframAlphaPlugin,currencyPlugin);
                 },
                 new TenantIdExtractor()
             ),
