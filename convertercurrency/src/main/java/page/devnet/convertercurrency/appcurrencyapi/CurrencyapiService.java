@@ -10,15 +10,13 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.protocol.HTTP;
 import page.devnet.convertercurrency.ConverterCurrencyException;
 import page.devnet.convertercurrency.ConverterCurrencyService;
+import page.devnet.convertercurrency.CurrencyDictionary;
 import page.devnet.convertercurrency.utils.ParserCurrencyMessage;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Konstantin Agafonov
@@ -32,9 +30,8 @@ public class CurrencyapiService implements ConverterCurrencyService {
     private final URI appCurrencyapiUrl;
     private final HttpClient client;
     private final ParserCurrencyMessage parserCurrencyMessage = new ParserCurrencyMessage();
-
-    private static final List<String> currencys = Arrays.asList("RUB", "USD", "EUR", "JPY", "KZT", "GEL", "NZD");
-
+    private final CurrencyDictionary currencyDictionary = new CurrencyDictionary();
+    private static final int HTTP_TIMEOUT = 5000;
     public CurrencyapiService(String apiKey) {
         try {
             this.appCurrencyapiUrl = new URIBuilder(URI.create("https://api.currencyapi.com/v3/latest"))
@@ -46,9 +43,10 @@ public class CurrencyapiService implements ConverterCurrencyService {
         }
 
         RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(5000)
-                .setConnectionRequestTimeout(5000)
-                .setSocketTimeout(5000).build();
+                .setConnectTimeout(HTTP_TIMEOUT)
+                .setConnectionRequestTimeout(HTTP_TIMEOUT)
+                .setSocketTimeout(HTTP_TIMEOUT)
+                .build();
         this.client = HttpClientBuilder.create()
                 .setDefaultRequestConfig(config)
                 .build();
@@ -58,11 +56,14 @@ public class CurrencyapiService implements ConverterCurrencyService {
     public String convert(String from) {
         String number = parserCurrencyMessage.getValue(from);
         String currency = parserCurrencyMessage.getBaseCurrency(from);
-        if (currencys.contains(currency.toUpperCase())) {
+        if (currencyDictionary.getCurrencies().contains(currency.toUpperCase())) {
             URI uri;
             try {
                 uri = new URIBuilder(appCurrencyapiUrl)
-                        .addParameter("currencies", currencys.stream().filter(s -> s.equalsIgnoreCase(currency)).toList().toString())
+                        .addParameter("currencies", currencyDictionary.getCurrencies().stream()
+                                .filter(s -> s.equalsIgnoreCase(currency))
+                                .toList()
+                                .toString())
                         .build();
             } catch (URISyntaxException e) {
                 log.error(e.getMessage(), e);
@@ -76,8 +77,9 @@ public class CurrencyapiService implements ConverterCurrencyService {
                     case HttpStatus.SC_OK -> {
                         return number;
                     }
+                    case HttpStatus.SC_BAD_REQUEST -> throw new ConverterCurrencyException("FxRatesApiService convert request error: Bad request", from);
                     default -> {
-                        log.error("Wolfram Alpha error: " + response.getStatusLine().getStatusCode());
+                        log.error("Currency api service error: {}", response.getStatusLine().getStatusCode());
                         break;
                     }
                 }
@@ -89,45 +91,3 @@ public class CurrencyapiService implements ConverterCurrencyService {
         return "";
     }
 }
-/*
-{
-  "meta": {
-    "last_updated_at": "2024-07-31T23:59:59Z"
-  },
-  "data": {
-    "CAD": {
-      "code": "CAD",
-      "value": 1.3806402145
-    },
-    "EUR": {
-      "code": "EUR",
-      "value": 0.9238401291
-    },
-    "USD": {
-      "code": "USD",
-      "value": 1
-    }
-  }
-}
- */
-/**
- * {
- *   "meta": {
- *     "last_updated_at": "2024-07-31T23:59:59Z"
- *   },
- *   "data": {
- *     "CAD": {
- *       "code": "CAD",
- *       "value": 1.3806402145
- *     },
- *     "EUR": {
- *       "code": "EUR",
- *       "value": 0.9238401291
- *     },
- *     "USD": {
- *       "code": "USD",
- *       "value": 1
- *     }
- *   }
- * }
- */

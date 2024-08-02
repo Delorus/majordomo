@@ -13,14 +13,13 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import page.devnet.convertercurrency.ConverterCurrencyException;
 import page.devnet.convertercurrency.ConverterCurrencyService;
+import page.devnet.convertercurrency.CurrencyDictionary;
 import page.devnet.convertercurrency.fxratesapi.pojo.FxRatesApiResponse;
 import page.devnet.convertercurrency.utils.ParserCurrencyMessage;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,7 +33,8 @@ public class FxRatesApiService implements ConverterCurrencyService {
     private final URI appCurrencyApiUrl;
     private final HttpClient client;
     private final ParserCurrencyMessage parserCurrencyMessage = new ParserCurrencyMessage();
-    private static final List<String> currencies = Arrays.asList("RUB", "USD", "EUR", "JPY", "KZT", "GEL", "NZD");
+    private final CurrencyDictionary currencyDictionary = new CurrencyDictionary();
+    private static final int HTTP_TIMEOUT = 5000;
 
     public FxRatesApiService() {
         try {
@@ -49,9 +49,10 @@ public class FxRatesApiService implements ConverterCurrencyService {
         }
 
         RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(5000)
-                .setConnectionRequestTimeout(5000)
-                .setSocketTimeout(5000).build();
+                .setConnectTimeout(HTTP_TIMEOUT)
+                .setConnectionRequestTimeout(HTTP_TIMEOUT)
+                .setSocketTimeout(HTTP_TIMEOUT)
+                .build();
         this.client = HttpClientBuilder.create()
                 .setDefaultRequestConfig(config)
                 .build();
@@ -61,11 +62,11 @@ public class FxRatesApiService implements ConverterCurrencyService {
     public String convert(String from) throws ConverterCurrencyException {
         String number = parserCurrencyMessage.getValue(from);
         String currency = parserCurrencyMessage.getBaseCurrency(from);
-        if (currencies.contains(currency.toUpperCase())) {
+        if (currencyDictionary.getCurrencies().contains(currency.toUpperCase())) {
             URI uri;
             try {
                 uri = new URIBuilder(appCurrencyApiUrl)
-                        .addParameter("currencies", currencies.stream()
+                        .addParameter("currencies", currencyDictionary.getCurrencies().stream()
                                 .filter(s -> !s.equalsIgnoreCase(currency))
                                 .toList()
                                 .toString()
