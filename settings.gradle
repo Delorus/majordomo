@@ -8,4 +8,5 @@ include 'cli'
 include 'database'
 include 'vertxtgbot'
 include 'hacks'
+include 'convertercurrency'
 

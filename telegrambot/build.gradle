@@ -12,7 +12,7 @@ dependencies {
     // core plugins
     implementation project(":translate")
     implementation project(":wordstat")
-
+    implementation project(":convertercurrency")
     //todo убрать после переделки плагинов
     implementation "com.fasterxml.jackson.core:jackson-databind:2.10.1"
     implementation "org.apache.httpcomponents:httpclient:4.5.10"
