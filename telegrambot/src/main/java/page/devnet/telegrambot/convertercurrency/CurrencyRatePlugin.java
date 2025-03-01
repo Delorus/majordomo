@@ -2,22 +2,17 @@ package page.devnet.telegrambot.convertercurrency;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import page.devnet.convertercurrency.ConverterCurrencyException;
 import page.devnet.convertercurrency.ConverterCurrencyService;
+import page.devnet.convertercurrency.CurrencyDictionary;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.telegrambot.util.CommandUtils;
 import page.devnet.telegrambot.util.ParserMessage;
-import page.devnet.translate.TranslateService;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,6 +21,27 @@ public class CurrencyRatePlugin implements Plugin<Update, List<PartialBotApiMeth
     @Setter
     private CommandUtils commandUtils = new CommandUtils();
     private final ConverterCurrencyService [] services;
+    private final CurrencyDictionary currencyDictionary = new CurrencyDictionary();
+
+    private String formatCurrenciesInRussian() {
+        StringBuilder message = new StringBuilder("Поддерживаемые валюты:\n\n");
+        for (String currency : currencyDictionary.getCurrencies()) {
+            String description = switch (currency) {
+                case "RUB" -> "Российский рубль";
+                case "USD" -> "Доллар США";
+                case "EUR" -> "Евро";
+                case "JPY" -> "Японская иена";
+                case "KZT" -> "Казахстанский тенге";
+                case "GEL" -> "Грузинский лари";
+                case "NZD" -> "Новозеландский доллар";
+                case "AED" -> "Дирхам ОАЭ";
+                case "DZD" -> "Алжирский динар";
+                default -> currency;
+            };
+            message.append(currency).append(" - ").append(description).append("\n");
+        }
+        return message.toString();
+    }
 
     public CurrencyRatePlugin(ConverterCurrencyService ... services) {
         log.info("Start Currency Rate plugin");
@@ -54,7 +70,9 @@ public class CurrencyRatePlugin implements Plugin<Update, List<PartialBotApiMeth
         String command = commandUtils.normalizeCmdMsgWithParameter(message.getText());
         var commandParameter = parserMessage.getCommandParameterFromMessage(message.getText());
         var chatId = String.valueOf(message.getChatId());
-        if (command.equals("convert")) {
+        if (command.equals("currency") && commandParameter.isEmpty()) {
+            return List.of(new SendMessage(chatId, formatCurrenciesInRussian()));
+        } else if (command.equals("convert")) {
             StringBuilder errorMessage = new StringBuilder();
             for (ConverterCurrencyService service : services) {
                 try {

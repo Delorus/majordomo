@@ -9,7 +9,7 @@ import java.util.List;
 //TODO add addCurrency, and remove currency by command
 public class CurrencyDictionary {
 
-    private final List<String> currencies = List.of("RUB", "USD", "EUR", "JPY", "KZT", "GEL", "NZD");
+    private final List<String> currencies = List.of("RUB", "USD", "EUR", "JPY", "KZT", "GEL", "NZD", "AED", "DZD");
 
     public List<String> getCurrencies() {
         return currencies;
