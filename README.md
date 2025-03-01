@@ -65,6 +65,27 @@ Handles plugin management functionality:
 - Plugin orchestration
 - Event dispatching to plugins
 
+Available plugins:
+#### TimeZonePlugin
+Displays current time for various locations around the world.
+
+Usage:
+```
+/time
+```
+
+Supported locations:
+- Ekaterinburg (Asia/Yekaterinburg)
+- Almaty (Asia/Almaty)
+- Wellington, New Zealand (Pacific/Auckland)
+- Moscow (Europe/Moscow)
+- Orenburg (Asia/Yekaterinburg)
+- Warsaw, Poland (Europe/Warsaw)
+- Tokyo, Japan (Asia/Tokyo)
+- Switzerland (Europe/Zurich)
+
+The plugin returns time in 24-hour format with timezone identifier: `HH:mm (z)`.
+
 **Important: Plugins are implemented in specific entry points rather than in the logic modules themselves**
 
 ### Translation Module (translate)
