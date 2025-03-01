@@ -1,7 +1,20 @@
-## Структура проекта
+# Majordomo
 
-Проект разбит на модули, каждый из которых содержит изолированную логику. 
-На диаграмме ниже можно увидеть зависимость между модулями
+A modular application that provides various services through both a Telegram bot interface and a command-line interface (CLI).
+
+## Overview
+
+The project is divided into independent modules, each containing isolated logic. The application can be built either as a Telegram bot or as a CLI application, making it versatile for different use cases.
+
+## Requirements
+
+- Java 21 or higher
+- Gradle (wrapper included)
+- UTF-8 system encoding
+
+## Project Structure
+
+The dependency between modules is shown in the diagram below:
 
 ```mermaid
 graph BT;
@@ -13,44 +26,89 @@ graph BT;
   cli --> wordstat
 ```
 
-## Модули проекта
+## Installation
 
-### Бот для телеграма (telegrambot)
+1. Clone the repository
+2. Make sure you have Java 21 installed
+3. Build the project:
+   - For Telegram bot: `./gradlew assemblyBot`
+   - For CLI interface: `./gradlew assemblyCli`
+4. The built artifacts will be available in the `bin` directory
 
-Модуль является точкой входа для телеграмного бота и реализует всю логику специфичную для телеграма логику. 
+## Modules
 
-Для адаптирования логики из `wordstat` или `translate` под телеграм в модуле реализованы для них плагины.
+### Telegram Bot (telegrambot)
 
-Для сборки проекта как бота нужно выполнить команду:
+The entry point for the Telegram bot functionality. This module implements all Telegram-specific logic and adapts the functionality from other modules (like `wordstat` or `translate`) through plugins.
 
+To build the project as a Telegram bot:
 ```bash
 ./gradlew assemblyBot
 ```
 
-### Интерфейс командной строки (cli)
+### Command Line Interface (cli)
 
-Модуль является точкой входа для приложения с интерфейсом командной строки, так же в нем реализован собственно сам интерфейс командной строки.
+The entry point for the CLI application. This module implements a command-line interface and adapts functionality from other modules through CLI-specific plugins.
 
-Для адаптирования логики из других модулей (таких как `wordstat` или `translate`) в модуле реализованы для них плагины с учетом особенностей `cli` интерфейса.
-
-Для сборки проекта с интерфейсом командной строки нужно выполнить команду:
-
+To build the project with CLI interface:
 ```bash
 ./gradlew assemblyCli
 ```
 
-CLI интерфейс нужно, в основном, для ручного тестирования логики.
+The CLI interface is primarily used for manual testing of the logic.
 
-### Менеджер плагинов (pluginmanager)
+### Plugin Manager (pluginmanager)
 
-Модуль содержит логику для управления плагинами: подключение новых, отключение старых, упорядочивание и отправление им событий.
+Handles plugin management functionality:
+- Connecting new plugins
+- Disconnecting old plugins
+- Plugin orchestration
+- Event dispatching to plugins
 
-**Важно: сами плагины реализуются не в модулях с логикой, а в специфичных точках входа**
+**Important: Plugins are implemented in specific entry points rather than in the logic modules themselves**
 
-### Модуль перевода (translate)
+### Translation Module (translate)
 
-Модуль перевода предоставляет сервис для перевода строки на другой язык.
+Provides a service for translating text to different languages.
 
-### Модуль статистики (wordstat)
+### Statistics Module (wordstat)
 
-Модуль статистики собирает статистику по переданным словам, агрегирует ее и возвращает по запросу удобочитаемом виде (например, в графиках)
+Collects and processes word statistics:
+- Gathers statistics for provided words
+- Aggregates collected data
+- Returns data in a readable format (e.g., graphs)
+
+## Additional Modules
+
+The project includes several other modules that extend its functionality:
+- convertercurrency: Currency conversion functionality
+- database: Database operations and management
+- vertxtgbot: Vert.x-based Telegram bot implementation
+
+## Development
+
+### Building
+The project uses Gradle for building and dependency management. Common tasks:
+```bash
+./gradlew build        # Build the project
+./gradlew test        # Run tests
+./gradlew assemblyCli  # Build CLI version
+./gradlew assemblyBot  # Build Telegram bot version
+```
+
+### Dependencies
+- SLF4J 1.7.25 and Log4j 2.11.2 for logging
+- JUnit 5.5.2 for testing
+- Lombok 1.18.32 for reducing boilerplate code
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
