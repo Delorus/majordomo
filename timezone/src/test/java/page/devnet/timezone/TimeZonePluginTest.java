@@ -1,4 +1,4 @@
-package page.devnet.pluginmanager;
+package page.devnet.timezone;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

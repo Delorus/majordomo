@@ -2,6 +2,7 @@ package page.devnet.pluginmanager;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import page.devnet.timezone.TimeZonePlugin;
 
 import java.util.List;
 
@@ -33,7 +34,7 @@ class TimeZonePluginIntegrationTest {
         List<String> timeResponse = pluginManager.consume("/time");
         assertEquals(1, timeResponse.size());
         String response = timeResponse.get(0);
-        
+
         // Verify all locations are present
         assertTrue(response.contains("Ekaterinburg:"));
         assertTrue(response.contains("Almaty:"));
@@ -50,7 +51,7 @@ class TimeZonePluginIntegrationTest {
         pluginManager.disablePlugin("timezone");
         List<String> response = pluginManager.consume("/time");
         assertTrue(response.isEmpty());
-        
+
         // Re-enable and verify it works
         pluginManager.enablePlugin("timezone");
         response = pluginManager.consume("/time");

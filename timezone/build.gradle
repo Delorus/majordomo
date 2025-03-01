@@ -1,12 +1,10 @@
 plugins {
-    id 'java-library'
+    id 'java'
 }
 
 dependencies {
-    // https://github.com/rubenlagus/TelegramBots
-    implementation "org.telegram:telegrambots-meta:5.2.0"
-
-    testImplementation project(":timezone")
+    implementation project(':pluginmanager')
+    
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
