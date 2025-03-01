@@ -1,14 +1,15 @@
+package page.devnet.telegrambot.util;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import page.devnet.telegrambot.util.ChatDateTime;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-public class ChatDateTimeTest {
+class ChatDateTimeTest {
 
     ZoneId timeZoneYekaterinburg;
     ZonedDateTime zonedDateTimeTest;
