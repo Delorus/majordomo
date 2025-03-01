@@ -29,7 +29,7 @@ class CurrencyRatePluginTest {
         TestChat chat = new TestChat();
         chat.setId(123L);
         message.setChat(chat);
-        message.setText("/currency");
+        message.setText("/convert");
         update.setMessage(message);
 
         System.out.println("[DEBUG_LOG] Message text: " + message.getText());
