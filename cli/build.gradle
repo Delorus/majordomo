@@ -8,6 +8,7 @@ dependencies {
     implementation project(":translate")
     implementation project(":wordstat")
     implementation project(":database")
+    implementation project(":timezone")
 }
 
 application {

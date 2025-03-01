@@ -1,4 +1,6 @@
-package page.devnet.pluginmanager;
+package page.devnet.timezone;
+
+import page.devnet.pluginmanager.Plugin;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
