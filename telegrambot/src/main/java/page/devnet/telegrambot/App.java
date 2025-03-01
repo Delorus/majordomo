@@ -8,6 +8,7 @@ import page.devnet.database.repository.impl.IgnoreMeRepositoryImpl;
 import page.devnet.pluginmanager.MultiTenantPluginManager;
 import page.devnet.pluginmanager.PluginManager;
 import page.devnet.telegrambot.convertercurrency.CurrencyRatePlugin;
+import page.devnet.telegrambot.timezone.TelegramTimeZonePlugin;
 import page.devnet.telegrambot.util.TenantIdExtractor;
 import page.devnet.vertxtgbot.GlobalVertxHolder;
 import page.devnet.wordstat.api.Statistics;
@@ -24,7 +25,15 @@ public class App {
                     var yesnoplug = new YesNoPlugin();
                     var wolframAlphaPlugin = new WolframAlphaBotPlugin();
                     var currencyPlugin = new CurrencyRatePlugin(new FxRatesApiService());
-                    return new PluginManager<>(statisticPlugin, new WordLimiterPlugin(repositoryManager.buildUnsubscribeRepository()), yesnoplug, wolframAlphaPlugin,currencyPlugin);
+                    var timeZonePlugin = new TelegramTimeZonePlugin();
+                    return new PluginManager<>(
+                            statisticPlugin,
+                            new WordLimiterPlugin(repositoryManager.buildUnsubscribeRepository()),
+                            yesnoplug,
+                            wolframAlphaPlugin,
+                            currencyPlugin,
+                            timeZonePlugin
+                            );
                 },
                 new TenantIdExtractor()
             ),
