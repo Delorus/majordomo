@@ -70,7 +70,7 @@ public class CurrencyRatePlugin implements Plugin<Update, List<PartialBotApiMeth
         String command = commandUtils.normalizeCmdMsgWithParameter(message.getText());
         var commandParameter = parserMessage.getCommandParameterFromMessage(message.getText());
         var chatId = String.valueOf(message.getChatId());
-        if (command.equals("currency") && commandParameter.isEmpty()) {
+        if (command.equals("convert") && commandParameter.isBlank()) {
             return List.of(new SendMessage(chatId, formatCurrenciesInRussian()));
         } else if (command.equals("convert")) {
             StringBuilder errorMessage = new StringBuilder();
