@@ -27,7 +27,6 @@ dependencies {
     implementation project(":timezone")
     //todo убрать после переделки плагинов
     implementation "com.fasterxml.jackson.core:jackson-databind:2.10.1"
-    implementation "org.apache.httpcomponents:httpclient:4.5.10"
     implementation project(":hacks")
 }
 

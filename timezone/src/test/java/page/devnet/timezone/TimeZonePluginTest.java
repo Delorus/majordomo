@@ -22,7 +22,9 @@ class TimeZonePluginTest {
     @Test
     void testInvalidCommand() {
         String response = plugin.onEvent("invalid");
-        assertEquals(null, response);
+        assertTrue(response.contains("/time"));
+        assertTrue(response.contains("Use"));
+        assertTrue(response.contains("to get current time"));
     }
 
     @Test
