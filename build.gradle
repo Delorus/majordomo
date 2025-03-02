@@ -9,6 +9,7 @@ ext {
     slf4jVersion = '1.7.25'
     log4jVersion = '2.11.2'
     lombokVersion = '1.18.32'
+    vertxVersion = '4.5.1'
 }
 
 allprojects {

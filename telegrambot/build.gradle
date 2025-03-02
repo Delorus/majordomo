@@ -8,6 +8,17 @@ dependencies {
     implementation project(":pluginmanager")
     implementation project(":database")
     implementation project(":vertxtgbot")
+    implementation project(":common")
+
+    implementation "io.vertx:vertx-core:${vertxVersion}"
+    implementation "io.vertx:vertx-web-client:${vertxVersion}"
+    implementation "io.vertx:vertx-web-common:${vertxVersion}"
+
+    testImplementation "io.vertx:vertx-junit5:${vertxVersion}"
+    testImplementation 'org.mockito:mockito-core:5.10.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.10.0'
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
 
     // core plugins
     implementation project(":translate")

@@ -1,122 +1,98 @@
 package page.devnet.convertercurrency.fxratesapi;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
+import page.devnet.common.webclient.WebClientFactory;
 import page.devnet.convertercurrency.ConverterCurrencyException;
 import page.devnet.convertercurrency.ConverterCurrencyService;
 import page.devnet.convertercurrency.CurrencyDictionary;
-import page.devnet.convertercurrency.fxratesapi.pojo.FxRatesApiResponse;
 import page.devnet.convertercurrency.utils.ParserCurrencyMessage;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
- * @author Konstantin Agafonov
- * @since 01.08.24
+ * Non-blocking currency conversion service using Vert.x WebClient.
  */
 @Slf4j
 public class FxRatesApiService implements ConverterCurrencyService {
 
-    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-    private final URI appCurrencyApiUrl;
-    private final HttpClient client;
-    private final ParserCurrencyMessage parserCurrencyMessage = new ParserCurrencyMessage();
-    private final CurrencyDictionary currencyDictionary = new CurrencyDictionary();
     private static final int HTTP_TIMEOUT = 5000;
+    private static final String API_URL = "https://api.fxratesapi.com/latest";
 
-    public FxRatesApiService() {
-        try {
-            this.appCurrencyApiUrl = new URIBuilder(URI.create("https://api.fxratesapi.com/latest"))
-                    .addParameter("resolution", "1m")
-                    .addParameter("places", "2")
-                    .addParameter("format", "json")
-                    .build();
-        } catch (URISyntaxException e) {
-            log.error(e.getMessage(), e);
-            throw new ConverterCurrencyException(e);
-        }
+    private final WebClient client;
+    private final ParserCurrencyMessage parserCurrencyMessage;
+    private final CurrencyDictionary currencyDictionary;
 
-        RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(HTTP_TIMEOUT)
-                .setConnectionRequestTimeout(HTTP_TIMEOUT)
-                .setSocketTimeout(HTTP_TIMEOUT)
-                .build();
-        this.client = HttpClientBuilder.create()
-                .setDefaultRequestConfig(config)
-                .build();
+    public FxRatesApiService(Vertx vertx) {
+        this.client = WebClientFactory.createWebClient(vertx, HTTP_TIMEOUT);
+        this.parserCurrencyMessage = new ParserCurrencyMessage();
+        this.currencyDictionary = new CurrencyDictionary();
     }
 
     @Override
     public String convert(String from) throws ConverterCurrencyException {
         String number = parserCurrencyMessage.getValue(from);
         String currency = parserCurrencyMessage.getBaseCurrency(from);
-        if (currencyDictionary.getCurrencies().contains(currency.toUpperCase())) {
-            URI uri;
-            try {
-                uri = new URIBuilder(appCurrencyApiUrl)
-                        .addParameter("currencies", currencyDictionary.getCurrencies().stream()
-                                .filter(s -> !s.equalsIgnoreCase(currency))
-                                .toList()
-                                .toString()
-                                .replace("[", "")
-                                .replace("]", "")
-                        )
-                        .addParameter("base", currency.toUpperCase())
-                        .addParameter("amount", number)
-                        .build();
-            } catch (URISyntaxException e) {
-                log.error(e.getMessage(), e);
-                throw new ConverterCurrencyException(e, from);
-            }
-            return requestResponse(uri, from);
-        } else {
-            log.error("FxRatesApiService convert error: Currency not found");
-            throw new ConverterCurrencyException("Не найдена валюта из сообщения: ", from);
+
+        if (!currencyDictionary.getCurrencies().contains(currency.toUpperCase())) {
+            log.error("Currency not found: {}", currency);
+            throw new ConverterCurrencyException("Currency not found: " + currency, from);
         }
 
-    }
+        String targetCurrencies = currencyDictionary.getCurrencies().stream()
+                .filter(c -> !c.equalsIgnoreCase(currency))
+                .collect(Collectors.joining(","));
 
-    private String requestResponse(URI uri, String from) throws ConverterCurrencyException {
-        HttpGet get = new HttpGet(uri);
-        try (CloseableHttpResponse response = (CloseableHttpResponse) client.execute(get)) {
-            switch (response.getStatusLine().getStatusCode()) {
-                case HttpStatus.SC_OK -> {return parseResponseBodyIfSuccess(response, from);}
-                case HttpStatus.SC_BAD_REQUEST -> throw new ConverterCurrencyException("FxRatesApiService convert request error: Bad request", from);
-                case HttpStatus.SC_NOT_FOUND -> throw new ConverterCurrencyException("FxRatesApiService convert request error: Not found", from);
-                default -> {
-                    log.error("FxRatesApiService convert request error: " + response.getStatusLine().getStatusCode());
-                    throw new ConverterCurrencyException("FxRatesApiService convert request error: " + response.getStatusLine().getStatusCode(), from);
+        CompletableFuture<String> future = new CompletableFuture<>();
+
+        client.getAbs(API_URL)
+            .addQueryParam("currencies", targetCurrencies)
+            .addQueryParam("base", currency.toUpperCase())
+            .addQueryParam("amount", number)
+            .addQueryParam("resolution", "1m")
+            .addQueryParam("places", "2")
+            .addQueryParam("format", "json")
+            .send()
+            .onSuccess(response -> {
+                JsonObject json = response.bodyAsJsonObject();
+                if (json.getBoolean("success", false)) {
+                    JsonObject rates = json.getJsonObject("rates");
+                    String date = json.getString("date");
+
+                    StringBuilder result = new StringBuilder();
+                    rates.forEach(entry -> {
+                        result.append(entry.getKey())
+                              .append(": ")
+                              .append(entry.getValue())
+                              .append("\n");
+                    });
+                    result.append("Данные на (UTC): ").append(date);
+                    future.complete(result.toString());
+                } else {
+                    String error = "API request failed: " + json.getString("error", "Unknown error");
+                    log.error(error);
+                    future.completeExceptionally(new ConverterCurrencyException(error, from));
                 }
-            }
-        } catch (Exception e) {
-            log.error("FxRatesApiService convert request error: " + e.getMessage());
-            throw new ConverterCurrencyException(e, from);
-        }
-    }
+            })
+            .onFailure(error -> {
+                String message = error.getMessage();
+                log.error("Failed to get currency rates: {}", message);
+                future.completeExceptionally(new ConverterCurrencyException(message, from));
+            });
 
-    private String parseResponseBodyIfSuccess(CloseableHttpResponse response, String from) throws IOException {
-        String json = EntityUtils.toString(response.getEntity());
-        FxRatesApiResponse fxRatesApiResponse = objectMapper.readValue(json, FxRatesApiResponse.class);
-        StringBuilder builder = new StringBuilder();
-        if (Boolean.TRUE.equals(fxRatesApiResponse.getSuccess())) {
-            for (Map.Entry<String, Double> entry : fxRatesApiResponse.getRates().entrySet()) {
-                builder.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+        try {
+            return future.get(HTTP_TIMEOUT, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof ConverterCurrencyException) {
+                throw (ConverterCurrencyException) cause;
             }
-            return builder.append("Данные на (UTC): ").append(fxRatesApiResponse.getDate()).toString();
-        } else {
-            throw new ConverterCurrencyException("FxRatesApiService convert request error: success is false", from);
+            log.error("Failed to get currency rates: {}", e.getMessage());
+            throw new ConverterCurrencyException(e.getMessage(), from);
         }
     }
 

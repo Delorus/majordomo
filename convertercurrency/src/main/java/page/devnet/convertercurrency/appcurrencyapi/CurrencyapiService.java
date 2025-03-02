@@ -1,93 +1,97 @@
 package page.devnet.convertercurrency.appcurrencyapi;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.HttpClientBuilder;
+import page.devnet.common.webclient.WebClientFactory;
 import page.devnet.convertercurrency.ConverterCurrencyException;
 import page.devnet.convertercurrency.ConverterCurrencyService;
 import page.devnet.convertercurrency.CurrencyDictionary;
 import page.devnet.convertercurrency.utils.ParserCurrencyMessage;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
- * @author Konstantin Agafonov
- * @since 01.08.24
+ * Non-blocking currency conversion service using currencyapi.com.
  */
 @Slf4j
-//TODO
 public class CurrencyapiService implements ConverterCurrencyService {
 
-    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-    private final URI appCurrencyapiUrl;
-    private final HttpClient client;
-    private final ParserCurrencyMessage parserCurrencyMessage = new ParserCurrencyMessage();
-    private final CurrencyDictionary currencyDictionary = new CurrencyDictionary();
     private static final int HTTP_TIMEOUT = 5000;
-    public CurrencyapiService(String apiKey) {
-        try {
-            this.appCurrencyapiUrl = new URIBuilder(URI.create("https://api.currencyapi.com/v3/latest"))
-                    .addParameter("key", apiKey)
-                    .build();
-        } catch (URISyntaxException e) {
-            log.error(e.getMessage(), e);
-            throw new ConverterCurrencyException(e);
-        }
+    private static final String API_URL = "https://api.currencyapi.com/v3/latest";
 
-        RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(HTTP_TIMEOUT)
-                .setConnectionRequestTimeout(HTTP_TIMEOUT)
-                .setSocketTimeout(HTTP_TIMEOUT)
-                .build();
-        this.client = HttpClientBuilder.create()
-                .setDefaultRequestConfig(config)
-                .build();
+    private final WebClient client;
+    private final String apiKey;
+    private final ParserCurrencyMessage parserCurrencyMessage;
+    private final CurrencyDictionary currencyDictionary;
+
+    public CurrencyapiService(Vertx vertx, String apiKey) {
+        this.client = WebClientFactory.createWebClient(vertx, HTTP_TIMEOUT);
+        this.apiKey = apiKey;
+        this.parserCurrencyMessage = new ParserCurrencyMessage();
+        this.currencyDictionary = new CurrencyDictionary();
     }
 
     @Override
-    public String convert(String from) {
+    public String convert(String from) throws ConverterCurrencyException {
         String number = parserCurrencyMessage.getValue(from);
         String currency = parserCurrencyMessage.getBaseCurrency(from);
-        if (currencyDictionary.getCurrencies().contains(currency.toUpperCase())) {
-            URI uri;
-            try {
-                uri = new URIBuilder(appCurrencyapiUrl)
-                        .addParameter("currencies", currencyDictionary.getCurrencies().stream()
-                                .filter(s -> s.equalsIgnoreCase(currency))
-                                .toList()
-                                .toString())
-                        .build();
-            } catch (URISyntaxException e) {
-                log.error(e.getMessage(), e);
-                throw new ConverterCurrencyException(e, from);
-            }
 
-            HttpGet get = new HttpGet(uri);
-            log.info("Currencyapi request");
-            try (CloseableHttpResponse response = (CloseableHttpResponse) client.execute(get)) {
-                switch (response.getStatusLine().getStatusCode()) {
-                    case HttpStatus.SC_OK -> {
-                        return number;
-                    }
-                    case HttpStatus.SC_BAD_REQUEST -> throw new ConverterCurrencyException("FxRatesApiService convert request error: Bad request", from);
-                    default -> {
-                        log.error("Currency api service error: {}", response.getStatusLine().getStatusCode());
-                        break;
-                    }
-                }
-            }catch (Exception e){
-                log.error(e.getMessage(), e);
-            }
-
+        if (!currencyDictionary.getCurrencies().contains(currency.toUpperCase())) {
+            log.error("Currency not found: {}", currency);
+            throw new ConverterCurrencyException("Currency not found: " + currency, from);
         }
-        return "";
+
+        String targetCurrencies = currencyDictionary.getCurrencies().stream()
+                .filter(c -> !c.equalsIgnoreCase(currency))
+                .collect(Collectors.joining(","));
+
+        CompletableFuture<String> future = new CompletableFuture<>();
+
+        client.getAbs(API_URL)
+            .addQueryParam("key", apiKey)
+            .addQueryParam("currencies", targetCurrencies)
+            .addQueryParam("base_currency", currency.toUpperCase())
+            .addQueryParam("amount", number)
+            .send()
+            .onSuccess(response -> {
+                JsonObject json = response.bodyAsJsonObject();
+                if (Boolean.TRUE.equals(json.getBoolean("success", false))) {
+                    JsonObject data = json.getJsonObject("data");
+                    StringBuilder result = new StringBuilder();
+                    data.forEach(entry -> {
+                        JsonObject rate = (JsonObject) entry.getValue();
+                        result.append(entry.getKey())
+                              .append(": ")
+                              .append(rate.getDouble("value"))
+                              .append("\n");
+                    });
+                    result.append("Данные на (UTC): ").append(json.getString("last_updated_at"));
+                    future.complete(result.toString());
+                } else {
+                    String error = "API request failed: " + json.getString("error", "Unknown error");
+                    log.error(error);
+                    future.completeExceptionally(new ConverterCurrencyException(error, from));
+                }
+            })
+            .onFailure(error -> {
+                String message = error.getMessage();
+                log.error("Failed to get currency rates: {}", message);
+                future.completeExceptionally(new ConverterCurrencyException(message, from));
+            });
+
+        try {
+            return future.get(HTTP_TIMEOUT, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof ConverterCurrencyException) {
+                throw (ConverterCurrencyException) cause;
+            }
+            log.error("Failed to get currency rates: {}", e.getMessage());
+            throw new ConverterCurrencyException(e.getMessage(), from);
+        }
     }
 }
