@@ -13,9 +13,9 @@ public class TimeZonePlugin implements Plugin<String, String> {
     private static final String PLUGIN_ID = "timezone";
     private static final String COMMAND = "/time";
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm (z)");
-    
+
     private final Map<String, String> zoneMapping;
-    
+
     public TimeZonePlugin() {
         zoneMapping = new LinkedHashMap<>();
         zoneMapping.put("Ekaterinburg", "Asia/Yekaterinburg");
@@ -27,18 +27,18 @@ public class TimeZonePlugin implements Plugin<String, String> {
         zoneMapping.put("Tokyo", "Asia/Tokyo");
         zoneMapping.put("Switzerland", "Europe/Zurich");
     }
-    
+
     @Override
     public String getPluginId() {
         return PLUGIN_ID;
     }
-    
+
     @Override
     public String onEvent(String event) {
         if (!event.trim().equalsIgnoreCase(COMMAND)) {
-            return "Use " + COMMAND + " to get current time in different locations";
+            return null;
         }
-        
+
         return zoneMapping.entrySet().stream()
             .map(entry -> {
                 ZonedDateTime time = ZonedDateTime.now(ZoneId.of(entry.getValue()));
