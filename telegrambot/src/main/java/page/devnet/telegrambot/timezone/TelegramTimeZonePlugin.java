@@ -36,6 +36,11 @@ public class TelegramTimeZonePlugin implements Plugin<Update, List<PartialBotApi
         String chatId = String.valueOf(message.getChatId());
         String text = message.getText().trim();
 
+        // Only process messages that start with "/"
+        if (!text.startsWith("/")) {
+            return Collections.emptyList();
+        }
+
         String response = timeZonePlugin.onEvent(text);
         if (response != null && !response.isEmpty()) {
             return List.of(new SendMessage(chatId, response));

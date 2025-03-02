@@ -20,8 +20,21 @@ class TimeZonePluginTest {
     }
 
     @Test
-    void testInvalidCommand() {
-        String response = plugin.onEvent("invalid");
+    void testInvalidInput() {
+        // Test non-command message
+        String response = plugin.onEvent("hello");
+        assertTrue(response.contains("/time"));
+        assertTrue(response.contains("Use"));
+        assertTrue(response.contains("to get current time"));
+
+        // Test invalid command
+        response = plugin.onEvent("/invalid");
+        assertTrue(response.contains("/time"));
+        assertTrue(response.contains("Use"));
+        assertTrue(response.contains("to get current time"));
+
+        // Test similar but wrong command
+        response = plugin.onEvent("/wrongtime");
         assertTrue(response.contains("/time"));
         assertTrue(response.contains("Use"));
         assertTrue(response.contains("to get current time"));
