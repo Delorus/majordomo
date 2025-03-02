@@ -1,24 +1,19 @@
 package page.devnet.telegrambot;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vertx.core.Vertx;
+import io.vertx.ext.web.client.WebClient;
 import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClients;
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import page.devnet.common.webclient.WebClientFactory;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.telegrambot.util.CommandUtils;
 import page.devnet.vertxtgbot.tgapi.SendExternalAnimation;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,8 +24,8 @@ import java.util.List;
 @Slf4j
 public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>> {
 
-    private static final String API_URL = "https://yesno.wtf";
-    private final HttpClient client;
+    private static final String API_URL = "https://yesno.wtf/api";
+    private final WebClient client;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Data
@@ -49,7 +44,11 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
     private CommandUtils commandUtils = new CommandUtils();
 
     public YesNoPlugin() {
-        this.client = HttpClients.createMinimal();
+        this.client = createWebClient();
+    }
+
+    protected WebClient createWebClient() {
+        return WebClientFactory.createWebClient(Vertx.vertx());
     }
 
     @Override
@@ -72,6 +71,9 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
         switch (command) {
             case "yes": {
                 var image = tryExecute("yes");
+                if (image == null) {
+                    return Collections.emptyList();
+                }
 
                 return List.of(
                         new SendExternalAnimation(String.valueOf(message.getChatId()), image)
@@ -79,6 +81,9 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
             }
             case "no": {
                 var image = tryExecute("no");
+                if (image == null) {
+                    return Collections.emptyList();
+                }
 
                 return List.of(
                         new SendExternalAnimation(String.valueOf(message.getChatId()), image)
@@ -86,6 +91,9 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
             }
             case "maybe": {
                 var image = tryExecute("maybe");
+                if (image == null) {
+                    return Collections.emptyList();
+                }
 
                 return List.of(
                         new SendExternalAnimation(String.valueOf(message.getChatId()), image)
@@ -98,15 +106,22 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
 
     private String tryExecute(String type) {
         try {
-            HttpResponse response = client.execute(HttpHost.create(API_URL), new HttpGet("/api?force=" + type));
-            try (InputStreamReader reader = new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)) {
-                ApiResponse resp = mapper.readValue(reader, ApiResponse.class);
+            var response = client.getAbs(API_URL)
+                    .addQueryParam("force", type)
+                    .send()
+                    .onFailure(e -> log.warn("Failed to get response from yesno.wtf", e))
+                    .result();
 
-                return resp.image;
+            if (response.statusCode() != 200) {
+                log.warn("Failed to get response from yesno.wtf, status code: {}", response.statusCode());
+                return null;
             }
-        } catch (IOException e) {
-            log.warn(e.getMessage(), e);
-            return "";
+
+            ApiResponse resp = mapper.readValue(response.bodyAsString(), ApiResponse.class);
+            return resp.image;
+        } catch (Exception e) {
+            log.warn("Failed to process response from yesno.wtf", e);
+            return null;
         }
     }
 }
