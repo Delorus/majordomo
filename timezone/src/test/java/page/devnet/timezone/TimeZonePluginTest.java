@@ -22,14 +22,13 @@ class TimeZonePluginTest {
     @Test
     void testInvalidCommand() {
         String response = plugin.onEvent("invalid");
-        assertTrue(response.contains("/time"));
-        assertTrue(response.contains("Use"));
+        assertEquals(null, response);
     }
 
     @Test
     void testTimeCommand() {
         String response = plugin.onEvent("/time");
-        
+
         // Check if all required locations are present
         assertTrue(response.contains("Ekaterinburg:"));
         assertTrue(response.contains("Almaty:"));
