@@ -31,7 +31,7 @@ final class UploadStickerFileAction implements TelegramAction {
         MultipartForm form = MultipartForm.create()
                 .attribute(UploadStickerFile.USERID_FIELD, uploadStickerFile.getUserId().toString());
 
-        InputFileHelper.addBinaryFileToForm(form, uploadStickerFile.getPngSticker(), UploadStickerFile.PNGSTICKER_FIELD, true);
+        InputFileHelper.addBinaryFileToForm(form, uploadStickerFile.getSticker(), UploadStickerFile.STICKER_FORMAT_FIELD, true);
 
         transport.send(url, form);
     }

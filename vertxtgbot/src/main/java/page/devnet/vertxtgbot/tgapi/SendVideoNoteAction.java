@@ -52,9 +52,9 @@ final class SendVideoNoteAction implements TelegramAction {
             form.attribute(SendVideoNote.DISABLENOTIFICATION_FIELD, sendVideoNote.getDisableNotification()
                     .toString());
         }
-        if (sendVideoNote.getThumb() != null) {
-            InputFileHelper.addBinaryFileToForm(form, sendVideoNote.getThumb(), SendVideoNote.THUMB_FIELD, false);
-            form.attribute(SendVideoNote.THUMB_FIELD, sendVideoNote.getThumb().getAttachName());
+        if (sendVideoNote.getThumbnail() != null) {
+            InputFileHelper.addBinaryFileToForm(form, sendVideoNote.getThumbnail(), SendVideoNote.THUMBNAIL_FIELD, false);
+            form.attribute(SendVideoNote.THUMBNAIL_FIELD, sendVideoNote.getThumbnail().getAttachName());
         }
 
         transport.send(url, form);

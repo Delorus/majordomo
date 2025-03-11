@@ -61,9 +61,9 @@ final class SendAudioAction implements TelegramAction {
                 form.attribute(SendAudio.PARSEMODE_FIELD, sendAudio.getParseMode());
             }
         }
-        if (sendAudio.getThumb() != null) {
-            InputFileHelper.addBinaryFileToForm(form, sendAudio.getThumb(), SendAudio.THUMB_FIELD, false);
-            form.attribute(SendAudio.THUMB_FIELD, sendAudio.getThumb().getAttachName());
+        if (sendAudio.getThumbnail() != null) {
+            InputFileHelper.addBinaryFileToForm(form, sendAudio.getThumbnail(), SendAudio.THUMBNAIL_FIELD, false);
+            form.attribute(SendAudio.THUMBNAIL_FIELD, sendAudio.getThumbnail().getAttachName());
         }
 
         transport.send(url, form);
