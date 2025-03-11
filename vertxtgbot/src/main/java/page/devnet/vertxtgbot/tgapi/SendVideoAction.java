@@ -62,9 +62,9 @@ final class SendVideoAction implements TelegramAction {
         if (sendVideo.getDisableNotification() != null) {
             form.attribute(SendVideo.DISABLENOTIFICATION_FIELD, sendVideo.getDisableNotification().toString());
         }
-        if (sendVideo.getThumb() != null) {
-            form.attribute(SendVideo.THUMB_FIELD, sendVideo.getThumb().getAttachName());
-            InputFileHelper.addBinaryFileToForm(form, sendVideo.getThumb(), SendVideo.THUMB_FIELD, false);
+        if (sendVideo.getThumbnail() != null) {
+            form.attribute(SendVideo.THUMBNAIL_FIELD, sendVideo.getThumbnail().getAttachName());
+            InputFileHelper.addBinaryFileToForm(form, sendVideo.getThumbnail(), SendVideo.THUMBNAIL_FIELD, false);
         }
 
         transport.send(url, form);

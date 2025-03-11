@@ -84,23 +84,16 @@ final class InputFileHelper {
             }
         }
 
-        if (media instanceof InputMediaAudio) {
-            InputMediaAudio audio = (InputMediaAudio) media;
-            if (audio.getThumb() != null) {
-                addBinaryFileToForm(form, audio.getThumb(), InputMediaAudio.THUMB_FIELD, false);
-            }
-        } else if (media instanceof InputMediaDocument) {
-            InputMediaDocument document = (InputMediaDocument) media;
-            if (document.getThumb() != null) {
-                addBinaryFileToForm(form, document.getThumb(), InputMediaDocument.THUMB_FIELD, false);
-            }
-        } else if (media instanceof InputMediaVideo) {
-            InputMediaVideo video = (InputMediaVideo) media;
-            if (video.getThumb() != null) {
-                addBinaryFileToForm(form, video.getThumb(), InputMediaVideo.THUMB_FIELD, false);
+        switch (media) {
+            case InputMediaAudio audio when audio.getThumbnail() != null ->
+                addBinaryFileToForm(form, audio.getThumbnail(), InputMediaAudio.THUMBNAIL_FIELD, false);
+            case InputMediaDocument document when document.getThumbnail() != null ->
+                addBinaryFileToForm(form, document.getThumbnail(), InputMediaDocument.THUMBNAIL_FIELD, false);
+            case InputMediaVideo video when video.getThumbnail() != null ->
+                    addBinaryFileToForm(form, video.getThumbnail(), InputMediaVideo.THUMBNAIL_FIELD, false);
+            default -> {
             }
         }
-
         if (!field.isEmpty()) {
             form.attribute(field, Json.encode(media));
         }

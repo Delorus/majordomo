@@ -39,7 +39,7 @@ public final class SetupWebhookAction implements TelegramAction {
             if (resp.succeeded()) {
                 try {
                     var ok = setWebhook.deserializeResponse(resp.result().body());
-                    if (ok) {
+                    if (Boolean.TRUE.equals(ok)) {
                         log.info("Webhook successfully registered on address: {}", setWebhook.getUrl());
                     }
                 } catch (TelegramApiRequestException e) {
