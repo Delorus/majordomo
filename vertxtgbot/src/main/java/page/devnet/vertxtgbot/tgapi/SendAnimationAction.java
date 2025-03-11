@@ -52,9 +52,9 @@ final class SendAnimationAction implements TelegramAction {
         if (sendAnimation.getHeight() != null) {
             form.attribute(SendAnimation.HEIGHT_FIELD, sendAnimation.getHeight().toString());
         }
-        if (sendAnimation.getThumb() != null) {
-            InputFileHelper.addBinaryFileToForm(form, sendAnimation.getThumb(), SendAnimation.THUMB_FIELD, false);
-            form.attribute(SendAnimation.THUMB_FIELD, sendAnimation.getThumb().getAttachName());
+        if (sendAnimation.getThumbnail() != null) {
+            InputFileHelper.addBinaryFileToForm(form, sendAnimation.getThumbnail(), SendAnimation.THUMBNAIL_FIELD, false);
+            form.attribute(SendAnimation.THUMBNAIL_FIELD, sendAnimation.getThumbnail().getAttachName());
         }
 
         if (sendAnimation.getCaption() != null) {

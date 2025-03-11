@@ -4,7 +4,7 @@ plugins {
 
 ext {
     vertxVersion = '4.5.8'
-    telegrambotsVersion = '5.2.0'
+    telegrambotsVersion = '6.9.7.1'
 }
 
 dependencies {

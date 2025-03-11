@@ -15,8 +15,8 @@ dependencies {
     implementation "io.vertx:vertx-web-common:${vertxVersion}"
 
     testImplementation "io.vertx:vertx-junit5:${vertxVersion}"
-    testImplementation 'org.mockito:mockito-core:5.10.0'
-    testImplementation 'org.mockito:mockito-junit-jupiter:5.10.0'
+    testImplementation 'org.mockito:mockito-core:5.14.2'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.14.2'
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
 

@@ -52,9 +52,9 @@ final class SendDocumentAction implements TelegramAction {
                     .toString());
         }
 
-        if (sendDocument.getThumb() != null) {
-            InputFileHelper.addTextFileToForm(form, sendDocument.getThumb(), SendDocument.THUMB_FIELD, false);
-            form.attribute(SendDocument.THUMB_FIELD, sendDocument.getThumb().getAttachName());
+        if (sendDocument.getThumbnail() != null) {
+            InputFileHelper.addTextFileToForm(form, sendDocument.getThumbnail(), SendDocument.THUMBNAIL_FIELD, false);
+            form.attribute(SendDocument.THUMBNAIL_FIELD, sendDocument.getThumbnail().getAttachName());
         }
 
         transport.send(url, form);
