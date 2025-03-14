@@ -1,10 +1,9 @@
-package page.devnet.vertxtgbot.tgapi;
+package page.devnet.telegrambot;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-
 import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
@@ -27,11 +26,9 @@ public final class TelegramSender {
         }
     }
 
-    private final VertxWebClientWrapper transport;
 
     public TelegramSender(Vertx vertx, TelegramSenderSetting options) {
         WebClient httpClient = WebClient.create(vertx, options.webClientOptions);
-        this.transport = new VertxWebClientWrapper(httpClient, options.botToken);
     }
 
     public void send(PartialBotApiMethod<?> message) {
