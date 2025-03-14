@@ -7,11 +7,10 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.codec.BodyCodec;
 import lombok.extern.slf4j.Slf4j;
+import org.telegram.telegrambots.longpolling.BotSession;
 import org.telegram.telegrambots.meta.ApiConstants;
 import org.telegram.telegrambots.meta.api.methods.updates.GetUpdates;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.generics.BotOptions;
-import org.telegram.telegrambots.meta.generics.BotSession;
 import org.telegram.telegrambots.meta.generics.LongPollingBot;
 
 import java.security.InvalidParameterException;
@@ -25,10 +24,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since 05.06.2020
  */
 @Slf4j
-public class VertxBotSession implements BotSession {
+public class VertxBotSession implements AutoCloseable {
 
     private final AtomicBoolean running = new AtomicBoolean(false);
-
     private final WebClient client;
 
     private BotOptions options;
@@ -38,7 +36,6 @@ public class VertxBotSession implements BotSession {
     private int lastReceivedUpdate;
 
     public VertxBotSession() {
-
         Vertx vertx = GlobalVertxHolder.getVertx();
         client = WebClient.create(vertx, new WebClientOptions()
                 .setSsl(true)

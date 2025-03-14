@@ -4,7 +4,8 @@ plugins {
 
 dependencies {
     // https://github.com/rubenlagus/TelegramBots
-    implementation "org.telegram:telegrambots-meta:8.2.0"
+    //implementation "org.telegram:telegrambots-meta:8.2.0"
+    //implementation "org.telegram:telegrambots-longpolling:8.2.0"
 
     testImplementation project(":timezone")
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
