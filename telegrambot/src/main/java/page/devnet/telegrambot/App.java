@@ -10,13 +10,11 @@ import page.devnet.pluginmanager.PluginManager;
 import page.devnet.telegrambot.convertercurrency.CurrencyRatePlugin;
 import page.devnet.telegrambot.timezone.TelegramTimeZonePlugin;
 import page.devnet.telegrambot.util.TenantIdExtractor;
-import page.devnet.vertxtgbot.GlobalVertxHolder;
 import page.devnet.wordstat.api.Statistics;
 
 public class App {
 
     public static void main(String[] args) {
-        Vertx vertx = GlobalVertxHolder.getVertx();
         DataSource ds = isProd(args) ? new DataSource() : DataSource.inMemory();
         var manager = new IgnoreMeFilter(
             new MultiTenantPluginManager<>(
@@ -40,11 +38,12 @@ public class App {
             ),
             new IgnoreMeRepositoryImpl(ds));
 
-        if (isProd(args)) {
-            TelegramBotExecutor.newInProdMode(vertx).runBotWith(manager);
+        TelegramBotExecutor.newInDevMode().runBotWith(manager);
+        /*if (isProd(args)) {
+            TelegramBotExecutor.newInProdMode().runBotWith(manager);
         } else {
-            TelegramBotExecutor.newInDevMode(vertx).runBotWith(manager);
-        }
+            TelegramBotExecutor.newInDevMode().runBotWith(manager);
+        }*/
     }
 
     private static boolean isProd(String[] args) {
