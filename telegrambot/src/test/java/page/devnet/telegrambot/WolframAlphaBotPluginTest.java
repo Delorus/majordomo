@@ -80,7 +80,7 @@ class WolframAlphaBotPluginTest {
             factory.close();
         }
     }
-/**
+
     @Test
     void testWolframCommandSuccess() {
         // Given
@@ -155,7 +155,7 @@ class WolframAlphaBotPluginTest {
 
         // Then
         assertFalse(result.isEmpty());
-        SendMessage sendMessage = (SendMessage) result.get(0);
+        SendMessage sendMessage = (SendMessage) result.getFirst();
         assertEquals("123", sendMessage.getChatId());
         assertTrue(sendMessage.getText().contains("Error to execute request: Network error"));
     }
@@ -180,7 +180,7 @@ class WolframAlphaBotPluginTest {
 
         // Then
         assertFalse(result.isEmpty());
-        SendMessage sendMessage = (SendMessage) result.get(0);
+        SendMessage sendMessage = (SendMessage) result.getFirst();
         assertEquals("123", sendMessage.getChatId());
         assertTrue(sendMessage.getText().contains("Error to execute request: Operation timed out"));
     }
@@ -202,5 +202,5 @@ class WolframAlphaBotPluginTest {
         // Then
         assertTrue(result.isEmpty());
         verify(webClient, never()).getAbs(anyString());
-    }**/
+    }
 }

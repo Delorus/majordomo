@@ -26,11 +26,11 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
 
     @Setter
     private CommandUtils commandUtils = new CommandUtils();
-    private WebClient client;
+    private final WebClient client;
     private final String apiKey;
     //TODO need client
     public WolframAlphaBotPlugin() {
-        /*this.client = WebClientFactory.createWebClient(vertx, HTTP_TIMEOUT);*/
+        this.client = WebClientFactory.createWebClient(Vertx.vertx(), HTTP_TIMEOUT);
         this.apiKey = System.getenv("WOLFRAM_API_KEY");
         log.info("Start Wolfram Alpha plugin");
     }
