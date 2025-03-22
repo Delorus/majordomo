@@ -2,8 +2,6 @@ package page.devnet.vertxtgbot.tgapi;
 
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.multipart.MultipartForm;
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiValidationException;
 
 /**

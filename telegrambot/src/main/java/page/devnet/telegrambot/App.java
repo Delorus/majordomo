@@ -1,6 +1,9 @@
 package page.devnet.telegrambot;
 
-import io.vertx.core.Vertx;
+
+import com.sun.net.httpserver.HttpServer;
+import lombok.extern.slf4j.Slf4j;
+import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import page.devnet.convertercurrency.fxratesapi.FxRatesApiService;
 import page.devnet.database.DataSource;
 import page.devnet.database.RepositoryFactory;
@@ -12,18 +15,32 @@ import page.devnet.telegrambot.timezone.TelegramTimeZonePlugin;
 import page.devnet.telegrambot.util.TenantIdExtractor;
 import page.devnet.wordstat.api.Statistics;
 
-public class App {
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+@Slf4j
+public class App {
+    private static HttpServer httpServer;
     public static void main(String[] args) {
         DataSource ds = isProd(args) ? new DataSource() : DataSource.inMemory();
+        try(ExecutorService service = Executors.newVirtualThreadPerTaskExecutor()){
+            httpServer.bind (new InetSocketAddress("localhost", 8001), 0);
+            httpServer.createContext("/test");
+            httpServer.setExecutor(service);
+            httpServer.start();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         var manager = new IgnoreMeFilter(
             new MultiTenantPluginManager<>(
                 id -> {
                     var repositoryManager = RepositoryFactory.multitenancy(ds, id);
                     var statisticPlugin = new WordStatisticPlugin(new Statistics(repositoryManager.buildWordStorageRepository()), repositoryManager.buildUserRepository());
                     var yesnoplug = new YesNoPlugin();
-                    var wolframAlphaPlugin = new WolframAlphaBotPlugin(vertx);
-                    var currencyPlugin = new CurrencyRatePlugin(new FxRatesApiService(vertx));
+                    var wolframAlphaPlugin = new WolframAlphaBotPlugin();
+                    var currencyPlugin = new CurrencyRatePlugin(new FxRatesApiService());
                     var timeZonePlugin = new TelegramTimeZonePlugin();
                     return new PluginManager<>(
                             statisticPlugin,
@@ -44,6 +61,7 @@ public class App {
         } else {
             TelegramBotExecutor.newInDevMode().runBotWith(manager);
         }*/
+
     }
 
     private static boolean isProd(String[] args) {

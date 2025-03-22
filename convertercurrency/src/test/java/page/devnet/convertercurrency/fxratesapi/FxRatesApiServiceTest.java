@@ -49,7 +49,7 @@ class FxRatesApiServiceTest {
 
         lenient().when(webClient.getAbs(anyString())).thenReturn(request);
         lenient().when(request.addQueryParam(anyString(), anyString())).thenReturn(request);
-        service = new FxRatesApiService(vertx);
+        service = new FxRatesApiService();
     }
 
     @Test
