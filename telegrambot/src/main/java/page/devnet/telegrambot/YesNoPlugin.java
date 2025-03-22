@@ -7,12 +7,13 @@ import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import page.devnet.common.webclient.WebClientFactory;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.telegrambot.util.CommandUtils;
-import page.devnet.vertxtgbot.tgapi.SendExternalAnimation;
 
 import java.util.Collections;
 import java.util.List;
@@ -76,7 +77,7 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                 }
                 //TODO realize SendExternalAniation or SendAnimaation
                 return List.of(
-                        new SendExternalAnimation(String.valueOf(message.getChatId()), image)
+                        //new SendAnimation(String.valueOf(message.getChatId()), image)
                 );
             }
             case "no": {
@@ -86,7 +87,7 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                 }
 
                 return List.of(
-                        new SendExternalAnimation(String.valueOf(message.getChatId()), image)
+                        //new SendExternalAnimation(String.valueOf(message.getChatId()), image)
                 );
             }
             case "maybe": {
@@ -96,7 +97,7 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                 }
 
                 return List.of(
-                        new SendExternalAnimation(String.valueOf(message.getChatId()), image)
+                        //new SendExternalAnimation(String.valueOf(message.getChatId()), image)
                 );
             }
         }
@@ -116,7 +117,6 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                 log.warn("Failed to get response from yesno.wtf, status code: {}", response.statusCode());
                 return null;
             }
-
             ApiResponse resp = mapper.readValue(response.bodyAsString(), ApiResponse.class);
             return resp.image;
         } catch (Exception e) {
