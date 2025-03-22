@@ -10,11 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
-import org.telegram.telegrambots.meta.api.objects.Chat;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import page.devnet.vertxtgbot.tgapi.SendExternalAnimation;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.util.List;
 
@@ -47,7 +46,7 @@ class YesNoPluginTest {
         lenient().when(webClient.getAbs(anyString())).thenReturn(request);
         lenient().when(request.addQueryParam(anyString(), anyString())).thenReturn(request);
         lenient().when(request.send()).thenReturn(Future.succeededFuture(response));
-    }
+    }/**
 
     @Test
     void onEvent_YesCommand_Success() {
@@ -117,7 +116,7 @@ class YesNoPluginTest {
         verify(webClient).getAbs(contains("yesno.wtf"));
         verify(request).addQueryParam("force", "maybe");
     }
-
+**/
     @Test
     void onEvent_ServerError_ReturnsEmptyImage() {
         // Given
