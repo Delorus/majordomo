@@ -2,13 +2,13 @@ package page.devnet.telegrambot;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import page.devnet.database.repository.UserRepository;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.telegrambot.util.ChatDateTime;
@@ -128,10 +128,11 @@ public class WordStatisticPlugin implements Plugin<Update, List<PartialBotApiMet
     }
 
     private SendPhoto wrapToSendPhoto(Chart chart, String title, String chatId) throws IOException {
-        SendPhoto sendPhoto = new SendPhoto();
-        sendPhoto.setChatId(chatId);
 
-        sendPhoto.setPhoto(new InputFile(chart.toInputStream(), title));
+        SendPhoto sendPhoto = SendPhoto.builder()
+                .chatId(chatId)
+                .photo(new InputFile(chart.toInputStream(), title))
+                .build();
         log.info("Send new chart {} to group: {}", title, chatId);
         return sendPhoto;
     }

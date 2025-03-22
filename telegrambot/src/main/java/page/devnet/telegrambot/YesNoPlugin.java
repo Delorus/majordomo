@@ -6,9 +6,9 @@ import io.vertx.ext.web.client.WebClient;
 import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import page.devnet.common.webclient.WebClientFactory;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.telegrambot.util.CommandUtils;
@@ -74,7 +74,7 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                 if (image == null) {
                     return Collections.emptyList();
                 }
-
+                //TODO realize SendExternalAniation or SendAnimaation
                 return List.of(
                         new SendExternalAnimation(String.valueOf(message.getChatId()), image)
                 );

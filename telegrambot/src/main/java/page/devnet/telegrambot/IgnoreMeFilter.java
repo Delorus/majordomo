@@ -1,9 +1,9 @@
 package page.devnet.telegrambot;
 
-import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import page.devnet.database.repository.IgnoreMeRepository;
 import page.devnet.pluginmanager.MessageSubscriber;
 import page.devnet.telegrambot.util.CommandUtils;

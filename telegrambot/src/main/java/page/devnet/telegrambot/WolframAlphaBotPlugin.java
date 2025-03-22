@@ -5,10 +5,10 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import page.devnet.common.webclient.WebClientFactory;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.telegrambot.util.CommandUtils;
@@ -26,11 +26,11 @@ public class WolframAlphaBotPlugin implements Plugin<Update, List<PartialBotApiM
 
     @Setter
     private CommandUtils commandUtils = new CommandUtils();
-    private final WebClient client;
+    private WebClient client;
     private final String apiKey;
-
-    public WolframAlphaBotPlugin(Vertx vertx) {
-        this.client = WebClientFactory.createWebClient(vertx, HTTP_TIMEOUT);
+    //TODO need client
+    public WolframAlphaBotPlugin() {
+        /*this.client = WebClientFactory.createWebClient(vertx, HTTP_TIMEOUT);*/
         this.apiKey = System.getenv("WOLFRAM_API_KEY");
         log.info("Start Wolfram Alpha plugin");
     }
