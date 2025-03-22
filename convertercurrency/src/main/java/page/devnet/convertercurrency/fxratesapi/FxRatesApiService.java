@@ -23,12 +23,12 @@ public class FxRatesApiService implements ConverterCurrencyService {
     private static final int HTTP_TIMEOUT = 5000;
     private static final String API_URL = "https://api.fxratesapi.com/latest";
 
-    private WebClient client;
+    private final WebClient client;
     private final ParserCurrencyMessage parserCurrencyMessage;
     private final CurrencyDictionary currencyDictionary;
 
     public FxRatesApiService() {
-        /*this.client = WebClientFactory.createWebClient(HTTP_TIMEOUT);*/
+        this.client = WebClientFactory.createWebClient(Vertx.vertx(),HTTP_TIMEOUT);
         this.parserCurrencyMessage = new ParserCurrencyMessage();
         this.currencyDictionary = new CurrencyDictionary();
     }

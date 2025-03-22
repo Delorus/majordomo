@@ -50,7 +50,7 @@ class CurrencyapiServiceTest {
 
         lenient().when(webClient.getAbs(anyString())).thenReturn(request);
         lenient().when(request.addQueryParam(anyString(), anyString())).thenReturn(request);
-        service = new CurrencyapiService(vertx, API_KEY);
+        service = new CurrencyapiService(API_KEY);
     }
 
     @AfterEach

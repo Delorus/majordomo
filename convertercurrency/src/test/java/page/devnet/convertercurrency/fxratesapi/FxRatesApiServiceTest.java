@@ -52,7 +52,7 @@ class FxRatesApiServiceTest {
         service = new FxRatesApiService();
     }
 
-    /**@Test
+    @Test
     void testConvertSuccess() {
         // Given
         String input = "100 USD";
@@ -141,5 +141,5 @@ class FxRatesApiServiceTest {
         );
         String expectedMessage = String.format("Unexpected error: %s\n\tText to convert: [%s]", "Operation timed out", input);
         assertEquals(expectedMessage, exception.getMessage());
-    }**/
+    }
 }
