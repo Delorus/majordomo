@@ -46,8 +46,8 @@ class YesNoPluginTest {
         lenient().when(webClient.getAbs(anyString())).thenReturn(request);
         lenient().when(request.addQueryParam(anyString(), anyString())).thenReturn(request);
         lenient().when(request.send()).thenReturn(Future.succeededFuture(response));
-    }/**
-
+    }
+/**
     @Test
     void onEvent_YesCommand_Success() {
         // Given
@@ -65,7 +65,7 @@ class YesNoPluginTest {
         // Then
         assertFalse(result.isEmpty());
         assertTrue(result.get(0) instanceof SendExternalAnimation);
-        SendExternalAnimation animation = (SendExternalAnimation) result.get(0);
+        SendExternalAnimation animation = (SendExternalAnimation) result.getFirst();
         assertEquals(imageUrl, animation.getAnimationUrl());
         verify(webClient).getAbs(contains("yesno.wtf"));
         verify(request).addQueryParam("force", "yes");
@@ -88,7 +88,7 @@ class YesNoPluginTest {
         // Then
         assertFalse(result.isEmpty());
         assertTrue(result.get(0) instanceof SendExternalAnimation);
-        SendExternalAnimation animation = (SendExternalAnimation) result.get(0);
+        SendExternalAnimation animation = (SendExternalAnimation) result.getFirst();
         assertEquals(imageUrl, animation.getAnimationUrl());
         verify(webClient).getAbs(contains("yesno.wtf"));
         verify(request).addQueryParam("force", "no");
@@ -111,12 +111,12 @@ class YesNoPluginTest {
         // Then
         assertFalse(result.isEmpty());
         assertTrue(result.get(0) instanceof SendExternalAnimation);
-        SendExternalAnimation animation = (SendExternalAnimation) result.get(0);
+        SendExternalAnimation animation = (SendExternalAnimation) result.getFirst();
         assertEquals(imageUrl, animation.getAnimationUrl());
         verify(webClient).getAbs(contains("yesno.wtf"));
         verify(request).addQueryParam("force", "maybe");
     }
-**/
+ **/
     @Test
     void onEvent_ServerError_ReturnsEmptyImage() {
         // Given

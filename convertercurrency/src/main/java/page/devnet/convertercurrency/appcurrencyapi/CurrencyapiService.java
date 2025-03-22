@@ -28,8 +28,8 @@ public class CurrencyapiService implements ConverterCurrencyService {
     private final ParserCurrencyMessage parserCurrencyMessage;
     private final CurrencyDictionary currencyDictionary;
 
-    public CurrencyapiService(Vertx vertx, String apiKey) {
-        this.client = WebClientFactory.createWebClient(vertx, HTTP_TIMEOUT);
+    public CurrencyapiService(String apiKey) {
+        this.client = WebClientFactory.createWebClient(Vertx.vertx(), HTTP_TIMEOUT);
         this.apiKey = apiKey;
         this.parserCurrencyMessage = new ParserCurrencyMessage();
         this.currencyDictionary = new CurrencyDictionary();
