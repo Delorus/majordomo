@@ -3,13 +3,11 @@ package page.devnet.telegrambot;
 import io.vertx.core.Vertx;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import page.devnet.pluginmanager.MessageSubscriber;
-import page.devnet.vertxtgbot.VertxBotSession;
 
 import java.util.List;
 
@@ -36,7 +34,6 @@ public final class TelegramBotExecutor {
 
     public void runBotWith(MessageSubscriber<Update, List<PartialBotApiMethod<?>>> subscriber) {
         var telegramBot = createTelegramBot(subscriber);
-
         try {
             initTelegramConnection(telegramBot, isProd);
         } catch (TelegramApiException e) {
@@ -56,8 +53,8 @@ public final class TelegramBotExecutor {
     }
 
     private void initTelegramConnection(TelegramBot bot, boolean isProdEnv) throws TelegramApiException {
-        TelegramBotsLongPollingApplication botsApplication;
-
+        //TelegramBotsLongPollingApplication botsApplication;
+        /*
         // api;
         if (isProdEnv) {
             botsApplication = new TelegramBotsLongPollingApplication();
@@ -65,14 +62,23 @@ public final class TelegramBotExecutor {
         } else {
             botsApplication = new TelegramBotsLongPollingApplication();
             //api = new TelegramBotsApi(VertxBotSession.class);
-        }
+        }*/
 
-        if (isProdEnv) {
+        /*if (isProdEnv) {
             botsApplication.registerBot(System.getenv("TG_BOT_TOKEN"), bot);
             //api.registerBot(bot.atDevBotManager());
         } else {
             botsApplication.registerBot(botToken, bot);
             //api.registerBot(bot.atDevBotManager());
+        }*/
+        // Using try-with-resources to allow autoclose to run upon finishing
+        try ( TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
+            botsApplication.registerBot(bot.getBotToken(), bot);
+            System.out.println("MyAmazingBot successfully started!");
+            // Ensure this prcess wait forever
+            Thread.currentThread().join();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
