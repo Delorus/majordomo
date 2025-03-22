@@ -22,7 +22,7 @@ public final class TelegramBotExecutor {
         return new TelegramBotExecutor( false);
     }
 
-    public static TelegramBotExecutor newInProdMode(Vertx vertx) {
+    public static TelegramBotExecutor newInProdMode() {
         return new TelegramBotExecutor(true);
     }
 
@@ -64,21 +64,27 @@ public final class TelegramBotExecutor {
             //api = new TelegramBotsApi(VertxBotSession.class);
         }*/
 
-        /*if (isProdEnv) {
-            botsApplication.registerBot(System.getenv("TG_BOT_TOKEN"), bot);
-            //api.registerBot(bot.atDevBotManager());
+        if (isProdEnv) {
+            // Using try-with-resources to allow autoclose to run upon finishing
+            try ( TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
+                botsApplication.registerBot(bot.getBotToken(), bot);
+                System.out.println("MyAmazingBot successfully started!");
+                // Ensure this prcess wait forever
+                Thread.currentThread().join();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else {
-            botsApplication.registerBot(botToken, bot);
-            //api.registerBot(bot.atDevBotManager());
-        }*/
-        // Using try-with-resources to allow autoclose to run upon finishing
-        try ( TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
-            botsApplication.registerBot(bot.getBotToken(), bot);
-            System.out.println("MyAmazingBot successfully started!");
-            // Ensure this prcess wait forever
-            Thread.currentThread().join();
-        } catch (Exception e) {
-            e.printStackTrace();
+            // Using try-with-resources to allow autoclose to run upon finishing
+            try ( TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
+                botsApplication.registerBot(bot.getBotToken(), bot);
+                System.out.println("MyAmazingBot successfully started!");
+                // Ensure this prcess wait forever
+                Thread.currentThread().join();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+
     }
 }

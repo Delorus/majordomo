@@ -25,14 +25,14 @@ public class App {
     private static HttpServer httpServer;
     public static void main(String[] args) {
         DataSource ds = isProd(args) ? new DataSource() : DataSource.inMemory();
-        try(ExecutorService service = Executors.newVirtualThreadPerTaskExecutor()){
+        /*try(ExecutorService service = Executors.newVirtualThreadPerTaskExecutor()){
             httpServer.bind (new InetSocketAddress("localhost", 8001), 0);
             httpServer.createContext("/test");
             httpServer.setExecutor(service);
             httpServer.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
+        }*/
         var manager = new IgnoreMeFilter(
             new MultiTenantPluginManager<>(
                 id -> {
@@ -55,12 +55,12 @@ public class App {
             ),
             new IgnoreMeRepositoryImpl(ds));
 
-        TelegramBotExecutor.newInDevMode().runBotWith(manager);
-        /*if (isProd(args)) {
+        //TelegramBotExecutor.newInDevMode().runBotWith(manager);
+        if (isProd(args)) {
             TelegramBotExecutor.newInProdMode().runBotWith(manager);
         } else {
             TelegramBotExecutor.newInDevMode().runBotWith(manager);
-        }*/
+        }
 
     }
 
