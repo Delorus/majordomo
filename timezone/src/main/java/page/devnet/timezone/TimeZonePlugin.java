@@ -35,9 +35,9 @@ public class TimeZonePlugin implements Plugin<String, String> {
 
     @Override
     public String onEvent(String event) {
-        if (!event.trim().equalsIgnoreCase(COMMAND)) {
+        /*if (!event.trim().equalsIgnoreCase(COMMAND)) {
             return "Use " + COMMAND + " to get current time in different time zones";
-        }
+        }*/
 
         return zoneMapping.entrySet().stream()
             .map(entry -> {
