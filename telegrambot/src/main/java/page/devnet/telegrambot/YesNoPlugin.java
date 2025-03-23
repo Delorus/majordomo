@@ -75,9 +75,11 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                 if (image == null) {
                     return Collections.emptyList();
                 }
+                InputFile inputFile = new InputFile();
+                inputFile.setMedia(image);
                 //TODO realize SendExternalAniation or SendAnimaation
                 return List.of(
-                        //new SendAnimation(String.valueOf(message.getChatId()), image)
+                        new SendAnimation(String.valueOf(message.getChatId()), inputFile)
                 );
             }
             case "no": {
@@ -85,9 +87,10 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                 if (image == null) {
                     return Collections.emptyList();
                 }
-
+                InputFile inputFile = new InputFile();
+                inputFile.setMedia(image);
                 return List.of(
-                        //new SendExternalAnimation(String.valueOf(message.getChatId()), image)
+                        new SendAnimation(String.valueOf(message.getChatId()), inputFile)
                 );
             }
             case "maybe": {
@@ -95,9 +98,10 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                 if (image == null) {
                     return Collections.emptyList();
                 }
-
+                InputFile inputFile = new InputFile();
+                inputFile.setMedia(image);
                 return List.of(
-                        //new SendExternalAnimation(String.valueOf(message.getChatId()), image)
+                        new SendAnimation(String.valueOf(message.getChatId()), inputFile)
                 );
             }
         }
