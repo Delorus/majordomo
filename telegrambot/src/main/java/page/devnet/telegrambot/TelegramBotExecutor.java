@@ -44,42 +44,31 @@ public final class TelegramBotExecutor {
 
     private TelegramBot createTelegramBot(MessageSubscriber<Update, List<PartialBotApiMethod<?>>> subscriber) {
         TelegramBot.Setting setting = TelegramBot.Setting.builder()
-                .name(System.getenv("TG_BOT_NAME"))
+                .name("ComXvrBot")
+                .token(System.getenv("TELEGRAM_TOKEN"))
+                .path("ComXvrBot")
+                /*.name(System.getenv("TG_BOT_NAME"))
                 .token(System.getenv("TG_BOT_TOKEN"))
-                .path(System.getenv("TG_BOT_NAME"))
+                .path(System.getenv("TG_BOT_NAME"))*/
                 .build();
 
         return new TelegramBot(setting, subscriber);
     }
 
     private void initTelegramConnection(TelegramBot bot, boolean isProdEnv) throws TelegramApiException {
-        //TelegramBotsLongPollingApplication botsApplication;
-        /*
-        // api;
-        if (isProdEnv) {
-            botsApplication = new TelegramBotsLongPollingApplication();
-            //api = new TelegramBotsApi(VertxBotSession.class);
-        } else {
-            botsApplication = new TelegramBotsLongPollingApplication();
-            //api = new TelegramBotsApi(VertxBotSession.class);
-        }*/
 
         if (isProdEnv) {
-            // Using try-with-resources to allow autoclose to run upon finishing
-            try ( TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
+            log.info("Start telegram bot in prod mode");
+            try (TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
                 botsApplication.registerBot(bot.getBotToken(), bot);
-                System.out.println("MyAmazingBot successfully started!");
-                // Ensure this prcess wait forever
                 Thread.currentThread().join();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         } else {
-            // Using try-with-resources to allow autoclose to run upon finishing
+            log.info("Start telegram bot in dev mode");
             try ( TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
                 botsApplication.registerBot(bot.getBotToken(), bot);
-                System.out.println("MyAmazingBot successfully started!");
-                // Ensure this prcess wait forever
                 Thread.currentThread().join();
             } catch (Exception e) {
                 e.printStackTrace();

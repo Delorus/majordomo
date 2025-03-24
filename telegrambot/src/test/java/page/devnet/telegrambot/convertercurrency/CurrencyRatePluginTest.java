@@ -7,7 +7,6 @@ import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
-import page.devnet.convertercurrency.ConverterCurrencyService;
 import page.devnet.convertercurrency.fxratesapi.FxRatesApiService;
 
 import java.util.List;
@@ -22,7 +21,6 @@ class CurrencyRatePluginTest {
     @BeforeEach
     public void setUp() {
         // Create a simple test implementation of ConverterCurrencyService
-        //ConverterCurrencyService testService = message -> "Test conversion result";
         plugin = new CurrencyRatePlugin(new FxRatesApiService());
     }
 
