@@ -44,12 +44,12 @@ public final class TelegramBotExecutor {
 
     private TelegramBot createTelegramBot(MessageSubscriber<Update, List<PartialBotApiMethod<?>>> subscriber) {
         TelegramBot.Setting setting = TelegramBot.Setting.builder()
-                .name("ComXvrBot")
+                /*.name("ComXvrBot")
                 .token(System.getenv("TELEGRAM_TOKEN"))
-                .path("ComXvrBot")
-                /*.name(System.getenv("TG_BOT_NAME"))
+                .path("ComXvrBot")*/
+                .name(System.getenv("TG_BOT_NAME"))
                 .token(System.getenv("TG_BOT_TOKEN"))
-                .path(System.getenv("TG_BOT_NAME"))*/
+                .path(System.getenv("TG_BOT_NAME"))
                 .build();
 
         return new TelegramBot(setting, subscriber);
