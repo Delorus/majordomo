@@ -1,7 +1,5 @@
 package page.devnet.telegrambot;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClientOptions;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -16,12 +14,8 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import page.devnet.pluginmanager.MessageSubscriber;
 
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @author maksim
@@ -42,7 +36,6 @@ class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
     private final String token;
     private final MessageSubscriber<Update, List<PartialBotApiMethod<?>>> eventSubscriber;
     private final Instant startTime;
-    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
     private final TelegramSender telegramSender;
     private TelegramClient telegramClient;
 

@@ -55,14 +55,10 @@ public class CurrencyRatePlugin implements Plugin<Update, List<PartialBotApiMeth
 
     @Override
     public List<PartialBotApiMethod<?>> onEvent(Update update) {
-        System.out.println("Currency rate plugin onEvent on Thread id: {}" + Thread.currentThread().threadId());
-        System.out.println("Wr " + update.getMessage());
         if (!update.hasMessage() || !update.getMessage().hasText()) {
-            System.out.println("wtf");
             return Collections.emptyList();
         }
         if (update.getMessage().isCommand()) {
-            System.out.println("not a command");
             return executeCommand(update.getMessage());
         }
         return List.of();
