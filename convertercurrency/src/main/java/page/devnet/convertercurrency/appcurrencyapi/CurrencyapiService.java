@@ -87,8 +87,8 @@ public class CurrencyapiService implements ConverterCurrencyService {
             return future.get(HTTP_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             Throwable cause = e.getCause();
-            if (cause instanceof ConverterCurrencyException) {
-                throw (ConverterCurrencyException) cause;
+            if (cause instanceof ConverterCurrencyException converterCurrencyException) {
+                throw converterCurrencyException;
             }
             log.error("Failed to get currency rates: {}", e.getMessage());
             throw new ConverterCurrencyException(e.getMessage(), from);

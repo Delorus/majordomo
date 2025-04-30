@@ -8,10 +8,8 @@ import io.vertx.ext.web.client.WebClient;
 import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.Response;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
@@ -134,17 +132,19 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                                                 apiResponseCompletableFuture.completeExceptionally(new Exception("Failed to get image response from yesno.wtf, status code: " + imageResp.statusCode()));
                                             }
                                         })
-                                        .onFailure(e -> log.warn("Failed to get image response from yesno.wtf", e));
+                                        .onFailure(e -> log.warn("Failed to get image response from yesno.wtf {}", e.getMessage()));
                             } catch (JsonProcessingException ex) {
-                                log.error("Failed to parse response from yesno.wtf", ex);
+                                log.error("Failed to parse response from yesno.wtf {}", ex.getMessage());
                                 apiResponseCompletableFuture.completeExceptionally(ex);
                             }
+                        }else {
+                            apiResponseCompletableFuture.completeExceptionally(new Exception("Failed to get response from yesno.wtf, code: " + resp.statusCode()));
                         }
                     })
-                    .onFailure(e -> log.warn("Failed to get response from yesno.wtf", e));
+                    .onFailure(e -> log.warn("Failed to get response from yesno.wtf {}", e.getMessage()));
             return apiResponseCompletableFuture.get();
         } catch (ExecutionException | InterruptedException e) {
-            log.error("Failed to process response from yesno.wtf", e);
+            log.error("Failed to process response from yesno.wtf {}", e.getMessage());
             return null;
         }
     }
