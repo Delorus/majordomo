@@ -27,8 +27,8 @@ public class FxRatesApiService implements ConverterCurrencyService {
     private final ParserCurrencyMessage parserCurrencyMessage;
     private final CurrencyDictionary currencyDictionary;
 
-    public FxRatesApiService(Vertx vertx) {
-        this.client = WebClientFactory.createWebClient(vertx, HTTP_TIMEOUT);
+    public FxRatesApiService() {
+        this.client = WebClientFactory.createWebClient(Vertx.vertx(),HTTP_TIMEOUT);
         this.parserCurrencyMessage = new ParserCurrencyMessage();
         this.currencyDictionary = new CurrencyDictionary();
     }

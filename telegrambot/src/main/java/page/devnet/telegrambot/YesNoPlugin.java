@@ -1,21 +1,28 @@
 package page.devnet.telegrambot;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.WebClient;
 import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import page.devnet.common.webclient.WebClientFactory;
 import page.devnet.pluginmanager.Plugin;
 import page.devnet.telegrambot.util.CommandUtils;
-import page.devnet.vertxtgbot.tgapi.SendExternalAnimation;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author mshherbakov
@@ -27,6 +34,7 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
     private static final String API_URL = "https://yesno.wtf/api";
     private final WebClient client;
     private final ObjectMapper mapper = new ObjectMapper();
+    private static final int HTTP_TIMEOUT = 5000;
 
     @Data
     private static class ApiResponse {
@@ -45,6 +53,7 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
 
     public YesNoPlugin() {
         this.client = createWebClient();
+        log.info("Start Yes No plugin");
     }
 
     protected WebClient createWebClient() {
@@ -57,11 +66,11 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
             return Collections.emptyList();
         }
 
-        if (!event.getMessage().isCommand()) {
-            return Collections.emptyList();
+        if (event.getMessage().isCommand()) {
+            return executeCommand(event.getMessage());
         }
 
-        return executeCommand(event.getMessage());
+        return Collections.emptyList();
     }
 
     private List<PartialBotApiMethod<?>> executeCommand(Message message) {
@@ -74,9 +83,8 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                 if (image == null) {
                     return Collections.emptyList();
                 }
-
                 return List.of(
-                        new SendExternalAnimation(String.valueOf(message.getChatId()), image)
+                        new SendAnimation(String.valueOf(message.getChatId()), image)
                 );
             }
             case "no": {
@@ -84,9 +92,8 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                 if (image == null) {
                     return Collections.emptyList();
                 }
-
                 return List.of(
-                        new SendExternalAnimation(String.valueOf(message.getChatId()), image)
+                        new SendAnimation(String.valueOf(message.getChatId()), image)
                 );
             }
             case "maybe": {
@@ -94,33 +101,50 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                 if (image == null) {
                     return Collections.emptyList();
                 }
-
                 return List.of(
-                        new SendExternalAnimation(String.valueOf(message.getChatId()), image)
+                        new SendAnimation(String.valueOf(message.getChatId()), image)
                 );
             }
         }
-
         return Collections.emptyList();
     }
 
-    private String tryExecute(String type) {
+    private InputFile tryExecute(String type) {
+        CompletableFuture<InputFile> apiResponseCompletableFuture = new CompletableFuture<>();
         try {
-            var response = client.getAbs(API_URL)
+            client.getAbs(API_URL)
                     .addQueryParam("force", type)
                     .send()
-                    .onFailure(e -> log.warn("Failed to get response from yesno.wtf", e))
-                    .result();
-
-            if (response.statusCode() != 200) {
-                log.warn("Failed to get response from yesno.wtf, status code: {}", response.statusCode());
-                return null;
-            }
-
-            ApiResponse resp = mapper.readValue(response.bodyAsString(), ApiResponse.class);
-            return resp.image;
-        } catch (Exception e) {
-            log.warn("Failed to process response from yesno.wtf", e);
+                    .onSuccess(resp -> {
+                        if (resp.statusCode() == 200) {
+                            try {
+                                ApiResponse respModel = mapper.readValue(resp.bodyAsString(), ApiResponse.class);
+                                client.getAbs(respModel.getImage()) // Отправляем GET-запрос по указанному URL
+                                        .send()
+                                        .onSuccess(imageResp -> {
+                                            if (imageResp.statusCode() == 200) {
+                                                Buffer body = imageResp.body(); // Получаем тело ответа
+                                                InputStream inputStream = new ByteArrayInputStream(body.getBytes());
+                                                InputFile inputFile = new InputFile(inputStream, respModel.getImage().substring(respModel.getImage().lastIndexOf("/") + 1));
+                                                apiResponseCompletableFuture.complete(inputFile);
+                                            } else {
+                                                log.warn("Failed to get image response from yesno.wtf, status code: {}", imageResp.statusCode());
+                                                apiResponseCompletableFuture.completeExceptionally(new Exception("Failed to get image response from yesno.wtf, status code: " + imageResp.statusCode()));
+                                            }
+                                        })
+                                        .onFailure(e -> log.warn("Failed to get image response from yesno.wtf {}", e.getMessage()));
+                            } catch (JsonProcessingException ex) {
+                                log.error("Failed to parse response from yesno.wtf {}", ex.getMessage());
+                                apiResponseCompletableFuture.completeExceptionally(ex);
+                            }
+                        }else {
+                            apiResponseCompletableFuture.completeExceptionally(new Exception("Failed to get response from yesno.wtf, code: " + resp.statusCode()));
+                        }
+                    })
+                    .onFailure(e -> log.warn("Failed to get response from yesno.wtf {}", e.getMessage()));
+            return apiResponseCompletableFuture.get();
+        } catch (ExecutionException | InterruptedException e) {
+            log.error("Failed to process response from yesno.wtf {}", e.getMessage());
             return null;
         }
     }

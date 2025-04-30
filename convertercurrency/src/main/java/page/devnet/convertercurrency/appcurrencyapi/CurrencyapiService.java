@@ -28,8 +28,8 @@ public class CurrencyapiService implements ConverterCurrencyService {
     private final ParserCurrencyMessage parserCurrencyMessage;
     private final CurrencyDictionary currencyDictionary;
 
-    public CurrencyapiService(Vertx vertx, String apiKey) {
-        this.client = WebClientFactory.createWebClient(vertx, HTTP_TIMEOUT);
+    public CurrencyapiService(String apiKey) {
+        this.client = WebClientFactory.createWebClient(Vertx.vertx(), HTTP_TIMEOUT);
         this.apiKey = apiKey;
         this.parserCurrencyMessage = new ParserCurrencyMessage();
         this.currencyDictionary = new CurrencyDictionary();
@@ -87,8 +87,8 @@ public class CurrencyapiService implements ConverterCurrencyService {
             return future.get(HTTP_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             Throwable cause = e.getCause();
-            if (cause instanceof ConverterCurrencyException) {
-                throw (ConverterCurrencyException) cause;
+            if (cause instanceof ConverterCurrencyException converterCurrencyException) {
+                throw converterCurrencyException;
             }
             log.error("Failed to get currency rates: {}", e.getMessage());
             throw new ConverterCurrencyException(e.getMessage(), from);

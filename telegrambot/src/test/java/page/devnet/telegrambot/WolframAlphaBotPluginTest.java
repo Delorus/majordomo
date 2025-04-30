@@ -14,10 +14,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import page.devnet.common.webclient.WebClientFactory;
 
 import java.util.List;
@@ -71,7 +71,7 @@ class WolframAlphaBotPluginTest {
         lenient().when(request.as(eq(BodyCodec.string()))).thenReturn(stringRequest);
         lenient().when(stringRequest.send()).thenReturn(Future.succeededFuture(response));
 
-        plugin = new WolframAlphaBotPlugin(vertx);
+        plugin = new WolframAlphaBotPlugin();
     }
 
     @AfterEach
@@ -155,7 +155,7 @@ class WolframAlphaBotPluginTest {
 
         // Then
         assertFalse(result.isEmpty());
-        SendMessage sendMessage = (SendMessage) result.get(0);
+        SendMessage sendMessage = (SendMessage) result.getFirst();
         assertEquals("123", sendMessage.getChatId());
         assertTrue(sendMessage.getText().contains("Error to execute request: Network error"));
     }
@@ -180,7 +180,7 @@ class WolframAlphaBotPluginTest {
 
         // Then
         assertFalse(result.isEmpty());
-        SendMessage sendMessage = (SendMessage) result.get(0);
+        SendMessage sendMessage = (SendMessage) result.getFirst();
         assertEquals("123", sendMessage.getChatId());
         assertTrue(sendMessage.getText().contains("Error to execute request: Operation timed out"));
     }

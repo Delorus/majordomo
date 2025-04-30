@@ -1,11 +1,13 @@
 package page.devnet.telegrambot.timezone;
 
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import page.devnet.pluginmanager.Plugin;
+import page.devnet.telegrambot.util.CommandUtils;
+import page.devnet.telegrambot.util.ParserMessage;
 import page.devnet.timezone.TimeZonePlugin;
 
 import java.util.Collections;
@@ -14,6 +16,7 @@ import java.util.List;
 @Slf4j
 public class TelegramTimeZonePlugin implements Plugin<Update, List<PartialBotApiMethod<?>>> {
     private final TimeZonePlugin timeZonePlugin;
+    private final CommandUtils commandUtils = new CommandUtils();
 
     public TelegramTimeZonePlugin() {
         log.info("Start Time Zone plugin");
@@ -31,21 +34,25 @@ public class TelegramTimeZonePlugin implements Plugin<Update, List<PartialBotApi
         if (!update.hasMessage() || !update.getMessage().hasText()) {
             return Collections.emptyList();
         }
-
-        Message message = update.getMessage();
-        String chatId = String.valueOf(message.getChatId());
-        String text = message.getText().trim();
-
-        // Only process messages that start with "/"
-        if (!text.startsWith("/")) {
-            return Collections.emptyList();
+        if (update.getMessage().isCommand()) {
+            return executeCommand(update.getMessage());
         }
-
-        String response = timeZonePlugin.onEvent(text);
-        if (response != null && !response.isEmpty()) {
-            return List.of(new SendMessage(chatId, response));
+        return Collections.emptyList();
+    }
+    private List<PartialBotApiMethod<?>> executeCommand(Message message) {
+        ParserMessage parserMessage = new ParserMessage();
+        String command = commandUtils.normalizeCmdMsgWithParameter(message.getText());
+        var commandParameter = parserMessage.getCommandParameterFromMessage(message.getText());
+        var chatId = String.valueOf(message.getChatId());
+        if (command.equals("time")) {
+            try {
+                String result = timeZonePlugin.onEvent(commandParameter);
+                return List.of(new SendMessage(chatId, result));
+            } catch (Exception e) {
+                log.error("Error in execute command: {}", e.getMessage());
+                return List.of(new SendMessage(chatId, e.getMessage()));
+            }
         }
-
         return Collections.emptyList();
     }
 }

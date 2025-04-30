@@ -1,6 +1,7 @@
 package page.devnet.telegrambot;
 
-import io.vertx.core.Vertx;
+
+import lombok.extern.slf4j.Slf4j;
 import page.devnet.convertercurrency.fxratesapi.FxRatesApiService;
 import page.devnet.database.DataSource;
 import page.devnet.database.RepositoryFactory;
@@ -10,13 +11,11 @@ import page.devnet.pluginmanager.PluginManager;
 import page.devnet.telegrambot.convertercurrency.CurrencyRatePlugin;
 import page.devnet.telegrambot.timezone.TelegramTimeZonePlugin;
 import page.devnet.telegrambot.util.TenantIdExtractor;
-import page.devnet.vertxtgbot.GlobalVertxHolder;
 import page.devnet.wordstat.api.Statistics;
 
+@Slf4j
 public class App {
-
     public static void main(String[] args) {
-        Vertx vertx = GlobalVertxHolder.getVertx();
         DataSource ds = isProd(args) ? new DataSource() : DataSource.inMemory();
         var manager = new IgnoreMeFilter(
             new MultiTenantPluginManager<>(
@@ -24,8 +23,8 @@ public class App {
                     var repositoryManager = RepositoryFactory.multitenancy(ds, id);
                     var statisticPlugin = new WordStatisticPlugin(new Statistics(repositoryManager.buildWordStorageRepository()), repositoryManager.buildUserRepository());
                     var yesnoplug = new YesNoPlugin();
-                    var wolframAlphaPlugin = new WolframAlphaBotPlugin(vertx);
-                    var currencyPlugin = new CurrencyRatePlugin(new FxRatesApiService(vertx));
+                    var wolframAlphaPlugin = new WolframAlphaBotPlugin();
+                    var currencyPlugin = new CurrencyRatePlugin(new FxRatesApiService());
                     var timeZonePlugin = new TelegramTimeZonePlugin();
                     return new PluginManager<>(
                             statisticPlugin,
@@ -40,11 +39,13 @@ public class App {
             ),
             new IgnoreMeRepositoryImpl(ds));
 
+        //TelegramBotExecutor.newInDevMode().runBotWith(manager);
         if (isProd(args)) {
-            TelegramBotExecutor.newInProdMode(vertx).runBotWith(manager);
+            TelegramBotExecutor.newInProdMode().runBotWith(manager);
         } else {
-            TelegramBotExecutor.newInDevMode(vertx).runBotWith(manager);
+            TelegramBotExecutor.newInDevMode().runBotWith(manager);
         }
+
     }
 
     private static boolean isProd(String[] args) {

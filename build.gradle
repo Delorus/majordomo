@@ -5,10 +5,9 @@ plugins {
 group 'page.devnet'
 
 ext {
-    junitVersion = '5.5.2'
-    slf4jVersion = '1.7.25'
-    log4jVersion = '2.11.2'
-    lombokVersion = '1.18.32'
+    junitVersion = '5.8.1'
+    lombokVersion = '1.18.34'
+    logbackVersion = '1.5.18'
     vertxVersion = '4.5.1'
 }
 
@@ -35,20 +34,12 @@ subprojects {
 
         // common dependencies
         dependencies {
-            // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-            implementation "org.slf4j:slf4j-api:$slf4jVersion"
-            // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api
-            implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
-            // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
-            implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
-            // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl
-            implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
-
+            implementation("ch.qos.logback:logback-classic:1.5.18")
 
             testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
             testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
-            compileOnly "org.projectlombok:lombok:$lombokVersion"
+            implementation "org.projectlombok:lombok:$lombokVersion"
             annotationProcessor "org.projectlombok:lombok:$lombokVersion"
         }
 

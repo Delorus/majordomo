@@ -2,13 +2,12 @@ package page.devnet.telegrambot;
 
 import io.vertx.core.Vertx;
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
+import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import page.devnet.pluginmanager.MessageSubscriber;
-import page.devnet.vertxtgbot.VertxBotSession;
 
 import java.util.List;
 
@@ -19,25 +18,22 @@ import java.util.List;
 @Slf4j
 public final class TelegramBotExecutor {
 
-    public static TelegramBotExecutor newInDevMode(Vertx vertx) {
-        return new TelegramBotExecutor(vertx, false);
+    public static TelegramBotExecutor newInDevMode() {
+        return new TelegramBotExecutor( false);
     }
 
-    public static TelegramBotExecutor newInProdMode(Vertx vertx) {
-        return new TelegramBotExecutor(vertx, true);
+    public static TelegramBotExecutor newInProdMode() {
+        return new TelegramBotExecutor(true);
     }
 
-    private final Vertx vertx;
     private final boolean isProd;
 
-    private TelegramBotExecutor(Vertx vertx, boolean isProd) {
+    private TelegramBotExecutor(boolean isProd) {
         this.isProd = isProd;
-        this.vertx = vertx;
     }
 
     public void runBotWith(MessageSubscriber<Update, List<PartialBotApiMethod<?>>> subscriber) {
         var telegramBot = createTelegramBot(subscriber);
-
         try {
             initTelegramConnection(telegramBot, isProd);
         } catch (TelegramApiException e) {
@@ -48,27 +44,36 @@ public final class TelegramBotExecutor {
 
     private TelegramBot createTelegramBot(MessageSubscriber<Update, List<PartialBotApiMethod<?>>> subscriber) {
         TelegramBot.Setting setting = TelegramBot.Setting.builder()
+                /*.name("ComXvrBot")
+                .token(System.getenv("TELEGRAM_TOKEN"))
+                .path("ComXvrBot")*/
                 .name(System.getenv("TG_BOT_NAME"))
                 .token(System.getenv("TG_BOT_TOKEN"))
                 .path(System.getenv("TG_BOT_NAME"))
                 .build();
 
-        return new TelegramBot(vertx, setting, subscriber);
+        return new TelegramBot(setting, subscriber);
     }
 
     private void initTelegramConnection(TelegramBot bot, boolean isProdEnv) throws TelegramApiException {
 
-        TelegramBotsApi api;
         if (isProdEnv) {
-            api = new TelegramBotsApi(VertxBotSession.class);
+            log.info("Start telegram bot in prod mode");
+            try (TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
+                botsApplication.registerBot(bot.getBotToken(), bot);
+                Thread.currentThread().join();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else {
-            api = new TelegramBotsApi(VertxBotSession.class);
+            log.info("Start telegram bot in dev mode");
+            try ( TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
+                botsApplication.registerBot(bot.getBotToken(), bot);
+                Thread.currentThread().join();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
-        if (isProdEnv) {
-            api.registerBot(bot.atDevBotManager());
-        } else {
-            api.registerBot(bot.atDevBotManager());
-        }
     }
 }

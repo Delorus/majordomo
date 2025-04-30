@@ -7,16 +7,12 @@ dependencies {
     // core
     implementation project(":pluginmanager")
     implementation project(":database")
-    implementation project(":vertxtgbot")
     implementation project(":common")
 
-    implementation "io.vertx:vertx-core:${vertxVersion}"
-    implementation "io.vertx:vertx-web-client:${vertxVersion}"
-    implementation "io.vertx:vertx-web-common:${vertxVersion}"
-
-    testImplementation "io.vertx:vertx-junit5:${vertxVersion}"
-    testImplementation 'org.mockito:mockito-core:5.10.0'
-    testImplementation 'org.mockito:mockito-junit-jupiter:5.10.0'
+    implementation "org.telegram:telegrambots-longpolling:8.2.0"
+    implementation "org.telegram:telegrambots-client:8.2.0"
+    testImplementation 'org.mockito:mockito-core:5.14.2'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.14.2'
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
 
@@ -26,7 +22,7 @@ dependencies {
     implementation project(":convertercurrency")
     implementation project(":timezone")
     //todo убрать после переделки плагинов
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.10.1"
+    //implementation "com.fasterxml.jackson.core:jackson-databind:2.10.1"
     implementation project(":hacks")
 }
 
