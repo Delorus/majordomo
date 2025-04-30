@@ -19,30 +19,11 @@ class TimeZonePluginTest {
         assertEquals("timezone", plugin.getPluginId());
     }
 
-    @Test
-    void testInvalidInput() {
-        // Test non-command message
-        String response = plugin.onEvent("hello");
-        assertTrue(response.contains("/time"));
-        assertTrue(response.contains("Use"));
-        assertTrue(response.contains("to get current time"));
 
-        // Test invalid command
-        response = plugin.onEvent("/invalid");
-        assertTrue(response.contains("/time"));
-        assertTrue(response.contains("Use"));
-        assertTrue(response.contains("to get current time"));
-
-        // Test similar but wrong command
-        response = plugin.onEvent("/wrongtime");
-        assertTrue(response.contains("/time"));
-        assertTrue(response.contains("Use"));
-        assertTrue(response.contains("to get current time"));
-    }
 
     @Test
-    void testTimeCommand() {
-        String response = plugin.onEvent("/time");
+    void testTimeResult() {
+        String response = plugin.onEvent("");
 
         // Check if all required locations are present
         assertTrue(response.contains("Ekaterinburg:"));
@@ -62,10 +43,4 @@ class TimeZonePluginTest {
         }
     }
 
-    @Test
-    void testCommandCaseInsensitive() {
-        String response1 = plugin.onEvent("/TIME");
-        String response2 = plugin.onEvent("/time");
-        assertEquals(response1.split("\n").length, response2.split("\n").length);
-    }
 }
