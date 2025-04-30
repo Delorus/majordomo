@@ -1,5 +1,7 @@
 package page.devnet.telegrambot;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpRequest;
@@ -12,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
+import org.telegram.telegrambots.meta.api.objects.ApiResponse;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
@@ -21,7 +24,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,13 +31,21 @@ class YesNoPluginTest {
 
     private YesNoPlugin plugin;
     private final String API_URL = "https://yesno.wtf/api";
-
     @Mock
     private WebClient webClient;
     @Mock
-    private HttpRequest<Buffer> request;
+    HttpRequest<Buffer> apiRequest;
     @Mock
-    private HttpResponse<Buffer> response;
+    HttpRequest<Buffer> imageRequest;
+    @Mock
+    HttpResponse<Buffer> apiResponse;
+    @Mock
+    HttpResponse<Buffer> imageResponse;
+    @Mock
+    Buffer imageBuffer;
+    @Mock
+    Update update;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
@@ -45,102 +55,143 @@ class YesNoPluginTest {
                 return webClient;
             }
         };
-
-        lenient().when(webClient.getAbs(anyString())).thenReturn(request);
-        lenient().when(request.addQueryParam(anyString(), anyString())).thenReturn(request);
-        lenient().when(request.send()).thenReturn(Future.succeededFuture(response));
+        lenient().when(webClient.getAbs(anyString())).thenReturn(apiRequest);
     }
 
     @Test
-    void onEvent_YesCommand_Success() {
-        // Given
-        String imageUrl = "https://example.com/yes.gif";
-        String jsonResponse = "{\"answer\":\"yes\",\"forced\":true,\"image\":\"" + imageUrl + "\"}";
+    void onEvent_YesCommand_Success() throws JsonProcessingException {
 
-        /*when(response.statusCode()).thenReturn(200);
-        when(response.bodyAsString()).thenReturn(jsonResponse);
-        Update update = createUpdateWithCommand("/yes");*/
+        // Arrange
+        String imageYesURL = "https://yesno.wtf/assets/yes/1.gif";
 
-        // When
-        //List<PartialBotApiMethod<?>> result = plugin.onEvent(update);
+        ApiResponse apiResp = new ApiResponse("yes", true, imageYesURL);
+        String apiJson = mapper.writeValueAsString(apiResp);
+        byte[] imageBytes = "GIF89a".getBytes(); // минимальный gif-заголовок
 
-        // Then
-        /*assertFalse(result.isEmpty());
-        assertTrue(result.getFirst() instanceof SendAnimation sendAnimation);
-        SendAnimation animation = (SendAnimation) result.getFirst();
-        //assertEquals(imageUrl, animation.getAnimationUrl());
-        verify(webClient).getAbs(contains("yesno.wtf"));
-        verify(request).addQueryParam("force", "yes");*/
+        // Первичный запрос к yesno.wtf/api
+        when(webClient.getAbs(API_URL)).thenReturn(apiRequest);
+        when(apiRequest.addQueryParam("force", "yes")).thenReturn(apiRequest);
+        when(apiRequest.send()).thenReturn(Future.succeededFuture(apiResponse));
+        when(apiResponse.statusCode()).thenReturn(200);
+        when(apiResponse.bodyAsString()).thenReturn(apiJson);
+
+        // Запрос к изображению
+        when(webClient.getAbs(imageYesURL)).thenReturn(imageRequest);
+        when(imageRequest.send()).thenReturn(Future.succeededFuture(imageResponse));
+        when(imageResponse.statusCode()).thenReturn(200);
+        when(imageResponse.body()).thenReturn(imageBuffer);
+        when(imageBuffer.getBytes()).thenReturn(imageBytes);
+
+
+        update = createUpdateWithCommand("/yes");
+
+        // Act
+        List<PartialBotApiMethod<?>> result = plugin.onEvent(update);
+
+        // Assert
+        assertFalse(result.isEmpty());
+        assertInstanceOf(SendAnimation.class,result.getFirst());
+        verify(webClient).getAbs("https://yesno.wtf/api");
+        verify(apiRequest).addQueryParam("force", "yes");
     }
 
     @Test
-    void onEvent_NoCommand_Success() {
+    void onEvent_NoCommand_Success() throws JsonProcessingException {
         // Given
-        String imageUrl = "https://example.com/no.gif";
-        String jsonResponse = "{\"answer\":\"no\",\"forced\":true,\"image\":\"" + imageUrl + "\"}";
+        String imageNoURL = "https://yesno.wtf/assets/no/1.gif";
 
-        /*when(response.statusCode()).thenReturn(200);
-        when(response.bodyAsString()).thenReturn(jsonResponse);
+        // Arrange
+        ApiResponse apiResp = new ApiResponse("no", true, imageNoURL);
+        String apiJson = mapper.writeValueAsString(apiResp);
+        byte[] imageBytes = "GIF189a".getBytes(); // минимальный gif-заголовок
 
-        Update update = createUpdateWithCommand("/no");*/
+        // Первичный запрос к yesno.wtf/api
+        when(webClient.getAbs(API_URL)).thenReturn(apiRequest);
+        when(apiRequest.addQueryParam("force", "no")).thenReturn(apiRequest);
+        when(apiRequest.send()).thenReturn(Future.succeededFuture(apiResponse));
+        when(apiResponse.statusCode()).thenReturn(200);
+        when(apiResponse.bodyAsString()).thenReturn(apiJson);
 
-        // When
-        //List<PartialBotApiMethod<?>> result = plugin.onEvent(update);
+        // Запрос к изображению
+        when(webClient.getAbs(imageNoURL)).thenReturn(imageRequest);
+        when(imageRequest.send()).thenReturn(Future.succeededFuture(imageResponse));
+        when(imageResponse.statusCode()).thenReturn(200);
+        when(imageResponse.body()).thenReturn(imageBuffer);
+        when(imageBuffer.getBytes()).thenReturn(imageBytes);
 
-        // Then
-        /**assertFalse(result.isEmpty());
-        //assertTrue(result.getFirst() instanceof SendAnimation sendAnimation);
-        SendAnimation animation = (SendAnimation) result.getFirst();
-        //assertEquals(imageUrl, animation.getAnimation()getAnimationUrl());
-        verify(webClient).getAbs(contains("yesno.wtf"));
-        verify(request).addQueryParam("force", "no");**/
+
+        update = createUpdateWithCommand("/no");
+
+        // Act
+        List<PartialBotApiMethod<?>> result = plugin.onEvent(update);
+
+        // Assert
+        assertFalse(result.isEmpty());
+        assertInstanceOf(SendAnimation.class,result.getFirst());
+        verify(webClient).getAbs("https://yesno.wtf/api");
+        verify(apiRequest).addQueryParam("force", "no");
     }
 
+
     @Test
-    void onEvent_MaybeCommand_Success() {
+    void onEvent_MaybeCommand_Success() throws JsonProcessingException {
         // Given
-        String imageUrl = "https://example.com/maybe.gif";
-        String jsonResponse = "{\"answer\":\"maybe\",\"forced\":true,\"image\":\"" + imageUrl + "\"}";
+        String imageMaybeURL = "https://yesno.wtf/assets/maybe/1.gif";
 
-        //when(response.statusCode()).thenReturn(200);
-        //when(response.bodyAsString()).thenReturn(jsonResponse);
+        // Arrange
+        ApiResponse apiResp = new ApiResponse("no", true, imageMaybeURL);
+        String apiJson = mapper.writeValueAsString(apiResp);
+        byte[] imageBytes = "GIF189a".getBytes(); // минимальный gif-заголовок
 
-        //Update update = createUpdateWithCommand("/maybe");
+        // Первичный запрос к yesno.wtf/api
+        when(webClient.getAbs(API_URL)).thenReturn(apiRequest);
+        when(apiRequest.addQueryParam("force", "maybe")).thenReturn(apiRequest);
+        when(apiRequest.send()).thenReturn(Future.succeededFuture(apiResponse));
+        when(apiResponse.statusCode()).thenReturn(200);
+        when(apiResponse.bodyAsString()).thenReturn(apiJson);
 
-        // When
-        //List<PartialBotApiMethod<?>> result = plugin.onEvent(update);
+        // Запрос к изображению
+        when(webClient.getAbs(imageMaybeURL)).thenReturn(imageRequest);
+        when(imageRequest.send()).thenReturn(Future.succeededFuture(imageResponse));
+        when(imageResponse.statusCode()).thenReturn(200);
+        when(imageResponse.body()).thenReturn(imageBuffer);
+        when(imageBuffer.getBytes()).thenReturn(imageBytes);
 
-        // Then
-        /**assertFalse(result.isEmpty());
-        //assertTrue(result.getFirst() instanceof SendAnimation sendAnimation);
-        SendAnimation animation = (SendAnimation) result.getFirst();
-        //assertEquals(imageUrl, animation.getAnimationUrl());
-        verify(webClient).getAbs(contains("yesno.wtf"));
-        verify(request).addQueryParam("force", "maybe");**/
+
+        update = createUpdateWithCommand("/maybe");
+
+        // Act
+        List<PartialBotApiMethod<?>> result = plugin.onEvent(update);
+
+        // Assert
+        assertFalse(result.isEmpty());
+        assertInstanceOf(SendAnimation.class,result.getFirst());
+        verify(webClient).getAbs("https://yesno.wtf/api");
+        verify(apiRequest).addQueryParam("force", "maybe");
     }
 
     @Test
     void onEvent_ServerError_ReturnsEmptyImage() {
         // Given
-        //when(response.statusCode()).thenReturn(500);
-        //Update update = createUpdateWithCommand("/yes");
-
+        when(webClient.getAbs(API_URL)).thenReturn(apiRequest);
+        when(apiRequest.addQueryParam("force", "yes")).thenReturn(apiRequest);
+        when(apiRequest.send()).thenReturn(Future.succeededFuture(apiResponse));
+        when(apiResponse.statusCode()).thenReturn(500);
+        update = createUpdateWithCommand("/yes");
         // When
-        //List<PartialBotApiMethod<?>> result = plugin.onEvent(update);
-
+        List<PartialBotApiMethod<?>> result = plugin.onEvent(update);
         // Then
-        assertTrue(true);
-        //assertTrue(result.isEmpty());
+        assertTrue(result.isEmpty());
     }
 
     @Test
     void onEvent_InvalidCommand_ReturnsEmpty() {
         // Given
-        Update update = createUpdateWithCommand("/invalid");
+
+        update = createUpdateWithCommand("/invalid");
 
         // When
         List<PartialBotApiMethod<?>> result = plugin.onEvent(update);
-
         // Then
         assertTrue(result.isEmpty());
         verify(webClient, never()).getAbs(anyString());
@@ -149,7 +200,7 @@ class YesNoPluginTest {
     @Test
     void onEvent_NonCommandMessage_ReturnsEmpty() {
         // Given
-        Update update = createUpdateWithText("Hello");
+        update = createUpdateWithText("Hello");
 
         // When
         List<PartialBotApiMethod<?>> result = plugin.onEvent(update);
@@ -180,7 +231,7 @@ class YesNoPluginTest {
         lenient().when(message.getChat()).thenReturn(chat);
         lenient().when(message.getEntities()).thenReturn(List.of(messageEntity));
 
-        Update update = mock(Update.class);
+        update = mock(Update.class);
         lenient().when(update.getMessage()).thenReturn(message);
         lenient().when(update.hasMessage()).thenReturn(true);
 
@@ -188,20 +239,58 @@ class YesNoPluginTest {
     }
 
     private Update createUpdateWithText(String text) {
-        Message message = mock(Message.class);
-        Chat chat = mock(Chat.class);
-        lenient().when(chat.getId()).thenReturn(123L);
-        lenient().when(message.getChatId()).thenReturn(123L);
-        lenient().when(message.getMessageId()).thenReturn(456);
-        lenient().when(message.getText()).thenReturn(text);
-        lenient().when(message.isCommand()).thenReturn(false);
-        lenient().when(message.hasText()).thenReturn(true);
-        lenient().when(message.getChat()).thenReturn(chat);
+         Message message = mock(Message.class);
+         Chat chat = mock(Chat.class);
+         lenient().when(chat.getId()).thenReturn(123L);
+         lenient().when(message.getChatId()).thenReturn(123L);
+         lenient().when(message.getMessageId()).thenReturn(456);
+         lenient().when(message.getText()).thenReturn(text);
+         lenient().when(message.isCommand()).thenReturn(false);
+         lenient().when(message.hasText()).thenReturn(true);
+         lenient().when(message.getChat()).thenReturn(chat);
 
-        Update update = mock(Update.class);
-        lenient().when(update.getMessage()).thenReturn(message);
-        lenient().when(update.hasMessage()).thenReturn(true);
+         update = mock(Update.class);
+         lenient().when(update.getMessage()).thenReturn(message);
+         lenient().when(update.hasMessage()).thenReturn(true);
 
-        return update;
+         return update;
+     }
+
+    private static class ApiResponse {
+        private String answer;
+        private Boolean forced;
+        private String image;
+
+        public ApiResponse(String answer, Boolean forced, String image) {
+            this.answer = answer;
+            this.forced = forced;
+            this.image = image;
+        }
+
+        public String getAnswer() {
+            return answer;
+        }
+
+        public void setAnswer(String answer) {
+            this.answer = answer;
+        }
+
+        public Boolean getForced() {
+            return forced;
+        }
+
+        public void setForced(Boolean forced) {
+            this.forced = forced;
+        }
+
+        public String getImage() {
+            return image;
+        }
+
+        public void setImage(String image) {
+            this.image = image;
+        }
     }
 }
+
+
