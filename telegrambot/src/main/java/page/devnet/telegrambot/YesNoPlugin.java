@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author mshherbakov
@@ -34,7 +35,7 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
     private static final String API_URL = "https://yesno.wtf/api";
     private final WebClient client;
     private final ObjectMapper mapper = new ObjectMapper();
-    private static final int HTTP_TIMEOUT = 5000;
+    private static final int HTTP_TIMEOUT = 10;
 
     @Data
     private static class ApiResponse {
@@ -132,7 +133,10 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                                                 apiResponseCompletableFuture.completeExceptionally(new Exception("Failed to get image response from yesno.wtf, status code: " + imageResp.statusCode()));
                                             }
                                         })
-                                        .onFailure(e -> log.warn("Failed to get image response from yesno.wtf {}", e.getMessage()));
+                                        .onFailure(e -> {
+                                            log.warn("Failed to get image response from yesno.wtf {}", e.getMessage());
+                                            apiResponseCompletableFuture.completeExceptionally(e);
+                                        });
                             } catch (JsonProcessingException ex) {
                                 log.error("Failed to parse response from yesno.wtf {}", ex.getMessage());
                                 apiResponseCompletableFuture.completeExceptionally(ex);
@@ -141,8 +145,17 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                             apiResponseCompletableFuture.completeExceptionally(new Exception("Failed to get response from yesno.wtf, code: " + resp.statusCode()));
                         }
                     })
-                    .onFailure(e -> log.warn("Failed to get response from yesno.wtf {}", e.getMessage()));
-            return apiResponseCompletableFuture.get();
+                    .onFailure(e -> {
+                        log.warn("Failed to get response from yesno.wtf {}", e.getMessage());
+                        apiResponseCompletableFuture.completeExceptionally(e);
+                    });
+            return apiResponseCompletableFuture.
+                    orTimeout(HTTP_TIMEOUT, TimeUnit.SECONDS)
+                    .exceptionally(e -> {
+                        log.error("Timeout for YesNo requst. ",e);
+                        return null;
+                    })
+                    .get();
         } catch (ExecutionException | InterruptedException e) {
             log.error("Failed to process response from yesno.wtf {}", e.getMessage());
             return null;
