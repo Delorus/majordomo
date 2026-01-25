@@ -75,7 +75,6 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
     }
 
     private List<PartialBotApiMethod<?>> executeCommand(Message message) {
-        final var msgId = message.getMessageId();
 
         var command = commandUtils.normalizeCmdMsg(message.getText());
         switch (command) {
