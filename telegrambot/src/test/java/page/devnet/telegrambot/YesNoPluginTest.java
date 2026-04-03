@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.ApiResponse;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -171,7 +172,7 @@ class YesNoPluginTest {
     }
 
     @Test
-    void onEvent_ServerError_ReturnsEmptyImage() {
+    void onEvent_ServerError_ReturnsErrorMessage() {
         // Given
         when(webClient.getAbs(API_URL)).thenReturn(apiRequest);
         when(apiRequest.addQueryParam("force", "yes")).thenReturn(apiRequest);
@@ -181,7 +182,8 @@ class YesNoPluginTest {
         // When
         List<PartialBotApiMethod<?>> result = plugin.onEvent(update);
         // Then
-        assertTrue(result.isEmpty());
+        assertFalse(result.isEmpty());
+        assertInstanceOf(SendMessage.class, result.getFirst());
     }
 
     @Test

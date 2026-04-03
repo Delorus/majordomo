@@ -158,8 +158,8 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
             return apiResponseCompletableFuture.
                     orTimeout(HTTP_TIMEOUT, TimeUnit.SECONDS)
                     .exceptionally(e -> {
-                        log.error("Timeout for YesNo requst. ", e);
-                        throw new CompletionException(new TimeoutException("Request to YesNo service timed out."));
+                        log.error("Error in YesNo request", e);
+                        throw new CompletionException(e.getCause() != null ? e.getCause() : e);
                     })
                     .get();
         } catch (ExecutionException e) {
