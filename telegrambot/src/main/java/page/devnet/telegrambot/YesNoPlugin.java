@@ -10,6 +10,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
@@ -21,9 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * @author mshherbakov
@@ -75,42 +74,49 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
     }
 
     private List<PartialBotApiMethod<?>> executeCommand(Message message) {
-        final var msgId = message.getMessageId();
 
         var command = commandUtils.normalizeCmdMsg(message.getText());
-        switch (command) {
-            case "yes": {
-                var image = tryExecute("yes");
-                if (image == null) {
-                    return Collections.emptyList();
+        try {
+            switch (command) {
+                case "yes": {
+                    var image = tryExecute("yes");
+                    if (image == null) {
+                        return Collections.emptyList();
+                    }
+                    return List.of(
+                            new SendAnimation(String.valueOf(message.getChatId()), image)
+                    );
                 }
-                return List.of(
-                        new SendAnimation(String.valueOf(message.getChatId()), image)
-                );
-            }
-            case "no": {
-                var image = tryExecute("no");
-                if (image == null) {
-                    return Collections.emptyList();
+                case "no": {
+                    var image = tryExecute("no");
+                    if (image == null) {
+                        return Collections.emptyList();
+                    }
+                    return List.of(
+                            new SendAnimation(String.valueOf(message.getChatId()), image)
+                    );
                 }
-                return List.of(
-                        new SendAnimation(String.valueOf(message.getChatId()), image)
-                );
-            }
-            case "maybe": {
-                var image = tryExecute("maybe");
-                if (image == null) {
-                    return Collections.emptyList();
+                case "maybe": {
+                    var image = tryExecute("maybe");
+                    if (image == null) {
+                        return Collections.emptyList();
+                    }
+                    return List.of(
+                            new SendAnimation(String.valueOf(message.getChatId()), image)
+                    );
                 }
-                return List.of(
-                        new SendAnimation(String.valueOf(message.getChatId()), image)
-                );
             }
+        } catch (TimeoutException e) {
+            log.error("Timeout occurred while fetching the image: {}", e.getMessage());
+            return List.of(new SendMessage(message.getChatId().toString(), "The request to the external service timed out. Please try again later."));
+        } catch (Exception e) {
+            log.error("An error occurred: {}", e.getMessage());
+            return List.of(new SendMessage(message.getChatId().toString(), "An error occurred while processing your request. Please try again later."));
         }
         return Collections.emptyList();
     }
 
-    private InputFile tryExecute(String type) {
+    private InputFile tryExecute(String type) throws TimeoutException{
         CompletableFuture<InputFile> apiResponseCompletableFuture = new CompletableFuture<>();
         try {
             client.getAbs(API_URL)
@@ -141,7 +147,7 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
                                 log.error("Failed to parse response from yesno.wtf {}", ex.getMessage());
                                 apiResponseCompletableFuture.completeExceptionally(ex);
                             }
-                        }else {
+                        } else {
                             apiResponseCompletableFuture.completeExceptionally(new Exception("Failed to get response from yesno.wtf, code: " + resp.statusCode()));
                         }
                     })
@@ -152,13 +158,25 @@ public class YesNoPlugin implements Plugin<Update, List<PartialBotApiMethod<?>>>
             return apiResponseCompletableFuture.
                     orTimeout(HTTP_TIMEOUT, TimeUnit.SECONDS)
                     .exceptionally(e -> {
-                        log.error("Timeout for YesNo requst. ",e);
-                        return null;
+                        log.error("Error in YesNo request", e);
+                        throw new CompletionException(e.getCause() != null ? e.getCause() : e);
                     })
                     .get();
-        } catch (ExecutionException | InterruptedException e) {
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof TimeoutException) {
+                // таймаут
+                log.error("Request to external service timed out.", cause);
+                throw new TimeoutException("Request to external service timed out.");
+            } else {
+                // Обработка других ошибок
+                log.error("Error during processing: ", cause);
+                throw new RuntimeException("Error during processing:", e);
+
+            }
+        } catch (InterruptedException e) {
             log.error("Failed to process response from yesno.wtf {}", e.getMessage());
-            return null;
+            throw new RuntimeException("Error during the processing of the response.", e);
         }
     }
 }
